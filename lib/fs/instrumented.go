@@ -69,7 +69,11 @@ func (f *InstrumentedFilesystem) Chtimes(name string, atime time.Time, mtime tim
 
 func (f *InstrumentedFilesystem) Create(name string) (File, error) {
 	defer f.instrument("Create")()
-	return f.fs.Create(name)
+	fd, err := f.fs.Create(name)
+	if err != nil {
+		return nil, err
+	}
+	return InstrumentedFile{fd, f}, err
 }
 
 func (f *InstrumentedFilesystem) CreateSymlink(target, name string) error {
@@ -99,12 +103,20 @@ func (f *InstrumentedFilesystem) MkdirAll(name string, perm FileMode) error {
 
 func (f *InstrumentedFilesystem) Open(name string) (File, error) {
 	defer f.instrument("Open")()
-	return f.fs.Open(name)
+	fd, err := f.fs.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	return InstrumentedFile{fd, f}, err
 }
 
 func (f *InstrumentedFilesystem) OpenFile(name string, flags int, mode FileMode) (File, error) {
 	defer f.instrument("OpenFile")()
-	return f.fs.OpenFile(name, flags, mode)
+	fd, err := f.fs.OpenFile(name, flags, mode)
+	if err != nil {
+		return nil, err
+	}
+	return InstrumentedFile{fd, f}, err
 }
 
 func (f *InstrumentedFilesystem) ReadSymlink(name string) (string, error) {
@@ -185,4 +197,54 @@ func (f *InstrumentedFilesystem) URI() string {
 func (f *InstrumentedFilesystem) SameFile(fi1, fi2 FileInfo) bool {
 	defer f.instrument("SameFile")()
 	return f.fs.SameFile(fi1, fi2)
+}
+
+type InstrumentedFile struct {
+	File
+	ifs *InstrumentedFilesystem
+}
+
+func (f InstrumentedFile) Read(data []byte) (int, error) {
+	defer f.ifs.instrument("fd.Read")()
+	return f.File.Read(data)
+}
+
+func (f InstrumentedFile) Write(data []byte) (int, error) {
+	defer f.ifs.instrument("fd.Write")()
+	return f.File.Write(data)
+}
+
+func (f InstrumentedFile) ReadAt(data []byte, off int64) (int, error) {
+	defer f.ifs.instrument("fd.ReadAt")()
+	return f.File.ReadAt(data, off)
+}
+
+func (f InstrumentedFile) WriteAt(data []byte, off int64) (int, error) {
+	defer f.ifs.instrument("fd.WriteAt")()
+	return f.File.WriteAt(data, off)
+}
+
+func (f InstrumentedFile) Seek(off int64, whence int) (int64, error) {
+	defer f.ifs.instrument("fd.Seek")()
+	return f.File.Seek(off, whence)
+}
+
+func (f InstrumentedFile) Close() error {
+	defer f.ifs.instrument("fd.Close")()
+	return f.File.Close()
+}
+
+func (f InstrumentedFile) Sync() error {
+	defer f.ifs.instrument("fd.Sync")()
+	return f.File.Sync()
+}
+
+func (f InstrumentedFile) Stat() (FileInfo, error) {
+	defer f.ifs.instrument("fd.Stat")()
+	return f.File.Stat()
+}
+
+func (f InstrumentedFile) Truncate(size int64) error {
+	defer f.ifs.instrument("fd.Truncate")()
+	return f.File.Truncate(size)
 }

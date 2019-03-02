@@ -47,7 +47,7 @@ func TestTransferFake(t *testing.T) {
 
 	cfg2 := config.New(device2)
 	cfg2.Devices = append(cfg2.Devices, config.NewDeviceConfiguration(device1, "device2"))
-	fcfg2 := config.NewFolderConfiguration(device2, "folder", "folder2", fs.FilesystemTypeFake, mustDir())
+	fcfg2 := config.NewFolderConfiguration(device2, "folder", "folder2", fs.FilesystemTypeBasic, mustDir())
 	fcfg2.Devices = append(fcfg2.Devices, config.FolderDeviceConfiguration{
 		DeviceID: device1,
 	})
@@ -111,8 +111,17 @@ func TestTransferFake(t *testing.T) {
 	}
 
 	ifs := fcfg2.Filesystem().(*fs.InstrumentedFilesystem)
-	fmt.Println("Durations:", ifs.Durations())
-	fmt.Println("Counts:", ifs.Counts())
+	durs := ifs.Durations()
+	fmt.Println("Durations:", durs)
+	counts := ifs.Counts()
+	fmt.Println("Counts:", counts)
+	fmt.Println("Per file:")
+	tot := time.Duration(0)
+	for k := range durs {
+		tot += durs[k] / 10000
+		fmt.Printf("%10s: %10s (%f)\n", k, durs[k]/10000, float64(counts[k])/10000)
+	}
+	fmt.Println("Total per file:", tot)
 }
 
 type pipeConn struct {
