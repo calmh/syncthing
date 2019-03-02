@@ -193,7 +193,7 @@ func NewFilesystem(fsType FilesystemType, uri string) Filesystem {
 		return &logFilesystem{NewWalkFilesystem(fs)}
 	}
 
-	return NewWalkFilesystem(fs)
+	return NewInstrumentedFilesystem(NewWalkFilesystem(fs))
 }
 
 // IsInternal returns true if the file, as a path relative to the folder

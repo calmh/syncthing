@@ -20,8 +20,8 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/syncthing/syncthing/lib/config"
@@ -215,8 +215,12 @@ type Event struct {
 	Data interface{}
 }
 
-func (p *Process) Events(since int) ([]Event, error) {
-	bs, err := p.Get(fmt.Sprintf("/rest/events?since=%d&timeout=10", since))
+func (p *Process) Events(since int, types ...string) ([]Event, error) {
+	path := fmt.Sprintf("/rest/events?since=%d&timeout=10", since)
+	if len(types) > 0 {
+		path = fmt.Sprintf("%s&events=%s", path, strings.Join(types, ","))
+	}
+	bs, err := p.Get(path)
 	if err != nil {
 		return nil, err
 	}
@@ -273,6 +277,19 @@ func (p *Process) GetConfig() (config.Configuration, error) {
 
 	err = json.Unmarshal(bs, &cfg)
 	return cfg, err
+}
+
+func (p *Process) GetDeviceID() (protocol.DeviceID, error) {
+	bs, err := p.Get("/rest/system/status")
+	if err != nil {
+		return protocol.EmptyDeviceID, err
+	}
+
+	var resp struct {
+		ID protocol.DeviceID `json:"myID"`
+	}
+	err = json.Unmarshal(bs, &resp)
+	return resp.ID, err
 }
 
 func (p *Process) PostConfig(cfg config.Configuration) error {
@@ -446,8 +463,19 @@ func (p *Process) checkForProblems(logfd *os.File) error {
 
 func (p *Process) eventLoop() {
 	since := 0
+	first := true
 	notScanned := make(map[string]struct{})
 	start := time.Now()
+
+	// The types of events we are actually interested (processed in the loop
+	// below).
+	eventTypes := []string{
+		"StateChanged",
+		"LocalIndexUpdated",
+		"RemoteIndexUpdated",
+		"FolderSummary",
+	}
+
 	for {
 		select {
 		case <-p.stopped:
@@ -455,7 +483,7 @@ func (p *Process) eventLoop() {
 		default:
 		}
 
-		events, err := p.Events(since)
+		events, err := p.Events(since, eventTypes...)
 		if err != nil {
 			if time.Since(start) < 5*time.Second {
 				// The API has probably not started yet, lets give it some time.
@@ -473,6 +501,29 @@ func (p *Process) eventLoop() {
 			continue
 		}
 
+		if first {
+			// Get the config to populate the list of folders. We do this
+			// after getting at least one event, so that we know it's
+			// actually up and running and ready for the /config etc calls.
+			cfg, err := p.GetConfig()
+			if err != nil {
+				panic("must get config: " + err.Error())
+			}
+			p.eventMut.Lock()
+			for _, folder := range cfg.Folders {
+				p.folders = append(p.folders, folder.ID)
+				notScanned[folder.ID] = struct{}{}
+			}
+			p.eventMut.Unlock()
+
+			// We need to know our device ID too.
+			p.id, err = p.GetDeviceID()
+			if err != nil {
+				panic("must get device ID: " + err.Error())
+			}
+			first = false
+		}
+
 		for _, ev := range events {
 			if ev.ID != since+1 {
 				l.Warnln("Event ID jumped", since, "to", ev.ID)
@@ -480,33 +531,6 @@ func (p *Process) eventLoop() {
 			since = ev.ID
 
 			switch ev.Type {
-			case "Starting":
-				// The Starting event tells us where the configuration is. Load
-				// it and populate our list of folders.
-
-				data := ev.Data.(map[string]interface{})
-				id, err := protocol.DeviceIDFromString(data["myID"].(string))
-				if err != nil {
-					log.Println("eventLoop: DeviceIdFromString:", err)
-					continue
-				}
-				p.id = id
-
-				home := data["home"].(string)
-				w, err := config.Load(filepath.Join(home, "config.xml"), protocol.LocalDeviceID)
-				if err != nil {
-					log.Println("eventLoop: Starting:", err)
-					continue
-				}
-				for id := range w.Folders() {
-					p.eventMut.Lock()
-					p.folders = append(p.folders, id)
-					p.eventMut.Unlock()
-					notScanned[id] = struct{}{}
-				}
-
-				l.Debugln("Started", p.id)
-
 			case "StateChanged":
 				// When a folder changes to idle, we tick it off by removing
 				// it from p.notScanned.

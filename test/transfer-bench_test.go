@@ -83,6 +83,8 @@ func benchmarkTransfer(t *testing.T, files, sizeExp int) {
 	receiver := startInstance(t, 2)
 	defer checkedStop(t, receiver)
 
+	log.Println("Syncing...")
+
 	sender.ResumeAll()
 	receiver.ResumeAll()
 
@@ -92,7 +94,7 @@ func benchmarkTransfer(t *testing.T, files, sizeExp int) {
 
 loop:
 	for {
-		evs, err := receiver.Events(lastEvent)
+		evs, err := receiver.Events(lastEvent, "ItemFinished", "StateChanged")
 		if err != nil {
 			if isTimeout(err) {
 				continue
