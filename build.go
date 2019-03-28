@@ -749,10 +749,9 @@ func proto() {
 }
 
 func translate() {
-	os.Chdir("gui/default/assets/lang")
-	runPipe("lang-en-new.json", goCmd, "run", "../../../../script/translate.go", "lang-en.json", "../../../")
-	os.Remove("lang-en.json")
-	err := os.Rename("lang-en-new.json", "lang-en.json")
+	runPipe("gui/default/assets/lang/lang-en-new.json", goCmd, "run", "script/translate.go", "gui/default/assets/lang/lang-en.json", "gui", "etc/linux-desktop")
+	os.Remove("gui/default/assets/lang/lang-en.json")
+	err := os.Rename("gui/default/assets/lang/lang-en-new.json", "gui/default/assets/lang/lang-en.json")
 	if err != nil {
 		log.Fatal(err)
 	}

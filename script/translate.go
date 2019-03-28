@@ -9,7 +9,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -116,7 +118,26 @@ func walkerFor(basePath string) filepath.WalkFunc {
 			generalNode(doc, filepath.Base(name))
 		}
 
+		if filepath.Ext(name) == ".tpl" && info.Mode().IsRegular() {
+			bs, err := ioutil.ReadFile(name)
+			if err != nil {
+				log.Fatal(err)
+			}
+			parseTemplate(bs)
+		}
+
 		return nil
+	}
+}
+
+func parseTemplate(tpl []byte) {
+	lines := bytes.Split(tpl, []byte("\n"))
+	exp := regexp.MustCompile(`range\s+translate\s+"([^"]+)"`)
+	for _, line := range lines {
+		m := exp.FindSubmatch(line)
+		if len(m) == 2 {
+			translation(string(m[1]))
+		}
 	}
 }
 
@@ -131,9 +152,9 @@ func main() {
 	}
 	fd.Close()
 
-	var guiDir = os.Args[2]
-
-	filepath.Walk(guiDir, walkerFor(guiDir))
+	for _, path := range os.Args[2:] {
+		filepath.Walk(path, walkerFor(path))
+	}
 
 	bs, err := json.MarshalIndent(trans, "", "   ")
 	if err != nil {
