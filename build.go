@@ -770,7 +770,7 @@ func transifex() {
 	os.Chdir("../../../../")
 
 	tpls := []string{"etc/linux-desktop/syncthing-start.desktop.tpl", "etc/linux-desktop/syncthing-ui.desktop.tpl"}
-	runPrint(goCmd, "run", "script/translate-template")
+	runPrint(goCmd, append([]string{"run", "script/translate-template"}, tpls...)...)
 }
 
 func ldflags() string {
