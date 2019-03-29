@@ -767,10 +767,10 @@ func translate() {
 func transifex() {
 	os.Chdir("gui/default/assets/lang")
 	runPrint(goCmd, "run", "../../../../script/transifexdl.go")
-	os.Chdir("../../../../")
+	os.Chdir("../../../..")
 
 	tpls := []string{"etc/linux-desktop/syncthing-start.desktop.tpl", "etc/linux-desktop/syncthing-ui.desktop.tpl"}
-	runPrint(goCmd, append([]string{"run", "script/translate-template"}, tpls...)...)
+	runPrint(goCmd, append([]string{"run", "script/translate-template.go"}, tpls...)...)
 }
 
 func ldflags() string {
