@@ -748,19 +748,29 @@ func proto() {
 	runPrint(goCmd, "generate", "github.com/syncthing/syncthing/lib/...", "github.com/syncthing/syncthing/cmd/stdiscosrv")
 }
 
+// translate picks up new phrases to translate from originals in GUI HTML
+// files and other templates.
 func translate() {
-	runPipe("gui/default/assets/lang/lang-en-new.json", goCmd, "run", "script/translate.go", "gui/default/assets/lang/lang-en.json", "gui", "etc/linux-desktop")
-	os.Remove("gui/default/assets/lang/lang-en.json")
-	err := os.Rename("gui/default/assets/lang/lang-en-new.json", "gui/default/assets/lang/lang-en.json")
+	langsDir := "gui/default/assets/lang/"
+	walkDirs := []string{"gui", "etc/linux-desktop"}
+
+	runPipe(langsDir+"lang-en-new.json", goCmd, append([]string{"run", "script/translate.go", langsDir + "lang-en.json"}, walkDirs...)...)
+	os.Remove(langsDir + "lang-en.json")
+	err := os.Rename(langsDir+"lang-en-new.json", langsDir+"lang-en.json")
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.Chdir("../../../..")
 }
 
+// transifex downloads new translations from transifex, and runs template
+// expansions on the results.
 func transifex() {
 	os.Chdir("gui/default/assets/lang")
 	runPrint(goCmd, "run", "../../../../script/transifexdl.go")
+	os.Chdir("../../../../")
+
+	tpls := []string{"etc/linux-desktop/syncthing-start.desktop.tpl", "etc/linux-desktop/syncthing-ui.desktop.tpl"}
+	runPrint(goCmd, "run", "script/translate-template")
 }
 
 func ldflags() string {

@@ -130,6 +130,11 @@ func walkerFor(basePath string) filepath.WalkFunc {
 	}
 }
 
+// find template invocations of the type
+//
+// {{ range translate "Hello, world" }}
+// ...
+// {{ end }}
 func parseTemplate(tpl []byte) {
 	lines := bytes.Split(tpl, []byte("\n"))
 	exp := regexp.MustCompile(`range\s+translate\s+"([^"]+)"`)
