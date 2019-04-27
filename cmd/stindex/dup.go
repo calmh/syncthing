@@ -25,7 +25,6 @@ func dups(ldb *db.Lowlevel) {
 		if len(val) == 0 {
 			continue
 		}
-		fmt.Println(dkey, protocol.DeviceIDFromBytes(val))
 		if protocol.DeviceIDFromBytes(val) == protocol.LocalDeviceID {
 			localDevice = dkey
 			break
@@ -73,7 +72,7 @@ func dups(ldb *db.Lowlevel) {
 			dup += int64(bd.count * bd.size)
 			dups = append(dups, bd)
 		}
-		tot += int64(bd.size)
+		tot += int64(bd.count * bd.size)
 	}
 
 	sort.Slice(dups, func(a, b int) bool { return dups[a].count < dups[b].count })
