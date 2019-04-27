@@ -13,11 +13,25 @@ import (
 
 	"github.com/syncthing/syncthing/lib/db"
 	"github.com/syncthing/syncthing/lib/protocol"
+	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
 func dups(ldb *db.Lowlevel) {
-	it := ldb.NewIterator(nil, nil)
-	defer it.Release()
+	var localDevice uint32
+	it := ldb.NewIterator(util.BytesPrefix([]byte{db.KeyTypeDeviceIdx}), nil)
+	for it.Next() {
+		dkey := binary.BigEndian.Uint32(it.Key()[1:])
+		val := it.Value()
+		if len(val) == 0 {
+			continue
+		}
+		fmt.Println(dkey, protocol.DeviceIDFromBytes(val))
+		if protocol.DeviceIDFromBytes(val) == protocol.LocalDeviceID {
+			localDevice = dkey
+			break
+		}
+	}
+	it.Release()
 
 	type blockdata struct {
 		hash  string
@@ -27,31 +41,29 @@ func dups(ldb *db.Lowlevel) {
 
 	blocks := make(map[string]blockdata)
 
+	it = ldb.NewIterator(util.BytesPrefix([]byte{db.KeyTypeDevice}), nil)
 	for it.Next() {
 		key := it.Key()
+		device := binary.BigEndian.Uint32(key[1+4:])
+		if device != localDevice {
+			continue
+		}
 
-		switch key[0] {
-		case db.KeyTypeDevice:
-			device := binary.BigEndian.Uint32(key[1+4:])
-			if device != 1 {
-				continue
-			}
-
-			var f protocol.FileInfo
-			err := f.Unmarshal(it.Value())
-			if err != nil {
-				fmt.Println("Unable to unmarshal FileInfo:", err)
-				continue
-			}
-			for _, b := range f.Blocks {
-				bd := blocks[string(b.Hash)]
-				bd.hash = string(b.Hash)
-				bd.size = int(b.Size)
-				bd.count++
-				blocks[string(b.Hash)] = bd
-			}
+		var f protocol.FileInfo
+		err := f.Unmarshal(it.Value())
+		if err != nil {
+			fmt.Println("Unable to unmarshal FileInfo:", err)
+			continue
+		}
+		for _, b := range f.Blocks {
+			bd := blocks[string(b.Hash)]
+			bd.hash = string(b.Hash)
+			bd.size = int(b.Size)
+			bd.count++
+			blocks[string(b.Hash)] = bd
 		}
 	}
+	it.Release()
 
 	var tot int64
 	var dup int64
