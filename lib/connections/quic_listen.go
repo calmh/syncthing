@@ -71,7 +71,7 @@ func (t *quicListener) Serve() {
 	})
 
 	filterConn.Start()
-	registry.Register(t.uri.Scheme, quicConn.(net.Conn))
+	registry.Register(t.uri.Scheme, quicConn)
 
 	listener, err := quic.Listen(quicConn, t.tlsCfg, quicConfig)
 	if err != nil {
@@ -85,7 +85,7 @@ func (t *quicListener) Serve() {
 	defer listener.Close()
 	defer stunConn.Close()
 	defer quicConn.Close()
-	defer registry.Unregister(t.uri.Scheme, quicConn.(net.Conn))
+	defer registry.Unregister(t.uri.Scheme, quicConn)
 	defer filterConn.Close()
 	defer packetConn.Close()
 

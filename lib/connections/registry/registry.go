@@ -19,17 +19,17 @@ import (
 
 var (
 	mut            = sync.NewMutex()
-	availableConns = make(map[string][]net.Conn)
+	availableConns = make(map[string][]net.PacketConn)
 )
 
-func Register(scheme string, conn net.Conn) {
+func Register(scheme string, conn net.PacketConn) {
 	mut.Lock()
 	defer mut.Unlock()
 
 	availableConns[scheme] = append(availableConns[scheme], conn)
 }
 
-func Unregister(scheme string, conn net.Conn) {
+func Unregister(scheme string, conn net.PacketConn) {
 	mut.Lock()
 	defer mut.Unlock()
 
@@ -44,11 +44,11 @@ func Unregister(scheme string, conn net.Conn) {
 	}
 }
 
-func Get(scheme string) net.Conn {
+func Get(scheme string) net.PacketConn {
 	mut.Lock()
 	defer mut.Unlock()
 
-	candidates := make([]net.Conn, 0)
+	candidates := make([]net.PacketConn, 0)
 	for availableScheme, conns := range availableConns {
 		// quic:// should be considered ok for both quic4:// and quic6://
 		if strings.HasPrefix(scheme, availableScheme) {
@@ -66,7 +66,7 @@ func Get(scheme string) net.Conn {
 
 // Sort connections by whether they are unspecified or not, as connections
 // listening on all addresses are more useful.
-func connSorter(conns []net.Conn) func(int, int) bool {
+func connSorter(conns []net.PacketConn) func(int, int) bool {
 	return func(i, j int) bool {
 		iIsUnspecified := false
 		jIsUnspecified := false
