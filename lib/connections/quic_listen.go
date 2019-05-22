@@ -194,7 +194,7 @@ func (t *quicListener) NATType() string {
 
 func (t *quicListener) stunRenewal(listener net.PacketConn) {
 	client := stun.NewClientWithConnection(listener)
-	client.SetSoftwareName("syncthing")
+	client.SetSoftwareName("")
 
 	var natType stun.NATType
 	var extAddr *stun.Host
