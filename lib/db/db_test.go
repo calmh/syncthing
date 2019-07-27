@@ -11,6 +11,7 @@ import (
 
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 func TestIgnoredFiles(t *testing.T) {
@@ -149,11 +150,11 @@ func TestUpdate0to3(t *testing.T) {
 
 	updater.updateSchema0to1()
 
-	if _, ok := db.getFileDirty(folder, protocol.LocalDeviceID[:], []byte(slashPrefixed)); ok {
+	if _, ok := getFile(db, db.keyer, folder, protocol.LocalDeviceID[:], []byte(slashPrefixed)); ok {
 		t.Error("File prefixed by '/' was not removed during transition to schema 1")
 	}
 
-	if _, err := db.Get(db.keyer.GenerateGlobalVersionKey(nil, folder, []byte(invalid)), nil); err != nil {
+	if _, err := db.Get(db.keyer.GenerateGlobalVersionKey(db, nil, folder, []byte(invalid)), nil); err != nil {
 		t.Error("Invalid file wasn't added to global list")
 	}
 
@@ -218,5 +219,31 @@ func TestDowngrade(t *testing.T) {
 		t.Fatal("Expected error due to database downgrade, got", err)
 	} else if err.minSyncthingVersion != dbMinSyncthingVersion {
 		t.Fatalf("Error has %v as min Syncthing version, expected %v", err.minSyncthingVersion, dbMinSyncthingVersion)
+	}
+}
+
+func TestBatchLen(t *testing.T) {
+	// This test verifies that we understand how Len() works on a batch.
+
+	batch := new(leveldb.Batch)
+	if batch.Len() != 0 {
+		t.Error("empty batch should be zero length")
+	}
+
+	batch = new(leveldb.Batch)
+	batch.Delete([]byte("asdf"))
+	if batch.Len() == 0 {
+		t.Error("batch with delete is not empty")
+	}
+
+	batch = new(leveldb.Batch)
+	batch.Put([]byte("a key"), []byte("and some data"))
+	if batch.Len() != 1 {
+		t.Error("batch with put should contain one operation")
+	}
+
+	batch.Put([]byte("a key"), []byte("and some data"))
+	if batch.Len() != 2 {
+		t.Error("batch with two put to the same key contains two operations")
 	}
 }

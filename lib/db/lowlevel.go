@@ -26,10 +26,6 @@ const (
 	dbWriteBuffer  = 16 << 20
 )
 
-var (
-	dbFlushBatch = debugEnvValue("WriteBuffer", dbWriteBuffer) / 4 // Some leeway for any leveldb in-memory optimizations
-)
-
 // Lowlevel is the lowest level database interface. It has a very simple
 // purpose: hold the actual *leveldb.DB database, and the in-memory state
 // that belong to that database. In the same way that a single on disk
@@ -235,32 +231,6 @@ func leveldbIsCorrupted(err error) bool {
 	return false
 }
 
-type batch struct {
-	*leveldb.Batch
-	db *Lowlevel
-}
-
-func (db *Lowlevel) newBatch() *batch {
-	return &batch{
-		Batch: new(leveldb.Batch),
-		db:    db,
-	}
-}
-
-// checkFlush flushes and resets the batch if its size exceeds dbFlushBatch.
-func (b *batch) checkFlush() {
-	if len(b.Dump()) > dbFlushBatch {
-		b.flush()
-		b.Reset()
-	}
-}
-
-func (b *batch) flush() {
-	if err := b.db.Write(b.Batch, nil); err != nil && err != leveldb.ErrClosed {
-		panic(err)
-	}
-}
-
 type closedIter struct{}
 
 func (it *closedIter) Release()                           {}
@@ -274,13 +244,6 @@ func (it *closedIter) Seek(key []byte) bool               { return false }
 func (it *closedIter) Valid() bool                        { return false }
 func (it *closedIter) Error() error                       { return leveldb.ErrClosed }
 func (it *closedIter) SetReleaser(releaser util.Releaser) {}
-
-type snapshot interface {
-	Get([]byte, *opt.ReadOptions) ([]byte, error)
-	Has([]byte, *opt.ReadOptions) (bool, error)
-	NewIterator(*util.Range, *opt.ReadOptions) iterator.Iterator
-	Release()
-}
 
 type closedSnap struct{}
 
