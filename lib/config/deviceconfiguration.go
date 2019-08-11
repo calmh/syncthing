@@ -23,6 +23,7 @@ type DeviceConfiguration struct {
 	SkipIntroductionRemovals bool                 `xml:"skipIntroductionRemovals,attr" json:"skipIntroductionRemovals"`
 	IntroducedBy             protocol.DeviceID    `xml:"introducedBy,attr" json:"introducedBy"`
 	Paused                   bool                 `xml:"paused" json:"paused"`
+	Passive                  bool                 `xml:"passive" json:"passive"`
 	AllowedNetworks          []string             `xml:"allowedNetwork,omitempty" json:"allowedNetworks"`
 	AutoAcceptFolders        bool                 `xml:"autoAcceptFolders" json:"autoAcceptFolders"`
 	MaxSendKbps              int                  `xml:"maxSendKbps" json:"maxSendKbps"`

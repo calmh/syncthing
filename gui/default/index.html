@@ -715,7 +715,10 @@
                         </span>
                       </td>
                       <td ng-if="!connections[deviceCfg.deviceID].connected" class="text-right">
-                        <span ng-repeat="addr in deviceCfg.addresses">
+                        <span ng-if="deviceCfg.passive" class="text-muted">
+                          <span translate>Passive - incoming connections only</span><br>
+                        </span>
+                        <span ng-if="!deviceCfg.passive" ng-repeat="addr in deviceCfg.addresses">
                             <span tooltip data-original-title="{{'Configured' | translate}}">{{addr}}</span><br>
                             <small ng-if="system.lastDialStatus[addr].error" tooltip data-original-title="{{system.lastDialStatus[addr].error}}" class="text-danger">{{abbreviatedError(addr)}}<br></small>
                         </span>

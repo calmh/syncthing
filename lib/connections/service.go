@@ -354,11 +354,7 @@ func (s *service) connect(stop chan struct{}) {
 
 		for _, deviceCfg := range cfg.Devices {
 			deviceID := deviceCfg.DeviceID
-			if deviceID == s.myID {
-				continue
-			}
-
-			if deviceCfg.Paused {
+			if deviceID == s.myID || deviceCfg.Paused || deviceCfg.Passive || len(deviceCfg.Addresses) == 0 {
 				continue
 			}
 
