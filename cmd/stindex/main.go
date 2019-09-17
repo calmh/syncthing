@@ -36,7 +36,7 @@ func main() {
 	}
 
 	if mode == "dump" {
-		dump(ldb)
+		dump(filepath.Base(path), ldb)
 	} else if mode == "dumpsize" {
 		dumpsize(ldb)
 	} else if mode == "idxck" {

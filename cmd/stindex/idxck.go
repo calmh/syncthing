@@ -69,6 +69,11 @@ func idxck(ldb *db.Lowlevel) (success bool) {
 				fmt.Println("Unable to unmarshal VersionList:", err)
 				success = false
 				continue
+
+			}
+			if len(flv.Versions) == 0 {
+				fmt.Printf("Empty version list for file %q, folder %q\n", name, folder)
+				continue
 			}
 			globals[globalKey{folder, name}] = flv
 
