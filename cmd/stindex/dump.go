@@ -102,7 +102,7 @@ func dump(base string, ldb *db.Lowlevel) {
 			if len(val) == 0 {
 				out("deviceidx", map[string]interface{}{"idx": key, "value": nil})
 			} else {
-				dev := protocol.DeviceIDFromBytes(val)
+				dev := protocol.DeviceIDFromBytes(val).String()
 				out("deviceidx", map[string]interface{}{"idx": key, "value": dev})
 			}
 
