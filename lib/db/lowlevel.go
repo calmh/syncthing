@@ -12,12 +12,12 @@ import (
 	"encoding/binary"
 	"time"
 
-	"github.com/greatroar/blobloom"
 	"github.com/syncthing/syncthing/lib/db/backend"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/sync"
 	"github.com/syncthing/syncthing/lib/util"
 	"github.com/thejerf/suture"
+	"github.com/willf/bloom"
 )
 
 const (
@@ -27,8 +27,7 @@ const (
 	// than 100k. For fewer than 100k items we will just get better false
 	// positive rate instead.
 	indirectGCBloomCapacity          = 100000
-	indirectGCBloomFalsePositiveRate = 0.01     // 1%
-	indirectGCBloomMaxBytes          = 32 << 20 // Use at most 32MiB memory, which covers our desired FP rate at 27 M items
+	indirectGCBloomFalsePositiveRate = 0.01 // 1%
 	indirectGCDefaultInterval        = 13 * time.Hour
 	indirectGCTimeKey                = "lastIndirectGCTime"
 
@@ -596,20 +595,19 @@ func (db *Lowlevel) gcIndirect(ctx context.Context) error {
 	if db.gcKeyCount > capacity {
 		capacity = db.gcKeyCount
 	}
-	blockFilter := blobloom.NewOptimized(blobloom.Config{
-		Capacity: uint64(capacity),
-		FPRate:   indirectGCBloomFalsePositiveRate,
-		MaxBits:  8 * indirectGCBloomMaxBytes,
-	})
+	l.Infoln("gc: new bloom filter with capacity", capacity)
+	blockFilter := bloom.NewWithEstimates(uint(capacity), indirectGCBloomFalsePositiveRate)
 
 	// Iterate the FileInfos, unmarshal the block and version hashes and
 	// add them to the filter.
 
+	l.Infoln("gc: iterating files")
 	it, err := t.NewPrefixIterator([]byte{KeyTypeDevice})
 	if err != nil {
 		return err
 	}
 	defer it.Release()
+	added, skipped := 0, 0
 	for it.Next() {
 		select {
 		case <-ctx.Done():
@@ -622,23 +620,26 @@ func (db *Lowlevel) gcIndirect(ctx context.Context) error {
 			return err
 		}
 		if len(bl.BlocksHash) > 0 {
-			blockFilter.Add(bloomHash(bl.BlocksHash))
+			blockFilter.Add(bl.BlocksHash)
+			added++
 		}
 	}
 	it.Release()
 	if err := it.Error(); err != nil {
 		return err
 	}
+	l.Infof("gc: added %d block entries to filter, skipped %d empty ones", added, skipped)
 
 	// Iterate over block lists, removing keys with hashes that don't match
 	// the filter.
 
+	l.Infoln("gc: iterating block lists")
 	it, err = t.NewPrefixIterator([]byte{KeyTypeBlockList})
 	if err != nil {
 		return err
 	}
 	defer it.Release()
-	matchedBlocks := 0
+	matchedBlocks, dropped := 0, 0
 	for it.Next() {
 		select {
 		case <-ctx.Done():
@@ -647,10 +648,11 @@ func (db *Lowlevel) gcIndirect(ctx context.Context) error {
 		}
 
 		key := blockListKey(it.Key())
-		if blockFilter.Has(bloomHash(key)) {
+		if blockFilter.Test(key.BlocksHash()) {
 			matchedBlocks++
 			continue
 		}
+		dropped++
 		if err := t.Delete(key); err != nil {
 			return err
 		}
@@ -659,6 +661,7 @@ func (db *Lowlevel) gcIndirect(ctx context.Context) error {
 	if err := it.Error(); err != nil {
 		return err
 	}
+	l.Infof("gc: matched %d block lists, dropped %d unused ones", matchedBlocks, dropped)
 
 	// Remember the number of unique keys we kept until the next pass.
 	db.gcKeyCount = matchedBlocks
@@ -668,12 +671,6 @@ func (db *Lowlevel) gcIndirect(ctx context.Context) error {
 	}
 
 	return db.Compact()
-}
-
-// Hash function for the bloomfilter: first eight bytes of the SHA-256.
-// Big or little-endian makes no difference, as long as we're consistent.
-func bloomHash(key blockListKey) uint64 {
-	return binary.BigEndian.Uint64(key.BlocksHash())
 }
 
 // CheckRepair checks folder metadata and sequences for miscellaneous errors.
