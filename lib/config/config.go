@@ -261,7 +261,7 @@ func (cfg *Configuration) clean() error {
 	// - free from duplicates
 	// - no devices with empty ID
 	// - sorted by ID
-	// Happen before preparting folders as that needs a correct device list.
+	// Happen before preparing folders as that needs a correct device list.
 	cfg.Devices = ensureNoDuplicateOrEmptyIDDevices(cfg.Devices)
 	sort.Slice(cfg.Devices, func(a, b int) bool {
 		return cfg.Devices[a].DeviceID.Compare(cfg.Devices[b].DeviceID) == -1

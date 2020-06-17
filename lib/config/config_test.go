@@ -9,6 +9,7 @@ package config
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -1202,6 +1203,67 @@ func testVerifyDefaults(t *testing.T, cfg Configuration) {
 
 	// DeviceConfiguration lacks non-slice default values, and slices are
 	// not set during SetDefaults.
+}
+
+func TestUnmarshalAppends(t *testing.T) {
+	var test struct {
+		Strings []string
+	}
+
+	// Unmarshalling JSON without the key mention doesn't touch it.
+
+	test.Strings = []string{"a"}
+	if err := json.Unmarshal([]byte(`{}`), &test); err != nil {
+		t.Fatal(err)
+	}
+	if len(test.Strings) != 1 || test.Strings[0] != "a" {
+		t.Error("did truncate")
+	}
+
+	// Unmarshalling JSON with empty or nil slices does the intuitive thing.
+
+	test.Strings = []string{"a"}
+	if err := json.Unmarshal([]byte(`{"strings":[]}`), &test); err != nil {
+		t.Fatal(err)
+	}
+	if len(test.Strings) != 0 {
+		t.Error("didn't truncate")
+	}
+	if test.Strings == nil {
+		t.Error("was suddenly nil")
+	}
+
+	test.Strings = []string{"a"}
+	if err := json.Unmarshal([]byte(`{"strings":null}`), &test); err != nil {
+		t.Fatal(err)
+	}
+	if len(test.Strings) != 0 {
+		t.Error("didn't truncate")
+	}
+	if test.Strings != nil {
+		t.Error("wasn't nil")
+	}
+
+	// XML without the attribute mentioned does nothing
+
+	test.Strings = []string{"a"}
+	if err := xml.Unmarshal([]byte(`<test></test>`), &test); err != nil {
+		t.Fatal(err)
+	}
+	if len(test.Strings) != 1 || test.Strings[0] != "a" {
+		t.Error("did truncate")
+	}
+
+	// XML appends
+
+	test.Strings = []string{"a"}
+	if err := xml.Unmarshal([]byte(`<test><Strings>b</Strings></test>`), &test); err != nil {
+		t.Fatal(err)
+	}
+	if len(test.Strings) != 2 || test.Strings[0] != "a" || test.Strings[1] != "b" {
+		t.Log(test.Strings)
+		t.Error("didn't append")
+	}
 }
 
 // defaultConfigAsMap returns a valid default config as a JSON-decoded
