@@ -797,7 +797,13 @@ func (f *fakeFile) Truncate(size int64) error {
 	defer f.mut.Unlock()
 
 	if f.content != nil {
-		f.content = f.content[:int(size)]
+		if cap(f.content) >= int(size) {
+			f.content = f.content[:int(size)]
+		} else {
+			newContent := make([]byte, int(size))
+			copy(f.content, newContent)
+			f.content = newContent
+		}
 	}
 	f.rng = nil
 	f.size = size

@@ -71,7 +71,7 @@ func init() {
 
 func tmpDefaultWrapper() (config.Wrapper, config.FolderConfiguration) {
 	w := createTmpWrapper(defaultCfgWrapper.RawCopy())
-	fcfg := testFolderConfigTmp()
+	fcfg := testFolderConfigFake()
 	_, _ = w.SetFolder(fcfg)
 	return w, fcfg
 }
