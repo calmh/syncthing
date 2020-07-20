@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -157,7 +158,7 @@ type fakeEntry struct {
 	content   []byte
 }
 
-func (fs *fakefs) entryForName(name string) *fakeEntry {
+func (fs *fakefs) entryForName(name string, follow bool) *fakeEntry {
 	// bug: lookup doesn't work through symlinks.
 	if fs.insens {
 		name = UnicodeLowercase(name)
@@ -169,25 +170,35 @@ func (fs *fakefs) entryForName(name string) *fakeEntry {
 	}
 
 	name = strings.Trim(name, "/")
-	comps := strings.Split(name, "/")
-	entry := fs.root
-	for _, comp := range comps {
-		if entry.entryType != fakeEntryTypeDir {
-			return nil
-		}
-		var ok bool
-		entry, ok = entry.children[comp]
-		if !ok {
-			return nil
-		}
+	return fs.entryUnderRoot(name, fs.root, follow)
+}
+
+func (fs *fakefs) entryUnderRoot(name string, root *fakeEntry, follow bool) *fakeEntry {
+	comps := strings.SplitN(name, "/", 2)
+	this := comps[0]
+	entry, ok := root.children[this]
+	if !ok {
+		return nil
 	}
-	return entry
+	if follow && entry.entryType == fakeEntryTypeSymlink {
+		next := entry.dest
+		if len(comps) > 1 {
+			next = path.Join(next, comps[1])
+		}
+		return fs.entryUnderRoot(next, root, follow)
+	}
+	if len(comps) == 1 {
+		return entry
+	}
+
+	next := comps[1]
+	return fs.entryUnderRoot(next, entry, follow)
 }
 
 func (fs *fakefs) Chmod(name string, mode FileMode) error {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, true)
 	if entry == nil {
 		return os.ErrNotExist
 	}
@@ -198,7 +209,7 @@ func (fs *fakefs) Chmod(name string, mode FileMode) error {
 func (fs *fakefs) Lchown(name string, uid, gid int) error {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, false)
 	if entry == nil {
 		return os.ErrNotExist
 	}
@@ -210,7 +221,7 @@ func (fs *fakefs) Lchown(name string, uid, gid int) error {
 func (fs *fakefs) Chtimes(name string, atime time.Time, mtime time.Time) error {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, true)
 	if entry == nil {
 		return os.ErrNotExist
 	}
@@ -222,11 +233,9 @@ func (fs *fakefs) create(name string) (*fakeEntry, error) {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
 
-	if entry := fs.entryForName(name); entry != nil {
+	if entry := fs.entryForName(name, true); entry != nil {
 		if entry.entryType == fakeEntryTypeDir {
 			return nil, os.ErrExist
-		} else if entry.entryType == fakeEntryTypeSymlink {
-			return nil, errors.New("following symlink not supported")
 		}
 		entry.size = 0
 		entry.mtime = time.Now()
@@ -240,7 +249,7 @@ func (fs *fakefs) create(name string) (*fakeEntry, error) {
 
 	dir := filepath.Dir(name)
 	base := filepath.Base(name)
-	entry := fs.entryForName(dir)
+	entry := fs.entryForName(dir, true)
 	if entry == nil {
 		return nil, os.ErrNotExist
 	}
@@ -287,7 +296,7 @@ func (fs *fakefs) DirNames(name string) ([]string, error) {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
 
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, true)
 	if entry == nil {
 		return nil, os.ErrNotExist
 	}
@@ -304,7 +313,7 @@ func (fs *fakefs) Lstat(name string) (FileInfo, error) {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
 
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, false)
 	if entry == nil {
 		return nil, os.ErrNotExist
 	}
@@ -323,7 +332,7 @@ func (fs *fakefs) Mkdir(name string, perm FileMode) error {
 
 	dir := filepath.Dir(name)
 	base := filepath.Base(name)
-	entry := fs.entryForName(dir)
+	entry := fs.entryForName(dir, true)
 	key := base
 
 	if entry == nil {
@@ -385,7 +394,7 @@ func (fs *fakefs) Open(name string) (File, error) {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
 
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, true)
 	if entry == nil || entry.entryType != fakeEntryTypeFile {
 		return nil, os.ErrNotExist
 	}
@@ -406,7 +415,7 @@ func (fs *fakefs) OpenFile(name string, flags int, mode FileMode) (File, error) 
 
 	dir := filepath.Dir(name)
 	base := filepath.Base(name)
-	entry := fs.entryForName(dir)
+	entry := fs.entryForName(dir, true)
 	key := base
 
 	if entry == nil {
@@ -441,7 +450,7 @@ func (fs *fakefs) ReadSymlink(name string) (string, error) {
 	fs.mut.Lock()
 	defer fs.mut.Unlock()
 
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, false)
 	if entry == nil {
 		return "", os.ErrNotExist
 	} else if entry.entryType != fakeEntryTypeSymlink {
@@ -458,7 +467,7 @@ func (fs *fakefs) Remove(name string) error {
 		name = UnicodeLowercase(name)
 	}
 
-	entry := fs.entryForName(name)
+	entry := fs.entryForName(name, true)
 	if entry == nil {
 		return os.ErrNotExist
 	}
@@ -466,7 +475,7 @@ func (fs *fakefs) Remove(name string) error {
 		return errors.New("not empty")
 	}
 
-	entry = fs.entryForName(filepath.Dir(name))
+	entry = fs.entryForName(filepath.Dir(name), true)
 	delete(entry.children, filepath.Base(name))
 	return nil
 }
@@ -479,7 +488,7 @@ func (fs *fakefs) RemoveAll(name string) error {
 		name = UnicodeLowercase(name)
 	}
 
-	entry := fs.entryForName(filepath.Dir(name))
+	entry := fs.entryForName(filepath.Dir(name), true)
 	if entry == nil {
 		return nil // all tested real systems exibit this behaviour
 	}
@@ -502,7 +511,7 @@ func (fs *fakefs) Rename(oldname, newname string) error {
 		newKey = UnicodeLowercase(newKey)
 	}
 
-	p0 := fs.entryForName(filepath.Dir(oldname))
+	p0 := fs.entryForName(filepath.Dir(oldname), true)
 	if p0 == nil {
 		return os.ErrNotExist
 	}
@@ -512,7 +521,7 @@ func (fs *fakefs) Rename(oldname, newname string) error {
 		return os.ErrNotExist
 	}
 
-	p1 := fs.entryForName(filepath.Dir(newname))
+	p1 := fs.entryForName(filepath.Dir(newname), true)
 	if p1 == nil {
 		return os.ErrNotExist
 	}
@@ -539,11 +548,24 @@ func (fs *fakefs) Rename(oldname, newname string) error {
 }
 
 func (fs *fakefs) Stat(name string) (FileInfo, error) {
-	return fs.Lstat(name)
+	fs.mut.Lock()
+	defer fs.mut.Unlock()
+
+	entry := fs.entryForName(name, true)
+	if entry == nil {
+		return nil, os.ErrNotExist
+	}
+
+	info := &fakeFileInfo{*entry}
+	if fs.insens {
+		info.name = filepath.Base(name)
+	}
+
+	return info, nil
 }
 
 func (fs *fakefs) SymlinksSupported() bool {
-	return false
+	return true
 }
 
 func (fs *fakefs) Walk(name string, walkFn WalkFunc) error {

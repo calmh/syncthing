@@ -59,7 +59,7 @@ func TestRequestSimple(t *testing.T) {
 	<-done
 
 	// Verify the contents
-	if err := equalContents(filepath.Join(tfs.URI(), "testfile"), contents); err != nil {
+	if err := equalContents(tfs, "testfile", contents); err != nil {
 		t.Error("File did not sync correctly:", err)
 	}
 }
@@ -465,12 +465,12 @@ func TestIssue4841(t *testing.T) {
 
 func TestRescanIfHaveInvalidContent(t *testing.T) {
 	m, fc, fcfg := setupModelWithConnection()
-	tmpDir := fcfg.Filesystem().URI()
-	defer cleanupModelAndRemoveDir(m, tmpDir)
+	tfs := fcfg.Filesystem()
+	defer cleanupModel(m)
 
 	payload := []byte("hello")
 
-	must(t, ioutil.WriteFile(filepath.Join(tmpDir, "foo"), payload, 0777))
+	must(t, writeFile(tfs, "foo", payload, 0777))
 
 	received := make(chan []protocol.FileInfo)
 	fc.mut.Lock()
@@ -511,7 +511,7 @@ func TestRescanIfHaveInvalidContent(t *testing.T) {
 	payload = []byte("bye")
 	buf = make([]byte, len(payload))
 
-	must(t, ioutil.WriteFile(filepath.Join(tmpDir, "foo"), payload, 0777))
+	must(t, writeFile(tfs, "foo", payload, 0777))
 
 	_, err = m.Request(device1, "default", "foo", int32(len(payload)), 0, f.Blocks[0].Hash, f.Blocks[0].WeakHash, false)
 	if err == nil {
@@ -667,8 +667,8 @@ func TestRequestSymlinkWindows(t *testing.T) {
 	}
 }
 
-func equalContents(path string, contents []byte) error {
-	if bs, err := ioutil.ReadFile(path); err != nil {
+func equalContents(fs fs.Filesystem, path string, contents []byte) error {
+	if bs, err := readFile(fs, path); err != nil {
 		return err
 	} else if !bytes.Equal(bs, contents) {
 		return errors.New("incorrect data")
@@ -679,7 +679,6 @@ func equalContents(path string, contents []byte) error {
 func TestRequestRemoteRenameChanged(t *testing.T) {
 	m, fc, fcfg := setupModelWithConnection()
 	tfs := fcfg.Filesystem()
-	tmpDir := tfs.URI()
 	defer cleanupModelAndRemoveDir(m, tfs.URI())
 
 	received := make(chan []protocol.FileInfo)
@@ -716,7 +715,7 @@ func TestRequestRemoteRenameChanged(t *testing.T) {
 	}
 
 	for _, n := range [2]string{a, b} {
-		must(t, equalContents(filepath.Join(tmpDir, n), data[n]))
+		must(t, equalContents(tfs, n, data[n]))
 	}
 
 	var gotA, gotB, gotConfl bool
@@ -796,11 +795,11 @@ func TestRequestRemoteRenameChanged(t *testing.T) {
 		case path == a:
 			t.Errorf(`File "a" was not removed`)
 		case path == b:
-			if err := equalContents(filepath.Join(tmpDir, b), data[a]); err != nil {
+			if err := equalContents(tfs, b, data[a]); err != nil {
 				t.Error(`File "b" has unexpected content (renamed from a on remote)`)
 			}
 		case strings.HasPrefix(path, b+".sync-conflict-"):
-			if err := equalContents(filepath.Join(tmpDir, path), otherData); err != nil {
+			if err := equalContents(tfs, path, otherData); err != nil {
 				t.Error(`Sync conflict of "b" has unexptected content`)
 			}
 		case path == "." || strings.HasPrefix(path, ".stfolder"):
@@ -814,8 +813,7 @@ func TestRequestRemoteRenameChanged(t *testing.T) {
 func TestRequestRemoteRenameConflict(t *testing.T) {
 	m, fc, fcfg := setupModelWithConnection()
 	tfs := fcfg.Filesystem()
-	tmpDir := tfs.URI()
-	defer cleanupModelAndRemoveDir(m, tmpDir)
+	defer cleanupModel(m)
 
 	recv := make(chan int)
 	fc.mut.Lock()
@@ -845,7 +843,7 @@ func TestRequestRemoteRenameConflict(t *testing.T) {
 	}
 
 	for _, n := range [2]string{a, b} {
-		must(t, equalContents(filepath.Join(tmpDir, n), data[n]))
+		must(t, equalContents(tfs, n, data[n]))
 	}
 
 	fd, err := tfs.OpenFile(b, fs.OptReadWrite, 0644)

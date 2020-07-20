@@ -9,6 +9,7 @@ package model
 import (
 	"bytes"
 	"context"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -400,4 +401,13 @@ func writeFile(fs fs.Filesystem, filename string, data []byte, perm fs.FileMode)
 		return err
 	}
 	return fs.Chmod(filename, perm)
+}
+
+func readFile(fs fs.Filesystem, name string) ([]byte, error) {
+	fd, err := fs.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer fd.Close()
+	return ioutil.ReadAll(fd)
 }

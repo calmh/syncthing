@@ -2587,7 +2587,6 @@ func TestIssue2571(t *testing.T) {
 
 	w, fcfg := tmpDefaultWrapper()
 	testFs := fcfg.Filesystem()
-	defer os.RemoveAll(testFs.URI())
 
 	for _, dir := range []string{"toLink", "linkTarget"} {
 		must(t, testFs.MkdirAll(dir, 0775))
@@ -2600,8 +2599,7 @@ func TestIssue2571(t *testing.T) {
 	defer cleanupModel(m)
 
 	must(t, testFs.RemoveAll("toLink"))
-
-	must(t, osutil.DebugSymlinkForTestsOnly(filepath.Join(testFs.URI(), "linkTarget"), filepath.Join(testFs.URI(), "toLink")))
+	must(t, testFs.CreateSymlink("linkTarget", "toLink"))
 
 	m.ScanFolder("default")
 

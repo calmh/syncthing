@@ -925,6 +925,40 @@ func TestReadWriteContent(t *testing.T) {
 	}
 }
 
+func TestFollowSymlink(t *testing.T) {
+	fs := newFakeFilesystem("testfollowsymlink?content=true")
+	data := []byte("foo")
+	fs.MkdirAll("a/b/c", 0755)
+	writeFile(fs, "a/b/c/file", data)
+
+	fs.CreateSymlink("c/file", "a/b/link") // a/b/link -> a/b/c/file
+	fs.CreateSymlink("c", "a/b/d")         // a/b/d -> a/b/c
+
+	if bs, err := readFile(fs, "a/b/link"); err != nil {
+		t.Error(err)
+	} else if !bytes.Equal(bs, data) {
+		t.Error("wrong data")
+	}
+
+	if info, err := fs.Stat("a/b/link"); err != nil {
+		t.Error(err)
+	} else if !info.IsRegular() || info.IsSymlink() {
+		t.Error("should be regular file")
+	}
+
+	if info, err := fs.Lstat("a/b/link"); err != nil {
+		t.Error(err)
+	} else if info.IsRegular() || !info.IsSymlink() {
+		t.Error("should be symlink")
+	}
+
+	if bs, err := readFile(fs, "a/b/d/file"); err != nil {
+		t.Error(err)
+	} else if !bytes.Equal(bs, data) {
+		t.Error("wrong data")
+	}
+}
+
 func cleanup(fs Filesystem) error {
 	filenames, _ := fs.DirNames("/")
 	for _, filename := range filenames {
@@ -936,4 +970,25 @@ func cleanup(fs Filesystem) error {
 	}
 
 	return nil
+}
+
+func writeFile(fs Filesystem, name string, data []byte) error {
+	fd, err := fs.Create(name)
+	if err != nil {
+		return err
+	}
+	if _, err := fd.Write(data); err != nil {
+		fd.Close()
+		return err
+	}
+	return fd.Close()
+}
+
+func readFile(fs Filesystem, name string) ([]byte, error) {
+	fd, err := fs.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer fd.Close()
+	return ioutil.ReadAll(fd)
 }

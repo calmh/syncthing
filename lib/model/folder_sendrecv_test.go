@@ -21,7 +21,6 @@ import (
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
-	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/scanner"
 	"github.com/syncthing/syncthing/lib/sync"
@@ -968,27 +967,18 @@ func TestDeleteBehindSymlink(t *testing.T) {
 	defer cleanupSRFolder(f, m)
 	ffs := f.Filesystem()
 
-	destDir := createTmpDir()
-	defer os.RemoveAll(destDir)
-	destFs := fs.NewFilesystem(fs.FilesystemTypeBasic, destDir)
+	// First we have "link" (directory) and "link/file" (a file)
 
-	link := "link"
-	file := filepath.Join(link, "file")
-
-	must(t, ffs.MkdirAll(link, 0755))
-	fi := createFile(t, file, ffs)
+	must(t, ffs.MkdirAll("link", 0755))
+	fi := createFile(t, "link/file", ffs)
 	f.updateLocalsFromScanning([]protocol.FileInfo{fi})
-	must(t, osutil.RenameOrCopy(fs.CopyRangeMethodStandard, ffs, destFs, file, "file"))
-	must(t, ffs.RemoveAll(link))
 
-	if err := osutil.DebugSymlinkForTestsOnly(destFs.URI(), filepath.Join(ffs.URI(), link)); err != nil {
-		if runtime.GOOS == "windows" {
-			// Probably we require permissions we don't have.
-			t.Skip("Need admin permissions or developer mode to run symlink test on Windows: " + err.Error())
-		} else {
-			t.Fatal(err)
-		}
-	}
+	// Now we move it away and make "link" a symlink instead
+
+	must(t, ffs.Rename("link", "somedir"))
+	must(t, ffs.CreateSymlink("somedir", "link"))
+
+	// Now we announce a delete and make sure that it doesn't get deleted.
 
 	fi.Deleted = true
 	fi.Version = fi.Version.Update(device1.Short())
@@ -1008,7 +998,10 @@ func TestDeleteBehindSymlink(t *testing.T) {
 	default:
 		t.Fatalf("No db update received")
 	}
-	if _, err := destFs.Stat("file"); err != nil {
+	if _, err := ffs.Stat("somedir/file"); err != nil {
+		t.Errorf("Expected no error when stating file behind symlink, got %v", err)
+	}
+	if _, err := ffs.Stat("link/file"); err != nil {
 		t.Errorf("Expected no error when stating file behind symlink, got %v", err)
 	}
 }
