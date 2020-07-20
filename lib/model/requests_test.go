@@ -1021,8 +1021,6 @@ func TestIgnoreDeleteUnignore(t *testing.T) {
 	w, fcfg := tmpDefaultWrapper()
 	m := setupModel(w)
 	fss := fcfg.Filesystem()
-	tmpDir := fss.URI()
-	defer cleanupModelAndRemoveDir(m, tmpDir)
 
 	folderIgnoresAlwaysReload(m, fcfg)
 
@@ -1051,7 +1049,7 @@ func TestIgnoreDeleteUnignore(t *testing.T) {
 	}
 	fc.mut.Unlock()
 
-	if err := ioutil.WriteFile(filepath.Join(fss.URI(), file), contents, 0644); err != nil {
+	if err := writeFile(fss, file, contents, 0644); err != nil {
 		panic(err)
 	}
 	m.ScanFolders()
