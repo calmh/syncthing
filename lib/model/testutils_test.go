@@ -7,6 +7,7 @@
 package model
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -230,4 +231,19 @@ func folderIgnoresAlwaysReload(m *model, fcfg config.FolderConfiguration) {
 	m.fmut.Lock()
 	m.addAndStartFolderLockedWithIgnores(fcfg, fset, ignores)
 	m.fmut.Unlock()
+}
+
+func debugFs(ffs fs.Filesystem) {
+	ffs.Walk("/", func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("! %s: %v\n", path, err)
+			return err
+		}
+		if info.IsDir() {
+			fmt.Printf("d %s\n", path)
+		} else {
+			fmt.Printf("f %s\n", path)
+		}
+		return nil
+	})
 }

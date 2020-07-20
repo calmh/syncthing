@@ -11,7 +11,6 @@ import (
 	"context"
 	"crypto/rand"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -663,13 +662,12 @@ func TestIssue3164(t *testing.T) {
 	m, f := setupSendReceiveFolder()
 	defer cleanupSRFolder(f, m)
 	ffs := f.Filesystem()
-	tmpDir := ffs.URI()
 
 	ignDir := filepath.Join("issue3164", "oktodelete")
 	subDir := filepath.Join(ignDir, "foobar")
 	must(t, ffs.MkdirAll(subDir, 0777))
-	must(t, ioutil.WriteFile(filepath.Join(tmpDir, subDir, "file"), []byte("Hello"), 0644))
-	must(t, ioutil.WriteFile(filepath.Join(tmpDir, ignDir, "file"), []byte("Hello"), 0644))
+	must(t, writeFile(ffs, filepath.Join(subDir, "file"), []byte("Hello"), 0644))
+	must(t, writeFile(ffs, filepath.Join(ignDir, "file"), []byte("Hello"), 0644))
 	file := protocol.FileInfo{
 		Name: "issue3164",
 	}

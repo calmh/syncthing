@@ -21,6 +21,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gobwas/glob"
 )
 
 // see readShortAt()
@@ -561,8 +563,26 @@ func (fs *fakefs) Unhide(name string) error {
 }
 
 func (fs *fakefs) Glob(pattern string) ([]string, error) {
-	// gnnh we don't seem to actually require this in practice
-	return nil, errors.New("not implemented")
+	// This is a very limited variant of glob that just supports a pattern
+	// as the last component of a path. It's enough for our test usage.
+
+	names, err := fs.DirNames(filepath.Dir(pattern))
+	if err != nil {
+		return nil, err
+	}
+	base := filepath.Base(pattern)
+	gp, err := glob.Compile(base)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []string
+	for _, n := range names {
+		if gp.Match(n) {
+			res = append(res, n)
+		}
+	}
+	return res, nil
 }
 
 func (fs *fakefs) Roots() ([]string, error) {
