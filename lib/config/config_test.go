@@ -93,79 +93,81 @@ func TestDeviceConfig(t *testing.T) {
 			continue
 		}
 
-		os.RemoveAll(filepath.Join("testdata", DefaultMarkerName))
-		wr, err := load(cfgFile, device1)
-		if err != nil {
-			t.Fatal(err)
-		}
+		t.Run(fmt.Sprintf("version-%d", i), func(t *testing.T) {
+			os.RemoveAll(filepath.Join("testdata", DefaultMarkerName))
+			wr, err := load(cfgFile, device1)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		_, err = os.Stat(filepath.Join("testdata", DefaultMarkerName))
-		if i < 6 && err != nil {
-			t.Fatal(err)
-		} else if i >= 6 && err == nil {
-			t.Fatal("Unexpected file")
-		}
+			_, err = os.Stat(filepath.Join("testdata", DefaultMarkerName))
+			if i < 6 && err != nil {
+				t.Fatal(err)
+			} else if i >= 6 && err == nil {
+				t.Fatal("Unexpected file")
+			}
 
-		cfg := wr.(*wrapper).cfg
+			cfg := wr.(*wrapper).cfg
 
-		expectedFolders := []FolderConfiguration{
-			{
-				ID:               "test",
-				FilesystemType:   fs.FilesystemTypeBasic,
-				Path:             "testdata",
-				Devices:          []FolderDeviceConfiguration{{DeviceID: device1}, {DeviceID: device4}},
-				Type:             FolderTypeSendOnly,
-				RescanIntervalS:  600,
-				FSWatcherEnabled: false,
-				FSWatcherDelayS:  10,
-				Copiers:          0,
-				Hashers:          0,
-				AutoNormalize:    true,
-				MinDiskFree:      Size{1, "%"},
-				MaxConflicts:     -1,
-				Versioning: VersioningConfiguration{
-					Params: map[string]string{},
+			expectedFolders := []FolderConfiguration{
+				{
+					ID:               "test",
+					FilesystemType:   fs.FilesystemTypeBasic,
+					Path:             "testdata",
+					Devices:          []FolderDeviceConfiguration{{DeviceID: device1}, {DeviceID: device4}},
+					Type:             FolderTypeSendOnly,
+					RescanIntervalS:  600,
+					FSWatcherEnabled: false,
+					FSWatcherDelayS:  10,
+					Copiers:          0,
+					Hashers:          0,
+					AutoNormalize:    true,
+					MinDiskFree:      Size{1, "%"},
+					MaxConflicts:     -1,
+					Versioning: VersioningConfiguration{
+						Params: map[string]string{},
+					},
+					WeakHashThresholdPct: 25,
+					MarkerName:           DefaultMarkerName,
+					JunctionsAsDirs:      true,
 				},
-				WeakHashThresholdPct: 25,
-				MarkerName:           DefaultMarkerName,
-				JunctionsAsDirs:      true,
-			},
-		}
+			}
 
-		expectedDevices := []DeviceConfiguration{
-			{
-				DeviceID:        device1,
-				Name:            "node one",
-				Addresses:       []string{"tcp://a"},
-				Compression:     protocol.CompressMetadata,
-				AllowedNetworks: []string{},
-				IgnoredFolders:  []ObservedFolder{},
-				PendingFolders:  []ObservedFolder{},
-			},
-			{
-				DeviceID:        device4,
-				Name:            "node two",
-				Addresses:       []string{"tcp://b"},
-				Compression:     protocol.CompressMetadata,
-				AllowedNetworks: []string{},
-				IgnoredFolders:  []ObservedFolder{},
-				PendingFolders:  []ObservedFolder{},
-			},
-		}
-		expectedDeviceIDs := []protocol.DeviceID{device1, device4}
+			expectedDevices := []DeviceConfiguration{
+				{
+					DeviceID:        device1,
+					Name:            "node one",
+					Addresses:       []string{"tcp://a"},
+					Compression:     protocol.CompressMetadata,
+					AllowedNetworks: []string{},
+					IgnoredFolders:  []ObservedFolder{},
+					PendingFolders:  []ObservedFolder{},
+				},
+				{
+					DeviceID:        device4,
+					Name:            "node two",
+					Addresses:       []string{"tcp://b"},
+					Compression:     protocol.CompressMetadata,
+					AllowedNetworks: []string{},
+					IgnoredFolders:  []ObservedFolder{},
+					PendingFolders:  []ObservedFolder{},
+				},
+			}
+			expectedDeviceIDs := []protocol.DeviceID{device1, device4}
 
-		if cfg.Version != CurrentVersion {
-			t.Errorf("%d: Incorrect version %d != %d", i, cfg.Version, CurrentVersion)
-		}
-		if diff, equal := messagediff.PrettyDiff(expectedFolders, cfg.Folders); !equal {
-			t.Errorf("%d: Incorrect Folders. Diff:\n%s", i, diff)
-		}
-		if diff, equal := messagediff.PrettyDiff(expectedDevices, cfg.Devices); !equal {
-			t.Errorf("%d: Incorrect Devices. Diff:\n%s", i, diff)
-		}
-		if diff, equal := messagediff.PrettyDiff(expectedDeviceIDs, cfg.Folders[0].DeviceIDs()); !equal {
-			t.Errorf("%d: Incorrect DeviceIDs. Diff:\n%s", i, diff)
-		}
+			if cfg.Version != CurrentVersion {
+				t.Errorf("%d: Incorrect version %d != %d", i, cfg.Version, CurrentVersion)
+			}
+			if diff, equal := messagediff.PrettyDiff(expectedFolders, cfg.Folders); !equal {
+				t.Errorf("%d: Incorrect Folders. Diff:\n%s", i, diff)
+			}
+			if diff, equal := messagediff.PrettyDiff(expectedDevices, cfg.Devices); !equal {
+				t.Errorf("%d: Incorrect Devices. Diff:\n%s", i, diff)
+			}
+			if diff, equal := messagediff.PrettyDiff(expectedDeviceIDs, cfg.Folders[0].DeviceIDs()); !equal {
+				t.Errorf("%d: Incorrect DeviceIDs. Diff:\n%s", i, diff)
+			}
+		})
 	}
 }
 

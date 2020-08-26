@@ -179,6 +179,8 @@ func (f *FolderConfiguration) DeviceIDs() []protocol.DeviceID {
 }
 
 func (f *FolderConfiguration) prepare() {
+	f.migrateDeprecatedAttributes()
+
 	if f.RescanIntervalS > MaxRescanIntervalS {
 		f.RescanIntervalS = MaxRescanIntervalS
 	} else if f.RescanIntervalS < 0 {
@@ -206,6 +208,48 @@ func (f *FolderConfiguration) prepare() {
 	if f.MarkerName == "" {
 		f.MarkerName = DefaultMarkerName
 	}
+}
+
+func (f *FolderConfiguration) migrateDeprecatedAttributes() {
+	if f.Label == "" && f.DeprecatedLabelAttr != "" {
+		f.Label = f.DeprecatedLabelAttr
+	}
+	f.DeprecatedLabelAttr = ""
+
+	if f.Path == "" && f.DeprecatedPathAttr != "" {
+		f.Path = f.DeprecatedPathAttr
+	}
+	f.DeprecatedPathAttr = ""
+
+	if f.Type == 0 && f.DeprecatedTypeAttr != 0 {
+		f.Type = f.DeprecatedTypeAttr
+	}
+	f.DeprecatedTypeAttr = 0
+
+	if f.RescanIntervalS == 0 && f.DeprecatedRescanIntervalSAttr != 0 {
+		f.RescanIntervalS = f.DeprecatedRescanIntervalSAttr
+	}
+	f.DeprecatedRescanIntervalSAttr = 0
+
+	if !f.FSWatcherEnabled && f.DeprecatedFsWatcherEnabledAttr {
+		f.FSWatcherEnabled = f.DeprecatedFsWatcherEnabledAttr
+	}
+	f.DeprecatedFsWatcherEnabledAttr = false
+
+	if f.FSWatcherDelayS == 0 && f.DeprecatedFsWatcherDelaySAttr != 0 {
+		f.FSWatcherDelayS = f.DeprecatedFsWatcherDelaySAttr
+	}
+	f.DeprecatedFsWatcherDelaySAttr = 0
+
+	if !f.IgnorePerms && f.DeprecatedIgnorePermsAttr {
+		f.IgnorePerms = f.DeprecatedIgnorePermsAttr
+	}
+	f.DeprecatedIgnorePermsAttr = false
+
+	if !f.AutoNormalize && f.DeprecatedAutoNormalizeAttr {
+		f.AutoNormalize = f.DeprecatedAutoNormalizeAttr
+	}
+	f.DeprecatedAutoNormalizeAttr = false
 }
 
 // RequiresRestartOnly returns a copy with only the attributes that require
