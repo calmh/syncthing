@@ -9,10 +9,13 @@
         <maxConflicts>-1</maxConflicts>
         <fsync>true</fsync>
     </folder>
-    <device id="AIR6LPZ-7K4PTTV-UXQSMUU-CPQ5YWH-OEDFIIQ-JUG777G-2YQXXR5-YD6AWQR" name="node one" compression="metadata">
+    <device id="AIR6LPZ-7K4PTTV-UXQSMUU-CPQ5YWH-OEDFIIQ-JUG777G-2YQXXR5-YD6AWQR"> <name>node one</name>
+        <compression>metadata</compression>
         <address>tcp://a</address>
     </device>
-    <device id="P56IOI7-MZJNU2Y-IQGDREY-DM2MGTI-MGL3BXN-PQ6W5BM-TBBZ4TJ-XZWICQ2" name="node two" compression="metadata">
+    <device id="P56IOI7-MZJNU2Y-IQGDREY-DM2MGTI-MGL3BXN-PQ6W5BM-TBBZ4TJ-XZWICQ2">
+        <name>node two</name>
+        <compression>metadata</compression>
         <address>tcp://b</address>
     </device>
 </configuration>
