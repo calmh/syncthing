@@ -39,6 +39,8 @@ func (cfg DeviceConfiguration) Copy() DeviceConfiguration {
 }
 
 func (cfg *DeviceConfiguration) prepare(sharedFolders []string) {
+	cfg.migrateDeprecatedAttributes()
+
 	if len(cfg.Addresses) == 0 || len(cfg.Addresses) == 1 && cfg.Addresses[0] == "" {
 		cfg.Addresses = []string{"dynamic"}
 	}
@@ -60,6 +62,38 @@ func (cfg *DeviceConfiguration) prepare(sharedFolders []string) {
 
 	cfg.IgnoredFolders = sortedObservedFolderSlice(ignoredFolders)
 	cfg.PendingFolders = sortedObservedFolderSlice(pendingFolders)
+}
+
+func (cfg *DeviceConfiguration) migrateDeprecatedAttributes() {
+	if cfg.Name == "" && cfg.DeprecatedNameAttr != "" {
+		cfg.Name = cfg.DeprecatedNameAttr
+	}
+	cfg.DeprecatedNameAttr = ""
+
+	if cfg.Compression == 0 && cfg.DeprecatedCompressionAttr != 0 {
+		cfg.Compression = cfg.DeprecatedCompressionAttr
+	}
+	cfg.DeprecatedCompressionAttr = 0
+
+	if cfg.CertName == "" && cfg.DeprecatedCertNameAttr != "" {
+		cfg.CertName = cfg.DeprecatedCertNameAttr
+	}
+	cfg.DeprecatedCertNameAttr = ""
+
+	if !cfg.Introducer && cfg.DeprecatedIntroducerAttr {
+		cfg.Introducer = cfg.DeprecatedIntroducerAttr
+	}
+	cfg.DeprecatedIntroducerAttr = false
+
+	if !cfg.SkipIntroductionRemovals && cfg.DeprecatedSkipIntroductionRemovalsAttr {
+		cfg.SkipIntroductionRemovals = cfg.DeprecatedSkipIntroductionRemovalsAttr
+	}
+	cfg.DeprecatedSkipIntroductionRemovalsAttr = false
+
+	if cfg.IntroducedBy == protocol.EmptyDeviceID && cfg.DeprecatedIntroducedByAttr != protocol.EmptyDeviceID {
+		cfg.IntroducedBy = cfg.DeprecatedIntroducedByAttr
+	}
+	cfg.DeprecatedIntroducedByAttr = protocol.EmptyDeviceID
 }
 
 func (cfg *DeviceConfiguration) IgnoredFolder(folder string) bool {

@@ -9,13 +9,13 @@ import "ext.proto";
 
 message DeviceConfiguration {
     bytes                   device_id                  = 1 [(ext.goname) = "DeviceID", (ext.xml) = "id,attr", (ext.json) = "deviceID", (ext.device_id) = true];
-    string                  name                       = 2 [(ext.xml) = "name,attr,omitempty"];
+    string                  name                       = 2 [(ext.xml) = "name,omitempty"];
     repeated string         addresses                  = 3 [(ext.xml) = "address,omitempty", (ext.default) = "dynamic"];
-    protocol.Compression    compression                = 4 [(ext.xml) = "compression,attr"];
-    string                  cert_name                  = 5 [(ext.xml) = "certName,attr,omitempty"];
-    bool                    introducer                 = 6 [(ext.xml) = "introducer,attr"];
-    bool                    skip_introduction_removals = 7 [(ext.xml) = "skipIntroductionRemovals,attr"];
-    bytes                   introduced_by              = 8 [(ext.xml) = "introducedBy,attr", (ext.device_id) = true];
+    protocol.Compression    compression                = 4 [(ext.xml) = "compression"];
+    string                  cert_name                  = 5 [(ext.xml) = "certName,omitempty"];
+    bool                    introducer                 = 6 [(ext.xml) = "introducer"];
+    bool                    skip_introduction_removals = 7 [(ext.xml) = "skipIntroductionRemovals"];
+    bytes                   introduced_by              = 8 [(ext.xml) = "introducedBy", (ext.device_id) = true];
     bool                    paused                     = 9;
     repeated string         allowed_networks           = 10 [(ext.xml) = "allowedNetwork,omitempty"];
     bool                    auto_accept_folders        = 11;
@@ -24,4 +24,11 @@ message DeviceConfiguration {
     repeated ObservedFolder ignored_folders            = 14;
     repeated ObservedFolder pending_folders            = 15;
     int32                   max_request_kib            = 16 [(ext.goname) = "MaxRequestKiB", (ext.xml) = "maxRequestKiB", (ext.json) = "maxRequestKiB"];
+
+    string               name_attr                       = 9001 [deprecated = true, (ext.xml) = "name,attr,omitempty"];
+    protocol.Compression compression_attr                = 9002 [deprecated = true, (ext.xml) = "compression,attr,omitempty"];
+    string               cert_name_attr                  = 9003 [deprecated = true, (ext.xml) = "certName,attr,omitempty"];
+    bool                 introducer_attr                 = 9004 [deprecated = true, (ext.xml) = "introducer,attr,omitempty"];
+    bool                 skip_introduction_removals_attr = 9005 [deprecated = true, (ext.xml) = "skipIntroductionRemovals,attr,omitempty"];
+    bytes                introduced_by_attr              = 9006 [deprecated = true, (ext.xml) = "introducedBy,attr,omitempty", (ext.device_id) = true];
 }
