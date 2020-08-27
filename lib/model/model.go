@@ -477,13 +477,6 @@ func (m *model) restartFolder(from, to config.FolderConfiguration, cacheIgnoredF
 		errMsg = "restarting"
 	}
 
-	var fset *db.FileSet
-	if !to.Paused {
-		// Creating the fileset can take a long time (metadata calculation)
-		// so we do it outside of the lock.
-		fset = db.NewFileSet(to.ID, to.Filesystem(), m.db)
-	}
-
 	err := fmt.Errorf("%v folder %v", errMsg, to.Description())
 	m.stopFolder(from, err)
 	// Need to send CC change to both from and to devices.
@@ -492,8 +485,17 @@ func (m *model) restartFolder(from, to config.FolderConfiguration, cacheIgnoredF
 	m.fmut.Lock()
 	defer m.fmut.Unlock()
 
+	// Cache the (maybe) existing fset before it's removed by cleanupFolderLocked
+	fset := m.folderFiles[to.ID]
+
 	m.cleanupFolderLocked(from)
 	if !to.Paused {
+		if fset == nil {
+			// Create a new fset. Might take a while and we do it under
+			// locking, but it's unsafe to create fset:s concurrently so
+			// that's the price we pay.
+			fset = db.NewFileSet(to.ID, to.Filesystem(), m.db)
+		}
 		m.addAndStartFolderLocked(to, fset, cacheIgnoredFiles)
 	}
 	l.Infof("%v folder %v (%v)", infoMsg, to.Description(), to.Type)

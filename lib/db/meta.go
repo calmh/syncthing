@@ -392,6 +392,16 @@ func (m *metadataTracker) nextLocalSeq() int64 {
 
 	c := m.countsPtr(protocol.LocalDeviceID, 0)
 	c.Sequence++
+
+	// Take the sequence number from current Unix nanos unless that weirdly
+	// happens to be smaller than whatever we just calculated (clock drift,
+	// whatnot). This has the desirable property that unexpectedly losing
+	// metadata will generally not cause sequence number reuse and the
+	// corresponding inconsistencies.
+	if now := time.Now().UnixNano(); now > c.Sequence {
+		c.Sequence = now
+	}
+
 	return c.Sequence
 }
 
