@@ -20,7 +20,7 @@ message FolderDeviceConfiguration {
 
 message FolderConfiguration {
     string                             id                         = 1 [(ext.goname) = "ID", (ext.xml) = "id,attr"];
-    string                             label                      = 2 [(ext.xml) = "label", (ext.restart) = false];
+    string                             label                      = 2 [(ext.xml) = "label,omitempty", (ext.restart) = false];
     fs.FilesystemType                  filesystem_type            = 3;
     string                             path                       = 4 [(ext.xml) = "path"];
     FolderType                         type                       = 5 [(ext.xml) = "type"];
@@ -58,13 +58,13 @@ message FolderConfiguration {
     bool       read_only               = 9000 [deprecated=true, (ext.xml) = "ro,attr,omitempty"];
     double     min_disk_free_pct       = 9001 [deprecated=true];
     int32      pullers                 = 9002 [deprecated=true];
-    string     label_attr              = 9003 [deprecated=true, (ext.xml) = "label,attr"];
+    string     label_attr              = 9003 [deprecated=true, (ext.xml) = "label,attr,omitempty"];
     string     path_attr               = 9004 [deprecated=true, (ext.xml) = "path,attr,omitempty"];
     FolderType type_attr               = 9005 [deprecated=true, (ext.xml) = "type,attr,omitempty"];
-    int32      rescan_interval_s_attr  = 9006 [deprecated=true, (ext.xml) = "rescanIntervalS,attr"];
-    bool       fs_watcher_enabled_attr = 9007 [deprecated=true, (ext.xml) = "fsWatcherEnabled,attr"];
-    int32      fs_watcher_delay_s_attr = 9008 [deprecated=true,  (ext.xml) = "fsWatcherDelayS,attr"];
-    bool       ignore_perms_attr       = 9009 [deprecated=true, (ext.xml) = "ignorePerms,attr"];
-    bool       auto_normalize_attr     = 9010 [deprecated=true, (ext.xml) = "autoNormalize,attr"];
+    int32      rescan_interval_s_attr  = 9006 [deprecated=true, (ext.xml) = "rescanIntervalS,attr,omitempty"];
+    bool       fs_watcher_enabled_attr = 9007 [deprecated=true, (ext.xml) = "fsWatcherEnabled,attr,omitempty"];
+    int32      fs_watcher_delay_s_attr = 9008 [deprecated=true,  (ext.xml) = "fsWatcherDelayS,attr,omitempty"];
+    bool       ignore_perms_attr       = 9009 [deprecated=true, (ext.xml) = "ignorePerms,attr,omitempty"];
+    bool       auto_normalize_attr     = 9010 [deprecated=true, (ext.xml) = "autoNormalize,attr,omitempty"];
 
 }
