@@ -5,7 +5,6 @@ package model
 
 import (
 	fmt "fmt"
-	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
 	math "math"
@@ -23,15 +22,91 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type SharingDeviceEntry struct {
+	Device []byte `protobuf:"bytes,1,opt,name=device,proto3" json:"device" xml:"device"`
+	When   int64  `protobuf:"varint,2,opt,name=when,proto3" json:"when" xml:"when"`
+}
+
+func (m *SharingDeviceEntry) Reset()         { *m = SharingDeviceEntry{} }
+func (m *SharingDeviceEntry) String() string { return proto.CompactTextString(m) }
+func (*SharingDeviceEntry) ProtoMessage()    {}
+func (*SharingDeviceEntry) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b40d5d4daefc0f51, []int{0}
+}
+func (m *SharingDeviceEntry) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SharingDeviceEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SharingDeviceEntry.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SharingDeviceEntry) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SharingDeviceEntry.Merge(m, src)
+}
+func (m *SharingDeviceEntry) XXX_Size() int {
+	return m.ProtoSize()
+}
+func (m *SharingDeviceEntry) XXX_DiscardUnknown() {
+	xxx_messageInfo_SharingDeviceEntry.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SharingDeviceEntry proto.InternalMessageInfo
+
+type SharingFolderEntry struct {
+	Folder  string               `protobuf:"bytes,1,opt,name=folder,proto3" json:"folder" xml:"folder"`
+	Devices []SharingDeviceEntry `protobuf:"bytes,2,rep,name=devices,proto3" json:"devices" xml:"device"`
+}
+
+func (m *SharingFolderEntry) Reset()         { *m = SharingFolderEntry{} }
+func (m *SharingFolderEntry) String() string { return proto.CompactTextString(m) }
+func (*SharingFolderEntry) ProtoMessage()    {}
+func (*SharingFolderEntry) Descriptor() ([]byte, []int) {
+	return fileDescriptor_b40d5d4daefc0f51, []int{1}
+}
+func (m *SharingFolderEntry) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *SharingFolderEntry) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_SharingFolderEntry.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *SharingFolderEntry) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SharingFolderEntry.Merge(m, src)
+}
+func (m *SharingFolderEntry) XXX_Size() int {
+	return m.ProtoSize()
+}
+func (m *SharingFolderEntry) XXX_DiscardUnknown() {
+	xxx_messageInfo_SharingFolderEntry.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SharingFolderEntry proto.InternalMessageInfo
+
 type SharingCandidates struct {
-	Folders map[string]FolderSharingCandidates `protobuf:"bytes,1,rep,name=folders,proto3" json:"folders" xml:"folder" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Folders []SharingFolderEntry `protobuf:"bytes,1,rep,name=folders,proto3" json:"folders" xml:"folder"`
 }
 
 func (m *SharingCandidates) Reset()         { *m = SharingCandidates{} }
 func (m *SharingCandidates) String() string { return proto.CompactTextString(m) }
 func (*SharingCandidates) ProtoMessage()    {}
 func (*SharingCandidates) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b40d5d4daefc0f51, []int{0}
+	return fileDescriptor_b40d5d4daefc0f51, []int{2}
 }
 func (m *SharingCandidates) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -60,75 +135,115 @@ func (m *SharingCandidates) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_SharingCandidates proto.InternalMessageInfo
 
-type FolderSharingCandidates struct {
-	Devices [][]byte `protobuf:"bytes,1,rep,name=devices,proto3" json:"devices" xml:"device"`
-}
-
-func (m *FolderSharingCandidates) Reset()         { *m = FolderSharingCandidates{} }
-func (m *FolderSharingCandidates) String() string { return proto.CompactTextString(m) }
-func (*FolderSharingCandidates) ProtoMessage()    {}
-func (*FolderSharingCandidates) Descriptor() ([]byte, []int) {
-	return fileDescriptor_b40d5d4daefc0f51, []int{1}
-}
-func (m *FolderSharingCandidates) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *FolderSharingCandidates) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_FolderSharingCandidates.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *FolderSharingCandidates) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_FolderSharingCandidates.Merge(m, src)
-}
-func (m *FolderSharingCandidates) XXX_Size() int {
-	return m.ProtoSize()
-}
-func (m *FolderSharingCandidates) XXX_DiscardUnknown() {
-	xxx_messageInfo_FolderSharingCandidates.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_FolderSharingCandidates proto.InternalMessageInfo
-
 func init() {
+	proto.RegisterType((*SharingDeviceEntry)(nil), "model.SharingDeviceEntry")
+	proto.RegisterType((*SharingFolderEntry)(nil), "model.SharingFolderEntry")
 	proto.RegisterType((*SharingCandidates)(nil), "model.SharingCandidates")
-	proto.RegisterMapType((map[string]FolderSharingCandidates)(nil), "model.SharingCandidates.FoldersEntry")
-	proto.RegisterType((*FolderSharingCandidates)(nil), "model.FolderSharingCandidates")
 }
 
 func init() { proto.RegisterFile("lib/model/candidate.proto", fileDescriptor_b40d5d4daefc0f51) }
 
 var fileDescriptor_b40d5d4daefc0f51 = []byte{
-	// 343 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0xcc, 0xc9, 0x4c, 0xd2,
-	0xcf, 0xcd, 0x4f, 0x49, 0xcd, 0xd1, 0x4f, 0x4e, 0xcc, 0x4b, 0xc9, 0x4c, 0x49, 0x2c, 0x49, 0xd5,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x05, 0x0b, 0x4b, 0x29, 0x17, 0xa5, 0x16, 0xe4, 0x17,
-	0xeb, 0x83, 0xc5, 0x92, 0x4a, 0xd3, 0xf4, 0xd3, 0xf3, 0xd3, 0xf3, 0xc1, 0x1c, 0x30, 0x0b, 0xa2,
-	0x56, 0xa9, 0x8d, 0x89, 0x4b, 0x30, 0x38, 0x23, 0xb1, 0x28, 0x33, 0x2f, 0xdd, 0x19, 0x66, 0x4c,
-	0xb1, 0x50, 0x02, 0x17, 0x7b, 0x5a, 0x7e, 0x4e, 0x4a, 0x6a, 0x51, 0xb1, 0x04, 0xa3, 0x02, 0xb3,
-	0x06, 0xb7, 0x91, 0xaa, 0x1e, 0xd8, 0x4c, 0x3d, 0x0c, 0xa5, 0x7a, 0x6e, 0x10, 0x75, 0xae, 0x79,
-	0x25, 0x45, 0x95, 0x4e, 0xf2, 0x27, 0xee, 0xc9, 0x33, 0xbc, 0xba, 0x27, 0x0f, 0xd3, 0xfd, 0xe9,
-	0x9e, 0x3c, 0x4f, 0x45, 0x6e, 0x8e, 0x95, 0x12, 0x84, 0xaf, 0x14, 0x04, 0x93, 0x90, 0xea, 0x63,
-	0xe4, 0xe2, 0x41, 0xd6, 0x2a, 0xa4, 0xc6, 0xc5, 0x9c, 0x9d, 0x5a, 0x29, 0xc1, 0xa8, 0xc0, 0xa8,
-	0xc1, 0xe9, 0x24, 0xf2, 0xea, 0x9e, 0x3c, 0x88, 0xfb, 0xe9, 0x9e, 0x3c, 0x27, 0x58, 0x7f, 0x76,
-	0x6a, 0xa5, 0x52, 0x10, 0x48, 0x44, 0x28, 0x88, 0x8b, 0xb5, 0x2c, 0x31, 0xa7, 0x34, 0x55, 0x82,
-	0x49, 0x81, 0x51, 0x83, 0xdb, 0x48, 0x0e, 0xea, 0x30, 0x88, 0x59, 0x18, 0xce, 0x73, 0x92, 0x81,
-	0xba, 0x08, 0xa2, 0xe9, 0xd3, 0x3d, 0x79, 0x6e, 0xb0, 0x79, 0x60, 0x9e, 0x52, 0x10, 0x44, 0xd4,
-	0x8a, 0xc9, 0x82, 0x51, 0x29, 0x80, 0x4b, 0x1c, 0x87, 0x19, 0x42, 0xa6, 0x5c, 0xec, 0x29, 0xa9,
-	0x65, 0x99, 0xc9, 0xa9, 0x90, 0xd0, 0xe0, 0x71, 0x92, 0x06, 0x79, 0x11, 0x2a, 0x04, 0xf7, 0x22,
-	0x84, 0xaf, 0x14, 0x04, 0x93, 0x70, 0xf2, 0x3a, 0xf1, 0x50, 0x8e, 0xe1, 0xc2, 0x43, 0x39, 0x86,
-	0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x9c, 0xf0, 0x58, 0x8e, 0x61, 0xc1, 0x63, 0x39,
-	0xc6, 0x0b, 0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88, 0xd2, 0x48, 0xcf, 0x2c, 0xc9, 0x28,
-	0x4d, 0xd2, 0x4b, 0xce, 0xcf, 0xd5, 0x2f, 0xae, 0xcc, 0x4b, 0x2e, 0xc9, 0xc8, 0xcc, 0x4b, 0x47,
-	0x62, 0xc1, 0xa3, 0x38, 0x89, 0x0d, 0x1c, 0x5b, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x73,
-	0x4f, 0xc7, 0xd7, 0xf6, 0x01, 0x00, 0x00,
+	// 311 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0xbd, 0x4e, 0xc3, 0x30,
+	0x14, 0x85, 0xed, 0x16, 0x8a, 0x30, 0x5d, 0xc8, 0x80, 0x52, 0x06, 0xbb, 0xf2, 0x14, 0x31, 0xa4,
+	0x52, 0xd9, 0x18, 0xc3, 0xcf, 0xc0, 0x58, 0x98, 0xd8, 0xda, 0xc4, 0x34, 0x96, 0x12, 0x07, 0x25,
+	0xe6, 0xa7, 0x6f, 0xc1, 0x13, 0x20, 0x1e, 0x27, 0x63, 0x46, 0x26, 0x4b, 0x6d, 0xb6, 0x8c, 0x7d,
+	0x02, 0x54, 0x3b, 0x09, 0x95, 0xc2, 0x96, 0x73, 0x6e, 0x8e, 0xbe, 0x7b, 0x7c, 0xd1, 0x28, 0xe2,
+	0x8b, 0x49, 0x9c, 0x04, 0x2c, 0x9a, 0xf8, 0x73, 0x11, 0xf0, 0x60, 0x2e, 0x99, 0xfb, 0x92, 0x26,
+	0x32, 0xb1, 0x0e, 0xb5, 0x4d, 0x25, 0xb2, 0x1e, 0xc2, 0x79, 0xca, 0xc5, 0xf2, 0x86, 0xbd, 0x71,
+	0x9f, 0xdd, 0x0a, 0x99, 0xae, 0xac, 0x29, 0x1a, 0x04, 0x5a, 0xda, 0x70, 0x0c, 0x9d, 0xa1, 0x77,
+	0x5e, 0x29, 0x52, 0x3b, 0x5b, 0x45, 0x86, 0x1f, 0x71, 0x74, 0x45, 0x8d, 0xa4, 0xb3, 0xda, 0xb7,
+	0x2e, 0xd0, 0xc1, 0x7b, 0xc8, 0x84, 0xdd, 0x1b, 0x43, 0xa7, 0xef, 0x9d, 0x55, 0x8a, 0x68, 0xbd,
+	0x55, 0x04, 0xe9, 0xff, 0x77, 0x82, 0xce, 0xb4, 0x47, 0xbf, 0x60, 0x8b, 0xbd, 0x4b, 0xa2, 0x80,
+	0xa5, 0x2d, 0xf6, 0x59, 0x4b, 0x8d, 0x3d, 0x36, 0x58, 0xe3, 0xb4, 0x58, 0x23, 0xe9, 0xac, 0xf6,
+	0xad, 0x47, 0x74, 0x64, 0x16, 0xc8, 0xec, 0xde, 0xb8, 0xef, 0x9c, 0x4c, 0x47, 0xae, 0x6e, 0xe6,
+	0x76, 0x6b, 0x79, 0x24, 0x57, 0x04, 0x54, 0x8a, 0x34, 0x89, 0x4e, 0x97, 0x66, 0x40, 0x39, 0x3a,
+	0xad, 0xf3, 0xd7, 0xcd, 0xbb, 0x65, 0x3b, 0x94, 0x81, 0x66, 0x36, 0xfc, 0x0f, 0xb5, 0x57, 0xe5,
+	0x0f, 0x55, 0x27, 0x3a, 0xfb, 0x37, 0x03, 0xef, 0x3e, 0x5f, 0x63, 0x50, 0xac, 0x31, 0xc8, 0x37,
+	0x18, 0x16, 0x1b, 0x0c, 0x3f, 0x4b, 0x0c, 0xbe, 0x4b, 0x0c, 0x8b, 0x12, 0x83, 0x9f, 0x12, 0x83,
+	0x27, 0x67, 0xc9, 0x65, 0xf8, 0xba, 0x70, 0xfd, 0x24, 0x9e, 0x64, 0x2b, 0xe1, 0xcb, 0x90, 0x8b,
+	0xe5, 0xde, 0x57, 0x7b, 0xe4, 0xc5, 0x40, 0xdf, 0xf6, 0xf2, 0x37, 0x00, 0x00, 0xff, 0xff, 0x7e,
+	0x3e, 0x14, 0xcc, 0xf8, 0x01, 0x00, 0x00,
+}
+
+func (m *SharingDeviceEntry) Marshal() (dAtA []byte, err error) {
+	size := m.ProtoSize()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SharingDeviceEntry) MarshalTo(dAtA []byte) (int, error) {
+	size := m.ProtoSize()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SharingDeviceEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.When != 0 {
+		i = encodeVarintCandidate(dAtA, i, uint64(m.When))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Device) > 0 {
+		i -= len(m.Device)
+		copy(dAtA[i:], m.Device)
+		i = encodeVarintCandidate(dAtA, i, uint64(len(m.Device)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *SharingFolderEntry) Marshal() (dAtA []byte, err error) {
+	size := m.ProtoSize()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SharingFolderEntry) MarshalTo(dAtA []byte) (int, error) {
+	size := m.ProtoSize()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *SharingFolderEntry) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Devices) > 0 {
+		for iNdEx := len(m.Devices) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Devices[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintCandidate(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
+	}
+	if len(m.Folder) > 0 {
+		i -= len(m.Folder)
+		copy(dAtA[i:], m.Folder)
+		i = encodeVarintCandidate(dAtA, i, uint64(len(m.Folder)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
 }
 
 func (m *SharingCandidates) Marshal() (dAtA []byte, err error) {
@@ -152,57 +267,15 @@ func (m *SharingCandidates) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if len(m.Folders) > 0 {
-		for k := range m.Folders {
-			v := m.Folders[k]
-			baseI := i
+		for iNdEx := len(m.Folders) - 1; iNdEx >= 0; iNdEx-- {
 			{
-				size, err := (&v).MarshalToSizedBuffer(dAtA[:i])
+				size, err := m.Folders[iNdEx].MarshalToSizedBuffer(dAtA[:i])
 				if err != nil {
 					return 0, err
 				}
 				i -= size
 				i = encodeVarintCandidate(dAtA, i, uint64(size))
 			}
-			i--
-			dAtA[i] = 0x12
-			i -= len(k)
-			copy(dAtA[i:], k)
-			i = encodeVarintCandidate(dAtA, i, uint64(len(k)))
-			i--
-			dAtA[i] = 0xa
-			i = encodeVarintCandidate(dAtA, i, uint64(baseI-i))
-			i--
-			dAtA[i] = 0xa
-		}
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *FolderSharingCandidates) Marshal() (dAtA []byte, err error) {
-	size := m.ProtoSize()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *FolderSharingCandidates) MarshalTo(dAtA []byte) (int, error) {
-	size := m.ProtoSize()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *FolderSharingCandidates) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Devices) > 0 {
-		for iNdEx := len(m.Devices) - 1; iNdEx >= 0; iNdEx-- {
-			i -= len(m.Devices[iNdEx])
-			copy(dAtA[i:], m.Devices[iNdEx])
-			i = encodeVarintCandidate(dAtA, i, uint64(len(m.Devices[iNdEx])))
 			i--
 			dAtA[i] = 0xa
 		}
@@ -221,6 +294,41 @@ func encodeVarintCandidate(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
+func (m *SharingDeviceEntry) ProtoSize() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Device)
+	if l > 0 {
+		n += 1 + l + sovCandidate(uint64(l))
+	}
+	if m.When != 0 {
+		n += 1 + sovCandidate(uint64(m.When))
+	}
+	return n
+}
+
+func (m *SharingFolderEntry) ProtoSize() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Folder)
+	if l > 0 {
+		n += 1 + l + sovCandidate(uint64(l))
+	}
+	if len(m.Devices) > 0 {
+		for _, e := range m.Devices {
+			l = e.ProtoSize()
+			n += 1 + l + sovCandidate(uint64(l))
+		}
+	}
+	return n
+}
+
 func (m *SharingCandidates) ProtoSize() (n int) {
 	if m == nil {
 		return 0
@@ -228,26 +336,8 @@ func (m *SharingCandidates) ProtoSize() (n int) {
 	var l int
 	_ = l
 	if len(m.Folders) > 0 {
-		for k, v := range m.Folders {
-			_ = k
-			_ = v
-			l = v.ProtoSize()
-			mapEntrySize := 1 + len(k) + sovCandidate(uint64(len(k))) + 1 + l + sovCandidate(uint64(l))
-			n += mapEntrySize + 1 + sovCandidate(uint64(mapEntrySize))
-		}
-	}
-	return n
-}
-
-func (m *FolderSharingCandidates) ProtoSize() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Devices) > 0 {
-		for _, b := range m.Devices {
-			l = len(b)
+		for _, e := range m.Folders {
+			l = e.ProtoSize()
 			n += 1 + l + sovCandidate(uint64(l))
 		}
 	}
@@ -259,6 +349,231 @@ func sovCandidate(x uint64) (n int) {
 }
 func sozCandidate(x uint64) (n int) {
 	return sovCandidate(uint64((x << 1) ^ uint64((int64(x) >> 63))))
+}
+func (m *SharingDeviceEntry) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCandidate
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SharingDeviceEntry: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SharingDeviceEntry: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Device", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCandidate
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Device = append(m.Device[:0], dAtA[iNdEx:postIndex]...)
+			if m.Device == nil {
+				m.Device = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field When", wireType)
+			}
+			m.When = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCandidate
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.When |= int64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCandidate(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SharingFolderEntry) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowCandidate
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SharingFolderEntry: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SharingFolderEntry: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Folder", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCandidate
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Folder = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Devices", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowCandidate
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Devices = append(m.Devices, SharingDeviceEntry{})
+			if err := m.Devices[len(m.Devices)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipCandidate(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if (iNdEx + skippy) < 0 {
+				return ErrInvalidLengthCandidate
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
 }
 func (m *SharingCandidates) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -318,190 +633,10 @@ func (m *SharingCandidates) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if m.Folders == nil {
-				m.Folders = make(map[string]FolderSharingCandidates)
-			}
-			var mapkey string
-			mapvalue := &FolderSharingCandidates{}
-			for iNdEx < postIndex {
-				entryPreIndex := iNdEx
-				var wire uint64
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowCandidate
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					wire |= uint64(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				fieldNum := int32(wire >> 3)
-				if fieldNum == 1 {
-					var stringLenmapkey uint64
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowCandidate
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						stringLenmapkey |= uint64(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					intStringLenmapkey := int(stringLenmapkey)
-					if intStringLenmapkey < 0 {
-						return ErrInvalidLengthCandidate
-					}
-					postStringIndexmapkey := iNdEx + intStringLenmapkey
-					if postStringIndexmapkey < 0 {
-						return ErrInvalidLengthCandidate
-					}
-					if postStringIndexmapkey > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapkey = string(dAtA[iNdEx:postStringIndexmapkey])
-					iNdEx = postStringIndexmapkey
-				} else if fieldNum == 2 {
-					var mapmsglen int
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowCandidate
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						mapmsglen |= int(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					if mapmsglen < 0 {
-						return ErrInvalidLengthCandidate
-					}
-					postmsgIndex := iNdEx + mapmsglen
-					if postmsgIndex < 0 {
-						return ErrInvalidLengthCandidate
-					}
-					if postmsgIndex > l {
-						return io.ErrUnexpectedEOF
-					}
-					mapvalue = &FolderSharingCandidates{}
-					if err := mapvalue.Unmarshal(dAtA[iNdEx:postmsgIndex]); err != nil {
-						return err
-					}
-					iNdEx = postmsgIndex
-				} else {
-					iNdEx = entryPreIndex
-					skippy, err := skipCandidate(dAtA[iNdEx:])
-					if err != nil {
-						return err
-					}
-					if skippy < 0 {
-						return ErrInvalidLengthCandidate
-					}
-					if (iNdEx + skippy) > postIndex {
-						return io.ErrUnexpectedEOF
-					}
-					iNdEx += skippy
-				}
-			}
-			m.Folders[mapkey] = *mapvalue
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipCandidate(dAtA[iNdEx:])
-			if err != nil {
+			m.Folders = append(m.Folders, SharingFolderEntry{})
+			if err := m.Folders[len(m.Folders)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
-			if skippy < 0 {
-				return ErrInvalidLengthCandidate
-			}
-			if (iNdEx + skippy) < 0 {
-				return ErrInvalidLengthCandidate
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *FolderSharingCandidates) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowCandidate
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: FolderSharingCandidates: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: FolderSharingCandidates: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Devices", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowCandidate
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthCandidate
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthCandidate
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Devices = append(m.Devices, make([]byte, postIndex-iNdEx))
-			copy(m.Devices[len(m.Devices)-1], dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

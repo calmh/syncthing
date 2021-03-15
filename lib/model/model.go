@@ -113,6 +113,8 @@ type Model interface {
 
 	StartDeadlockDetector(timeout time.Duration)
 	GlobalDirectoryTree(folder, prefix string, levels int, dirsOnly bool) ([]*TreeEntry, error)
+
+	AllKnownFolderDevicesStore
 }
 
 type model struct {
@@ -162,6 +164,8 @@ type model struct {
 	deviceDownloads     map[protocol.DeviceID]*deviceDownloadState
 	remotePausedFolders map[protocol.DeviceID]map[string]struct{} // deviceID -> folders
 	indexSenders        map[protocol.DeviceID]*indexSenderRegistry
+
+	*allKnownFolderDevicesStore
 
 	// for testing only
 	foldersRunning int32
@@ -246,6 +250,8 @@ func NewModel(cfg config.Wrapper, id protocol.DeviceID, clientName, clientVersio
 		deviceDownloads:     make(map[protocol.DeviceID]*deviceDownloadState),
 		remotePausedFolders: make(map[protocol.DeviceID]map[string]struct{}),
 		indexSenders:        make(map[protocol.DeviceID]*indexSenderRegistry),
+
+		allKnownFolderDevicesStore: newAllKnownFolderDevicesStore(db.NewMiscDataNamespace(ldb)),
 	}
 	for devID := range cfg.Devices() {
 		m.deviceStatRefs[devID] = stats.NewDeviceStatisticsReference(m.db, devID)
@@ -1203,6 +1209,9 @@ func (m *model) ClusterConfig(deviceID protocol.DeviceID, cm protocol.ClusterCon
 		l.Debugln("Device disappeared from config while processing cluster-config")
 		return errDeviceUnknown
 	}
+
+	// Register device and folder information for sharing candidates.
+	m.allKnownFolderDevicesStore.AddKnownFolderDevices(cm)
 
 	// Assemble the device information from the connected device about
 	// themselves and us for all folders.

@@ -2,12 +2,16 @@ syntax = "proto3";
 
 package model;
 
-import "repos/protobuf/gogoproto/gogo.proto";
-
-message SharingCandidates {
-    map<string, FolderSharingCandidates> folders = 1;
+message SharingDeviceEntry {
+    bytes device = 1;
+    int64 when   = 2;
 }
 
-message FolderSharingCandidates {
-    repeated bytes devices = 1;
+message SharingFolderEntry {
+    string                      folder  = 1;
+    repeated SharingDeviceEntry devices = 2;
+}
+
+message SharingCandidates {
+    repeated SharingFolderEntry folders = 1;
 }

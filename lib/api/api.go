@@ -245,7 +245,9 @@ func (s *service) Serve(ctx context.Context) error {
 	restMux := httprouter.New()
 
 	// The GET handlers
-	restMux.HandlerFunc(http.MethodGet, "/rest/cluster/pending/devices", s.getPendingDevices) // -
+	restMux.HandlerFunc(http.MethodGet, "/rest/cluster/known/devices", s.getKnownDevices)     // folder
+	restMux.HandlerFunc(http.MethodGet, "/rest/cluster/known/folders", s.getKnownFolders)     // device
+	restMux.HandlerFunc(http.MethodGet, "/rest/cluster/pending/devices", s.getPendingDevices) //
 	restMux.HandlerFunc(http.MethodGet, "/rest/cluster/pending/folders", s.getPendingFolders) // [device]
 	restMux.HandlerFunc(http.MethodGet, "/rest/db/completion", s.getDBCompletion)             // [device] [folder]
 	restMux.HandlerFunc(http.MethodGet, "/rest/db/file", s.getDBFile)                         // folder file
@@ -630,6 +632,25 @@ func (s *service) whenDebugging(h http.Handler) http.Handler {
 
 		http.Error(w, "Debugging disabled", http.StatusForbidden)
 	})
+}
+
+func (s *service) getKnownDevices(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	folder := qs.Get("folders")
+	devices := s.model.KnownDevicesForFolder(folder)
+	sendJSON(w, map[string]interface{}{"devices": devices})
+}
+
+func (s *service) getKnownFolders(w http.ResponseWriter, r *http.Request) {
+	qs := r.URL.Query()
+	device := qs.Get("device")
+	deviceID, err := protocol.DeviceIDFromString(device)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	folders := s.model.KnownFoldersForDevice(deviceID)
+	sendJSON(w, map[string]interface{}{"folders": folders})
 }
 
 func (s *service) getPendingDevices(w http.ResponseWriter, r *http.Request) {
