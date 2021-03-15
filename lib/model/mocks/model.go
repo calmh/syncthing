@@ -176,17 +176,6 @@ type Model struct {
 		result1 map[protocol.DeviceID]stats.DeviceStatistics
 		result2 error
 	}
-	DevicesForFolderStub        func(string) []protocol.DeviceID
-	devicesForFolderMutex       sync.RWMutex
-	devicesForFolderArgsForCall []struct {
-		arg1 string
-	}
-	devicesForFolderReturns struct {
-		result1 []protocol.DeviceID
-	}
-	devicesForFolderReturnsOnCall map[int]struct {
-		result1 []protocol.DeviceID
-	}
 	DownloadProgressStub        func(protocol.DeviceID, string, []protocol.FileDownloadProgressUpdate) error
 	downloadProgressMutex       sync.RWMutex
 	downloadProgressArgsForCall []struct {
@@ -235,17 +224,6 @@ type Model struct {
 	folderStatisticsReturnsOnCall map[int]struct {
 		result1 map[string]stats.FolderStatistics
 		result2 error
-	}
-	FoldersForDeviceStub        func(protocol.DeviceID) []string
-	foldersForDeviceMutex       sync.RWMutex
-	foldersForDeviceArgsForCall []struct {
-		arg1 protocol.DeviceID
-	}
-	foldersForDeviceReturns struct {
-		result1 []string
-	}
-	foldersForDeviceReturnsOnCall map[int]struct {
-		result1 []string
 	}
 	GetFolderVersionsStub        func(string) (map[string][]versioner.FileVersion, error)
 	getFolderVersionsMutex       sync.RWMutex
@@ -312,6 +290,28 @@ type Model struct {
 	}
 	indexUpdateReturnsOnCall map[int]struct {
 		result1 error
+	}
+	KnownDevicesForFolderStub        func(string) []protocol.DeviceID
+	knownDevicesForFolderMutex       sync.RWMutex
+	knownDevicesForFolderArgsForCall []struct {
+		arg1 string
+	}
+	knownDevicesForFolderReturns struct {
+		result1 []protocol.DeviceID
+	}
+	knownDevicesForFolderReturnsOnCall map[int]struct {
+		result1 []protocol.DeviceID
+	}
+	KnownFoldersForDeviceStub        func(protocol.DeviceID) []string
+	knownFoldersForDeviceMutex       sync.RWMutex
+	knownFoldersForDeviceArgsForCall []struct {
+		arg1 protocol.DeviceID
+	}
+	knownFoldersForDeviceReturns struct {
+		result1 []string
+	}
+	knownFoldersForDeviceReturnsOnCall map[int]struct {
+		result1 []string
 	}
 	LoadIgnoresStub        func(string) ([]string, []string, error)
 	loadIgnoresMutex       sync.RWMutex
@@ -1339,67 +1339,6 @@ func (fake *Model) DeviceStatisticsReturnsOnCall(i int, result1 map[protocol.Dev
 	}{result1, result2}
 }
 
-func (fake *Model) DevicesForFolder(arg1 string) []protocol.DeviceID {
-	fake.devicesForFolderMutex.Lock()
-	ret, specificReturn := fake.devicesForFolderReturnsOnCall[len(fake.devicesForFolderArgsForCall)]
-	fake.devicesForFolderArgsForCall = append(fake.devicesForFolderArgsForCall, struct {
-		arg1 string
-	}{arg1})
-	stub := fake.DevicesForFolderStub
-	fakeReturns := fake.devicesForFolderReturns
-	fake.recordInvocation("DevicesForFolder", []interface{}{arg1})
-	fake.devicesForFolderMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *Model) DevicesForFolderCallCount() int {
-	fake.devicesForFolderMutex.RLock()
-	defer fake.devicesForFolderMutex.RUnlock()
-	return len(fake.devicesForFolderArgsForCall)
-}
-
-func (fake *Model) DevicesForFolderCalls(stub func(string) []protocol.DeviceID) {
-	fake.devicesForFolderMutex.Lock()
-	defer fake.devicesForFolderMutex.Unlock()
-	fake.DevicesForFolderStub = stub
-}
-
-func (fake *Model) DevicesForFolderArgsForCall(i int) string {
-	fake.devicesForFolderMutex.RLock()
-	defer fake.devicesForFolderMutex.RUnlock()
-	argsForCall := fake.devicesForFolderArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *Model) DevicesForFolderReturns(result1 []protocol.DeviceID) {
-	fake.devicesForFolderMutex.Lock()
-	defer fake.devicesForFolderMutex.Unlock()
-	fake.DevicesForFolderStub = nil
-	fake.devicesForFolderReturns = struct {
-		result1 []protocol.DeviceID
-	}{result1}
-}
-
-func (fake *Model) DevicesForFolderReturnsOnCall(i int, result1 []protocol.DeviceID) {
-	fake.devicesForFolderMutex.Lock()
-	defer fake.devicesForFolderMutex.Unlock()
-	fake.DevicesForFolderStub = nil
-	if fake.devicesForFolderReturnsOnCall == nil {
-		fake.devicesForFolderReturnsOnCall = make(map[int]struct {
-			result1 []protocol.DeviceID
-		})
-	}
-	fake.devicesForFolderReturnsOnCall[i] = struct {
-		result1 []protocol.DeviceID
-	}{result1}
-}
-
 func (fake *Model) DownloadProgress(arg1 protocol.DeviceID, arg2 string, arg3 []protocol.FileDownloadProgressUpdate) error {
 	var arg3Copy []protocol.FileDownloadProgressUpdate
 	if arg3 != nil {
@@ -1647,67 +1586,6 @@ func (fake *Model) FolderStatisticsReturnsOnCall(i int, result1 map[string]stats
 		result1 map[string]stats.FolderStatistics
 		result2 error
 	}{result1, result2}
-}
-
-func (fake *Model) FoldersForDevice(arg1 protocol.DeviceID) []string {
-	fake.foldersForDeviceMutex.Lock()
-	ret, specificReturn := fake.foldersForDeviceReturnsOnCall[len(fake.foldersForDeviceArgsForCall)]
-	fake.foldersForDeviceArgsForCall = append(fake.foldersForDeviceArgsForCall, struct {
-		arg1 protocol.DeviceID
-	}{arg1})
-	stub := fake.FoldersForDeviceStub
-	fakeReturns := fake.foldersForDeviceReturns
-	fake.recordInvocation("FoldersForDevice", []interface{}{arg1})
-	fake.foldersForDeviceMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *Model) FoldersForDeviceCallCount() int {
-	fake.foldersForDeviceMutex.RLock()
-	defer fake.foldersForDeviceMutex.RUnlock()
-	return len(fake.foldersForDeviceArgsForCall)
-}
-
-func (fake *Model) FoldersForDeviceCalls(stub func(protocol.DeviceID) []string) {
-	fake.foldersForDeviceMutex.Lock()
-	defer fake.foldersForDeviceMutex.Unlock()
-	fake.FoldersForDeviceStub = stub
-}
-
-func (fake *Model) FoldersForDeviceArgsForCall(i int) protocol.DeviceID {
-	fake.foldersForDeviceMutex.RLock()
-	defer fake.foldersForDeviceMutex.RUnlock()
-	argsForCall := fake.foldersForDeviceArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *Model) FoldersForDeviceReturns(result1 []string) {
-	fake.foldersForDeviceMutex.Lock()
-	defer fake.foldersForDeviceMutex.Unlock()
-	fake.FoldersForDeviceStub = nil
-	fake.foldersForDeviceReturns = struct {
-		result1 []string
-	}{result1}
-}
-
-func (fake *Model) FoldersForDeviceReturnsOnCall(i int, result1 []string) {
-	fake.foldersForDeviceMutex.Lock()
-	defer fake.foldersForDeviceMutex.Unlock()
-	fake.FoldersForDeviceStub = nil
-	if fake.foldersForDeviceReturnsOnCall == nil {
-		fake.foldersForDeviceReturnsOnCall = make(map[int]struct {
-			result1 []string
-		})
-	}
-	fake.foldersForDeviceReturnsOnCall[i] = struct {
-		result1 []string
-	}{result1}
 }
 
 func (fake *Model) GetFolderVersions(arg1 string) (map[string][]versioner.FileVersion, error) {
@@ -2035,6 +1913,128 @@ func (fake *Model) IndexUpdateReturnsOnCall(i int, result1 error) {
 	}
 	fake.indexUpdateReturnsOnCall[i] = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *Model) KnownDevicesForFolder(arg1 string) []protocol.DeviceID {
+	fake.knownDevicesForFolderMutex.Lock()
+	ret, specificReturn := fake.knownDevicesForFolderReturnsOnCall[len(fake.knownDevicesForFolderArgsForCall)]
+	fake.knownDevicesForFolderArgsForCall = append(fake.knownDevicesForFolderArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	stub := fake.KnownDevicesForFolderStub
+	fakeReturns := fake.knownDevicesForFolderReturns
+	fake.recordInvocation("KnownDevicesForFolder", []interface{}{arg1})
+	fake.knownDevicesForFolderMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *Model) KnownDevicesForFolderCallCount() int {
+	fake.knownDevicesForFolderMutex.RLock()
+	defer fake.knownDevicesForFolderMutex.RUnlock()
+	return len(fake.knownDevicesForFolderArgsForCall)
+}
+
+func (fake *Model) KnownDevicesForFolderCalls(stub func(string) []protocol.DeviceID) {
+	fake.knownDevicesForFolderMutex.Lock()
+	defer fake.knownDevicesForFolderMutex.Unlock()
+	fake.KnownDevicesForFolderStub = stub
+}
+
+func (fake *Model) KnownDevicesForFolderArgsForCall(i int) string {
+	fake.knownDevicesForFolderMutex.RLock()
+	defer fake.knownDevicesForFolderMutex.RUnlock()
+	argsForCall := fake.knownDevicesForFolderArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *Model) KnownDevicesForFolderReturns(result1 []protocol.DeviceID) {
+	fake.knownDevicesForFolderMutex.Lock()
+	defer fake.knownDevicesForFolderMutex.Unlock()
+	fake.KnownDevicesForFolderStub = nil
+	fake.knownDevicesForFolderReturns = struct {
+		result1 []protocol.DeviceID
+	}{result1}
+}
+
+func (fake *Model) KnownDevicesForFolderReturnsOnCall(i int, result1 []protocol.DeviceID) {
+	fake.knownDevicesForFolderMutex.Lock()
+	defer fake.knownDevicesForFolderMutex.Unlock()
+	fake.KnownDevicesForFolderStub = nil
+	if fake.knownDevicesForFolderReturnsOnCall == nil {
+		fake.knownDevicesForFolderReturnsOnCall = make(map[int]struct {
+			result1 []protocol.DeviceID
+		})
+	}
+	fake.knownDevicesForFolderReturnsOnCall[i] = struct {
+		result1 []protocol.DeviceID
+	}{result1}
+}
+
+func (fake *Model) KnownFoldersForDevice(arg1 protocol.DeviceID) []string {
+	fake.knownFoldersForDeviceMutex.Lock()
+	ret, specificReturn := fake.knownFoldersForDeviceReturnsOnCall[len(fake.knownFoldersForDeviceArgsForCall)]
+	fake.knownFoldersForDeviceArgsForCall = append(fake.knownFoldersForDeviceArgsForCall, struct {
+		arg1 protocol.DeviceID
+	}{arg1})
+	stub := fake.KnownFoldersForDeviceStub
+	fakeReturns := fake.knownFoldersForDeviceReturns
+	fake.recordInvocation("KnownFoldersForDevice", []interface{}{arg1})
+	fake.knownFoldersForDeviceMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *Model) KnownFoldersForDeviceCallCount() int {
+	fake.knownFoldersForDeviceMutex.RLock()
+	defer fake.knownFoldersForDeviceMutex.RUnlock()
+	return len(fake.knownFoldersForDeviceArgsForCall)
+}
+
+func (fake *Model) KnownFoldersForDeviceCalls(stub func(protocol.DeviceID) []string) {
+	fake.knownFoldersForDeviceMutex.Lock()
+	defer fake.knownFoldersForDeviceMutex.Unlock()
+	fake.KnownFoldersForDeviceStub = stub
+}
+
+func (fake *Model) KnownFoldersForDeviceArgsForCall(i int) protocol.DeviceID {
+	fake.knownFoldersForDeviceMutex.RLock()
+	defer fake.knownFoldersForDeviceMutex.RUnlock()
+	argsForCall := fake.knownFoldersForDeviceArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *Model) KnownFoldersForDeviceReturns(result1 []string) {
+	fake.knownFoldersForDeviceMutex.Lock()
+	defer fake.knownFoldersForDeviceMutex.Unlock()
+	fake.KnownFoldersForDeviceStub = nil
+	fake.knownFoldersForDeviceReturns = struct {
+		result1 []string
+	}{result1}
+}
+
+func (fake *Model) KnownFoldersForDeviceReturnsOnCall(i int, result1 []string) {
+	fake.knownFoldersForDeviceMutex.Lock()
+	defer fake.knownFoldersForDeviceMutex.Unlock()
+	fake.KnownFoldersForDeviceStub = nil
+	if fake.knownFoldersForDeviceReturnsOnCall == nil {
+		fake.knownFoldersForDeviceReturnsOnCall = make(map[int]struct {
+			result1 []string
+		})
+	}
+	fake.knownFoldersForDeviceReturnsOnCall[i] = struct {
+		result1 []string
 	}{result1}
 }
 
@@ -3318,8 +3318,6 @@ func (fake *Model) Invocations() map[string][][]interface{} {
 	defer fake.delayScanMutex.RUnlock()
 	fake.deviceStatisticsMutex.RLock()
 	defer fake.deviceStatisticsMutex.RUnlock()
-	fake.devicesForFolderMutex.RLock()
-	defer fake.devicesForFolderMutex.RUnlock()
 	fake.downloadProgressMutex.RLock()
 	defer fake.downloadProgressMutex.RUnlock()
 	fake.folderErrorsMutex.RLock()
@@ -3328,8 +3326,6 @@ func (fake *Model) Invocations() map[string][][]interface{} {
 	defer fake.folderProgressBytesCompletedMutex.RUnlock()
 	fake.folderStatisticsMutex.RLock()
 	defer fake.folderStatisticsMutex.RUnlock()
-	fake.foldersForDeviceMutex.RLock()
-	defer fake.foldersForDeviceMutex.RUnlock()
 	fake.getFolderVersionsMutex.RLock()
 	defer fake.getFolderVersionsMutex.RUnlock()
 	fake.getHelloMutex.RLock()
@@ -3340,6 +3336,10 @@ func (fake *Model) Invocations() map[string][][]interface{} {
 	defer fake.indexMutex.RUnlock()
 	fake.indexUpdateMutex.RLock()
 	defer fake.indexUpdateMutex.RUnlock()
+	fake.knownDevicesForFolderMutex.RLock()
+	defer fake.knownDevicesForFolderMutex.RUnlock()
+	fake.knownFoldersForDeviceMutex.RLock()
+	defer fake.knownFoldersForDeviceMutex.RUnlock()
 	fake.loadIgnoresMutex.RLock()
 	defer fake.loadIgnoresMutex.RUnlock()
 	fake.localChangedFolderFilesMutex.RLock()

@@ -1557,6 +1557,11 @@ angular.module('syncthing.core')
             $scope.currentSharing.unrelated = $scope.folderList().filter(function (n) {
                 return !$scope.currentSharing.selected[n.id];
             });
+            $scope.currentSharing.known = [];
+            $http.get(urlbase + '/cluster/known/folders?device=' + encodeURIComponent(deviceCfg.deviceID))
+                .success(function (response) {
+                    $scope.currentSharing.known = response.folders;
+                });
             editDeviceModal();
         };
 
@@ -2448,7 +2453,7 @@ angular.module('syncthing.core')
             $scope.deviceFolders(device).forEach(function (folder) {
                 var comp = $scope.completion[device.deviceID][folder];
                 if (comp !== undefined && comp.needItems + comp.needDeletes === 0) {
-                    return;
+                return;
                 }
                 $scope.remoteNeedFolders.push(folder);
                 $scope.refreshRemoteNeed(folder, 1, 10);
