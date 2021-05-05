@@ -28,7 +28,7 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/klauspost/cpuid/v2 v2.0.6 // indirect
 	github.com/lib/pq v1.10.1
-	github.com/lucas-clemente/quic-go v0.19.3
+	github.com/lucas-clemente/quic-go v0.20.1
 	github.com/maruel/panicparse v1.6.1
 	github.com/mattn/go-isatty v0.0.12
 	github.com/minio/sha256-simd v1.0.0
