@@ -241,6 +241,9 @@ func TestEscapeWindowsReserved(t *testing.T) {
 		path    string
 		escaped string
 	}{
+		{"CO", "CO"},
+		{"CON", "xCON"},
+		{"CONS", "CONS"},
 		{"foo/bar", "foo/bar"},
 		{"foo/BAR", "foo/BAR"},
 		{"foo/CON", "foo/xCON"},
