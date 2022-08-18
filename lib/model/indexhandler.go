@@ -426,6 +426,9 @@ func (r *indexHandlerRegistry) startLocked(folder config.FolderConfiguration, fs
 	is := newIndexHandler(r.conn, r.downloads, folder, fset, runner, startInfo, r.evLogger)
 	is.token = r.sup.Add(is)
 	r.indexHandlers[folder.ID] = is
+
+	// This new connection might help us get in sync.
+	runner.SchedulePull()
 }
 
 // AddIndexInfo starts an index handler for given folder, unless it is paused.
@@ -468,7 +471,7 @@ func (r *indexHandlerRegistry) Remove(folder string) {
 // RemoveAllExcept stops all running index handlers and removes those pending to be started,
 // except mentioned ones.
 // It is a noop if the folder isn't known.
-func (r *indexHandlerRegistry) RemoveAllExcept(except map[string]struct{}) {
+func (r *indexHandlerRegistry) RemoveAllExcept(except map[string]remoteFolderState) {
 	r.mut.Lock()
 	defer r.mut.Unlock()
 

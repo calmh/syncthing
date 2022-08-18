@@ -45,7 +45,7 @@ a:hover,a:focus,a.focus{
 .nav-tabs > li > a:hover,
 .nav-tabs > li > a:focus {
   background-color: #424242 !important;
-  border: none !important;
+  border-color: transparent !important;
 }
 
 
@@ -277,6 +277,11 @@ code.ng-binding{
     color: #3fa9f0;
 }
 
-.fancytree-title {
-    color: #aaa !important;
+/*
+ * Fancytree tweaks
+ */
+
+.fancytree-container tr:hover,
+.fancytree-focused {
+    background-color: #424242;
 }

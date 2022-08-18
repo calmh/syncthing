@@ -58,6 +58,9 @@ angular.module('syncthing.core')
             text: '',
             error: null,
             disabled: false,
+            originalLines: [],
+            defaultLines: [],
+            saved: false,
         };
         resetRemoteNeed();
 
@@ -71,7 +74,6 @@ angular.module('syncthing.core')
             cleanupIntervalS: 3600,
             simpleKeep: 5,
             staggeredMaxAge: 365,
-            staggeredCleanInterval: 3600,
             externalCommand: "",
         };
 
@@ -176,7 +178,8 @@ angular.module('syncthing.core')
 
             console.log('HTTPError', arg);
             online = false;
-            if (!restarting) {
+            // We sometimes get arg == null from angularjs - no idea why
+            if (!restarting && arg) {
                 if (arg.status === 0) {
                     // A network error, not an HTTP error
                     $scope.$emit(Events.OFFLINE);
@@ -396,6 +399,10 @@ angular.module('syncthing.core')
         });
 
         $scope.$on(Events.FOLDER_ERRORS, function (event, arg) {
+            if (!$scope.model[arg.data.folder]) {
+                console.log("Dropping folder errors event for unknown folder", arg.data.folder)
+                return;
+            }
             $scope.model[arg.data.folder].errors = arg.data.errors.length;
         });
 
@@ -409,8 +416,14 @@ angular.module('syncthing.core')
             console.log("FolderScanProgress", data);
         });
 
+        // May be called through .error with the presented arguments, or through
+        // .catch with the http response object containing the same arguments.
         $scope.emitHTTPError = function (data, status, headers, config) {
-            $scope.$emit('HTTPError', { data: data, status: status, headers: headers, config: config });
+            var out = data;
+            if (data && !data.data) {
+                out = { data: data, status: status, headers: headers, config: config };
+            }
+            $scope.$emit('HTTPError', out);
         };
 
         var debouncedFuncs = {};
@@ -741,7 +754,7 @@ angular.module('syncthing.core')
         }
 
         function shouldSetDefaultFolderPath() {
-            return $scope.config.defaults.folder.path && !$scope.editingExisting && $scope.folderEditor.folderPath.$pristine && !$scope.editingDefaults;
+            return $scope.config.defaults.folder.path && $scope.folderEditor.folderPath.$pristine && $scope.editingFolderNew();
         }
 
         function resetRemoteNeed() {
@@ -749,7 +762,6 @@ angular.module('syncthing.core')
             $scope.remoteNeedFolders = [];
             $scope.remoteNeedDevice = undefined;
         }
-
 
         function setDefaultTheme() {
             if (!document.getElementById("fallback-theme-css")) {
@@ -767,13 +779,9 @@ angular.module('syncthing.core')
             }
         }
 
-        function saveIgnores(ignores, cb) {
-            $http.post(urlbase + '/db/ignores?folder=' + encodeURIComponent($scope.currentFolder.id), {
+        function saveIgnores(ignores) {
+            return $http.post(urlbase + '/db/ignores?folder=' + encodeURIComponent($scope.currentFolder.id), {
                 ignore: ignores
-            }).success(function () {
-                if (cb) {
-                    cb();
-                }
             });
         };
 
@@ -799,6 +807,7 @@ angular.module('syncthing.core')
                 }
                 $scope.currentSharing.selected[n.deviceID] = true;
             });
+            $scope.currentSharing.shared.sort(deviceCompare);
             $scope.currentSharing.unrelated = $scope.deviceList().filter(function (n) {
                 return n.deviceID !== $scope.myID && !$scope.currentSharing.selected[n.deviceID];
             });
@@ -930,9 +939,9 @@ angular.module('syncthing.core')
                 return 'faileditems';
             }
             if ($scope.hasReceiveOnlyChanged(folderCfg)) {
-                return 'localadditions';
-            }
-            if ($scope.hasReceiveEncryptedItems(folderCfg)) {
+                if (folderCfg.type === "receiveonly") {
+                    return 'localadditions';
+                }
                 return 'localunencrypted';
             }
             if (folderCfg.devices.length <= 1) {
@@ -1267,8 +1276,9 @@ angular.module('syncthing.core')
             if (cfg) {
                 cfg.paused = pause;
                 $scope.config.folders = folderList($scope.folders);
-                $scope.saveConfig();
+                return $scope.saveConfig();
             }
+            return $q.when();
         };
 
         $scope.showListenerStatus = function () {
@@ -1389,6 +1399,19 @@ angular.module('syncthing.core')
             }
         };
 
+        $scope.about = {
+            paths: {},
+            refreshPaths: function () {
+                $http.get(urlbase + '/system/paths').success(function (data) {
+                    $scope.about.paths = data;
+                }).error($scope.emitHTTPError);
+            },
+            show: function () {
+                $scope.about.refreshPaths();
+                $('#about').modal("show");
+            },
+        };
+
         $scope.discardChangedSettings = function () {
             $("#discard-changes-confirmation").modal("hide");
             $("#settings").off("hide.bs.modal").modal("hide");
@@ -1420,18 +1443,14 @@ angular.module('syncthing.core')
             });
         };
 
-        $scope.saveConfig = function (callback) {
+        $scope.saveConfig = function () {
             var cfg = JSON.stringify($scope.config);
             var opts = {
                 headers: {
                     'Content-Type': 'application/json'
                 }
             };
-            $http.put(urlbase + '/config', cfg, opts).finally(refreshConfig).then(function() {
-                if (callback) {
-                    callback();
-                }
-            }, $scope.emitHTTPError);
+            return $http.put(urlbase + '/config', cfg, opts).finally(refreshConfig).catch($scope.emitHTTPError);
         };
 
         $scope.urVersions = function () {
@@ -1511,7 +1530,7 @@ angular.module('syncthing.core')
                 // here as well...
                 $scope.devices = deviceMap($scope.config.devices);
 
-                $scope.saveConfig(function () {
+                $scope.saveConfig().then(function () {
                     if (themeChanged) {
                         document.location.reload(true);
                     }
@@ -1577,11 +1596,11 @@ angular.module('syncthing.core')
         }
 
         $scope.editDeviceModalTitle = function() {
-            if ($scope.editingDefaults) {
+            if ($scope.editingDeviceDefaults()) {
                 return $translate.instant("Edit Device Defaults");
             }
             var title = '';
-            if ($scope.editingExisting) {
+            if ($scope.editingDeviceExisting()) {
                 title += $translate.instant("Edit Device");
             } else {
                 title += $translate.instant("Add Device");
@@ -1594,16 +1613,28 @@ angular.module('syncthing.core')
         };
 
         $scope.editDeviceModalIcon = function() {
-            if ($scope.editingDefaults || $scope.editingExisting) {
+            if ($scope.has(["existing", "defaults"], $scope.currentDevice._editing)) {
                 return 'fas fa-pencil-alt';
             }
             return 'fas fa-desktop';
         };
 
+        $scope.editingDeviceDefaults = function() {
+            return $scope.currentDevice._editing == 'defaults';
+        }
+
+        $scope.editingDeviceExisting = function() {
+            return $scope.currentDevice._editing == 'existing';
+        }
+
+        $scope.editingDeviceNew = function() {
+            // The "new-pending" value is intentionally disregarded here.
+            return $scope.currentDevice._editing == 'new';
+        }
+
         $scope.editDeviceExisting = function (deviceCfg) {
             $scope.currentDevice = $.extend({}, deviceCfg);
-            $scope.editingExisting = true;
-            $scope.editingDefaults = false;
+            $scope.currentDevice._editing = "existing";
             $scope.willBeReintroducedBy = undefined;
             if (deviceCfg.introducedBy) {
                 var introducerDevice = $scope.devices[deviceCfg.introducedBy];
@@ -1632,7 +1663,7 @@ angular.module('syncthing.core')
         $scope.editDeviceDefaults = function () {
             $http.get(urlbase + '/config/defaults/device').then(function (p) {
                 $scope.currentDevice = p.data;
-                $scope.editingDefaults = true;
+                $scope.currentDevice._editing = "defaults";
                 editDeviceModal();
             }, $scope.emitHTTPError);
         };
@@ -1652,36 +1683,34 @@ angular.module('syncthing.core')
         };
 
         $scope.addDevice = function (deviceID, name) {
-            return $http.get(urlbase + '/system/discovery')
-                .success(function (registry) {
-                    $scope.discovery = [];
-                    for (var id in registry) {
-                        if ($scope.discovery.length === 5) {
-                            break;
-                        }
-                        if (id in $scope.devices) {
-                            continue
-                        }
-                        $scope.discovery.push(id);
-                    }
-                })
-                .then(function () {
-                    $http.get(urlbase + '/config/defaults/device').then(function (p) {
-                        $scope.currentDevice = p.data;
-                        $scope.currentDevice.name = name;
-                        $scope.currentDevice.deviceID = deviceID;
-                        $scope.editingExisting = false;
-                        $scope.editingDefaults = false;
-                        initShareEditing('device');
-                        $scope.currentSharing.unrelated = $scope.folderList();
-                        editDeviceModal();
-                    }, $scope.emitHTTPError);
-                });
+            $scope.discoveryUnknown = [];
+            for (var id in $scope.discoveryCache) {
+                if ($scope.discoveryUnknown.length === 100) {
+                    break;
+                }
+                if (id in $scope.devices) {
+                    continue
+                }
+                $scope.discoveryUnknown.push(id);
+            }
+            return $http.get(urlbase + '/config/defaults/device').then(function (p) {
+                $scope.currentDevice = p.data;
+                $scope.currentDevice.name = name;
+                $scope.currentDevice.deviceID = deviceID;
+                if (deviceID) {
+                    $scope.currentDevice._editing = "new-pending";
+                } else {
+                    $scope.currentDevice._editing = "new";
+                }
+                initShareEditing('device');
+                $scope.currentSharing.unrelated = $scope.folderList();
+                editDeviceModal();
+            }, $scope.emitHTTPError);
         };
 
         $scope.deleteDevice = function () {
             $('#editDevice').modal('hide');
-            if (!$scope.editingExisting) {
+            if ($scope.currentDevice._editing != "existing") {
                 return;
             }
 
@@ -1704,13 +1733,13 @@ angular.module('syncthing.core')
                 return x.trim();
             });
             delete $scope.currentDevice._addressesStr;
-            if ($scope.editingDefaults) {
+            if ($scope.currentDevice._editing == "defaults") {
                 $scope.config.defaults.device = $scope.currentDevice;
             } else {
                 setDeviceConfig();
             }
             delete $scope.currentSharing;
-            delete $scope.currentDevice;
+            $scope.currentDevice = {};
             $scope.saveConfig();
         };
 
@@ -1954,20 +1983,35 @@ angular.module('syncthing.core')
                     $('#folder-ignores textarea').focus();
                 }
             }).one('hidden.bs.modal', function () {
-                window.location.hash = "";
-                $scope.currentFolder = {};
+                var p = $q.when();
+                // If the modal was closed default patterns should still apply
+                if ($scope.currentFolder._editing == "new-ignores" && !$scope.ignores.saved && $scope.ignores.defaultLines) {
+                    p = saveFolderAddIgnores($scope.currentFolder.id, true);
+                }
+                p.then(function () {
+                    window.location.hash = "";
+                    $scope.currentFolder = {};
+                    $scope.ignores = {};
+                });
             });
         };
 
         $scope.editFolderModalTitle = function() {
-            if ($scope.editingDefaults) {
+            if ($scope.editingFolderDefaults()) {
                 return $translate.instant("Edit Folder Defaults");
             }
             var title = '';
-            if ($scope.editingExisting) {
-                title += $translate.instant("Edit Folder");
-            } else {
-                title += $translate.instant("Add Folder");
+            switch ($scope.currentFolder._editing) {
+            case "existing":
+                title = $translate.instant("Edit Folder");
+                break;
+            case "new":
+            case "new-pending":
+                title = $translate.instant("Add Folder");
+                break;
+            case "new-ignores":
+                title = $translate.instant("Set Ignores on Added Folder");
+                break;
             }
             if ($scope.currentFolder.id !== '') {
                 title += ' (' + $scope.folderLabel($scope.currentFolder.id) + ')';
@@ -1976,11 +2020,23 @@ angular.module('syncthing.core')
         };
 
         $scope.editFolderModalIcon = function() {
-            if ($scope.editingDefaults || $scope.editingExisting) {
+            if ($scope.has(["existing", "defaults"], $scope.currentFolder._editing)) {
                 return 'fas fa-pencil-alt';
             }
             return 'fas fa-folder';
         };
+
+        $scope.editingFolderDefaults = function() {
+            return $scope.currentFolder._editing == 'defaults';
+        }
+
+        $scope.editingFolderExisting = function() {
+            return $scope.currentFolder._editing == 'existing';
+        }
+
+        $scope.editingFolderNew = function() {
+            return $scope.has(['new', 'new-pending'], $scope.currentFolder._editing);
+        }
 
         function editFolder(initialTab) {
             if ($scope.currentFolder.path.length > 1 && $scope.currentFolder.path.slice(-1) === $scope.system.pathSeparator) {
@@ -2023,7 +2079,6 @@ angular.module('syncthing.core')
                 break;
             case "staggered":
                 $scope.currentFolder._guiVersioning.staggeredMaxAge = Math.floor(+currentVersioning.params.maxAge / 86400);
-                $scope.currentFolder._guiVersioning.staggeredCleanInterval = +currentVersioning.params.cleanInterval;
                 break;
             case "external":
                 $scope.currentFolder._guiVersioning.externalCommand = currentVersioning.params.command;
@@ -2032,38 +2087,64 @@ angular.module('syncthing.core')
         };
 
         $scope.editFolderExisting = function(folderCfg, initialTab) {
-            $scope.editingExisting = true;
-            $scope.editingDefaults = false;
             $scope.currentFolder = angular.copy(folderCfg);
-
-            $scope.ignores.text = 'Loading...';
-            $scope.ignores.error = null;
-            $scope.ignores.disabled = true;
-            $http.get(urlbase + '/db/ignores?folder=' + encodeURIComponent($scope.currentFolder.id))
-                .success(function (data) {
-                    $scope.currentFolder.ignores = data.ignore || [];
-                    $scope.ignores.text = $scope.currentFolder.ignores.join('\n');
-                    $scope.ignores.error = data.error;
-                    $scope.ignores.disabled = false;
-                })
-                .error(function (err) {
-                    $scope.ignores.text = $translate.instant("Failed to load ignore patterns.");
-                    $scope.emitHTTPError(err);
-                });
-
+            $scope.currentFolder._editing = "existing";
+            editFolderLoadIgnores();
             editFolder(initialTab);
         };
 
-        $scope.editFolderDefaults = function() {
-            $http.get(urlbase + '/config/defaults/folder')
-                 .success(function (data) {
-                     $scope.currentFolder = data;
-                     $scope.editingExisting = false;
-                     $scope.editingDefaults = true;
-                     editFolder();
-                 })
-                 .error($scope.emitHTTPError);
+        function editFolderLoadingIgnores() {
+            $scope.ignores.text = 'Loading...';
+            $scope.ignores.error = null;
+            $scope.ignores.disabled = true;
+        }
+
+        function editFolderGetIgnores() {
+            return $http.get(urlbase + '/db/ignores?folder=' + encodeURIComponent($scope.currentFolder.id))
+                .then(function(r) {
+                    return r.data;
+                }, function (response) {
+                    $scope.ignores.text = $translate.instant("Failed to load ignore patterns.");
+                    return $q.reject(response);
+            });
         };
+
+        function editFolderLoadIgnores() {
+            editFolderLoadingIgnores();
+            return editFolderGetIgnores().then(function(data) {
+                if (!data) {
+                    return;
+                }
+                editFolderInitIgnores(data.ignore, data.error);
+            }, $scope.emitHTTPError);
+        }
+
+        $scope.editFolderDefaults = function() {
+            $q.all([
+                $http.get(urlbase + '/config/defaults/folder').then(function (response) {
+                    $scope.currentFolder = response.data;
+                    $scope.currentFolder._editing = "defaults";
+                }),
+                getDefaultIgnores().then(editFolderInitIgnores),
+            ]).then(editFolder, $scope.emitHTTPError);
+        };
+
+        function getDefaultIgnores() {
+            return $http.get(urlbase + '/config/defaults/ignores').then(function (r) {
+                return r.data.lines;
+            });
+        }
+
+        function editFolderInitIgnores(lines, error) {
+            $scope.ignores.originalLines = lines || [];
+            setIgnoresText(lines);
+            $scope.ignores.error = error;
+            $scope.ignores.disabled = false;
+        }
+
+        function setIgnoresText(lines) {
+            $scope.ignores.text = lines ? lines.join('\n') : "";
+        }
 
         $scope.selectAllSharedDevices = function (state) {
             var devices = $scope.currentSharing.shared;
@@ -2084,6 +2165,7 @@ angular.module('syncthing.core')
                 var folderID = (data.random.substr(0, 5) + '-' + data.random.substr(5, 5)).toLowerCase();
                 addFolderInit(folderID).then(function() {
                     // Triggers the watch that sets the path
+                    $scope.currentFolder._editing = "new";
                     $scope.currentFolder.label = $scope.currentFolder.label;
                     editFolderModal();
                 });
@@ -2092,9 +2174,6 @@ angular.module('syncthing.core')
 
         $scope.addFolderAndShare = function (folderID, pendingFolder, device) {
             addFolderInit(folderID).then(function() {
-                $scope.currentFolder.viewFlags = {
-                    importFromOtherDevice: true
-                };
                 $scope.currentSharing.selected[device] = true;
                 $scope.currentFolder.label = pendingFolder.offeredBy[device].label;
                 for (var k in pendingFolder.offeredBy) {
@@ -2104,24 +2183,21 @@ angular.module('syncthing.core')
                         break;
                     }
                 }
+                $scope.currentFolder._editing = "new-pending";
                 editFolderModal();
             });
         };
 
         function addFolderInit(folderID) {
-            $scope.editingExisting = false;
-            $scope.editingDefaults = false;
-            return $http.get(urlbase + '/config/defaults/folder').then(function(p) {
-                $scope.currentFolder = p.data;
+            return $http.get(urlbase + '/config/defaults/folder').then(function (response) {
+                $scope.currentFolder = response.data;
                 $scope.currentFolder.id = folderID;
-
                 initShareEditing('folder');
                 $scope.currentSharing.unrelated = $scope.currentSharing.unrelated.concat($scope.currentSharing.shared);
                 $scope.currentSharing.shared = [];
-
-                $scope.ignores.text = '';
-                $scope.ignores.error = null;
-                $scope.ignores.disabled = false;
+                // Ignores don't need to be initialized here, as that happens in
+                // a second step if the user indicates in the creation modal
+                // that they want to set ignores
             }, $scope.emitHTTPError);
         }
 
@@ -2141,7 +2217,14 @@ angular.module('syncthing.core')
         };
 
         $scope.saveFolder = function () {
-            $('#editFolder').modal('hide');
+            if ($scope.currentFolder._editing == "new-ignores") {
+                // On modal being hidden without clicking save, the defaults will be saved.
+                $scope.ignores.saved = true;
+                saveFolderAddIgnores($scope.currentFolder.id);
+                hideFolderModal();
+                return;
+            }
+
             var folderCfg = angular.copy($scope.currentFolder);
             $scope.currentSharing.selected[$scope.myID] = true;
             var newDevices = [];
@@ -2180,7 +2263,6 @@ angular.module('syncthing.core')
                 break;
             case "staggered":
                 folderCfg.versioning.params.maxAge = '' + (folderCfg._guiVersioning.staggeredMaxAge * 86400);
-                folderCfg.versioning.params.cleanInterval = '' + folderCfg._guiVersioning.staggeredCleanInterval;
                 break;
             case "external":
                 folderCfg.versioning.params.command = '' + folderCfg._guiVersioning.externalCommand;
@@ -2190,44 +2272,88 @@ angular.module('syncthing.core')
             }
             delete folderCfg._guiVersioning;
 
-            if ($scope.editingDefaults) {
+            if ($scope.currentFolder._editing == "defaults") {
+                hideFolderModal();
+                $scope.config.defaults.ignores.lines = ignoresArray();
                 $scope.config.defaults.folder = folderCfg;
                 $scope.saveConfig();
-            } else {
-                saveFolderExisting(folderCfg);
+                return;
             }
+
+            // This is a new folder where ignores should apply before it first starts.
+            if ($scope.currentFolder._addIgnores) {
+                folderCfg.paused = true;
+            }
+            $scope.folders[folderCfg.id] = folderCfg;
+            $scope.config.folders = folderList($scope.folders);
+
+            if ($scope.currentFolder._editing == "existing") {
+                hideFolderModal();
+                saveFolderIgnoresExisting();
+                $scope.saveConfig();
+                return;
+            }
+
+            // No ignores to be set on the new folder, save directly.
+            if (!$scope.currentFolder._addIgnores) {
+                hideFolderModal();
+                $scope.saveConfig();
+                return;
+            }
+
+            // Add folder (paused), load existing ignores and if there are none,
+            // load default ignores, then let the user edit them.
+            $scope.saveConfig().then(function() {
+                editFolderLoadingIgnores();
+                $scope.currentFolder._editing = "new-ignores";
+                $('.nav-tabs a[href="#folder-ignores"]').tab('show');
+                return editFolderGetIgnores();
+            }).then(function(data) {
+                // Error getting ignores -> leave error message.
+                if (!data) {
+                    return;
+                }
+                if ((data.ignore && data.ignore.length > 0) || data.error) {
+                    editFolderInitIgnores(data.ignore, data.error);
+                } else {
+                    getDefaultIgnores().then(function(lines) {
+                        setIgnoresText(lines);
+                        $scope.ignores.defaultLines = lines;
+                        $scope.ignores.disabled = false;
+                    });
+                }
+            }, $scope.emitHTTPError);
         };
 
-        function saveFolderExisting(folderCfg) {
-            var ignoresLoaded = !$scope.ignores.disabled;
+        function saveFolderIgnoresExisting() {
+            if ($scope.ignores.disabled) {
+                return;
+            }
+            var ignores = ignoresArray();
+
+            function arrayDiffers(a, b) {
+                return !a !== !b || a.length !== b.length || a.some(function(v, i) { return v !== b[i]; });
+            }
+            if (arrayDiffers(ignores, $scope.ignores.originalLines)) {
+                return saveIgnores(ignores);
+            };
+        }
+
+        function saveFolderAddIgnores(folderID, useDefault) {
+            var ignores = useDefault ? $scope.ignores.defaultLines : ignoresArray();
+            return saveIgnores(ignores).then(function () {
+                return $scope.setFolderPause(folderID, $scope.currentFolder.paused);
+            });
+        };
+
+        function ignoresArray() {
             var ignores = $scope.ignores.text.split('\n');
             // Split always returns a minimum 1-length array even for no patterns
             if (ignores.length === 1 && ignores[0] === "") {
                 ignores = [];
             }
-            if (!$scope.editingExisting && ignores.length) {
-                folderCfg.paused = true;
-            };
-
-            $scope.folders[folderCfg.id] = folderCfg;
-            $scope.config.folders = folderList($scope.folders);
-
-            function arrayEquals(a, b) {
-              return a.length === b.length && a.every(function(v, i) { return v === b[i] });
-            }
-
-            if (ignoresLoaded && $scope.editingExisting && !arrayEquals(ignores, folderCfg.ignores)) {
-                saveIgnores(ignores);
-            };
-
-            $scope.saveConfig(function () {
-                if (!$scope.editingExisting && ignores.length) {
-                    saveIgnores(ignores, function () {
-                        $scope.setFolderPause(folderCfg.id, false);
-                    });
-                }
-            });
-        };
+            return ignores;
+        }
 
         $scope.ignoreFolder = function (device, folderID, offeringDevice) {
             var ignoredFolder = {
@@ -2248,15 +2374,50 @@ angular.module('syncthing.core')
                          + '&device=' + encodeURIComponent(deviceID));
         };
 
+        $scope.deviceNameMarkRemoteState = function (deviceID, folderID) {
+            var name = $scope.deviceName($scope.devices[deviceID]);
+            // Add footnote if sharing was not accepted on the remote device
+            if (deviceID in $scope.completion && folderID in $scope.completion[deviceID]) {
+                if ($scope.completion[deviceID][folderID].remoteState == 'notSharing') {
+                    name += '<sup>1</sup>';
+                } else if ($scope.completion[deviceID][folderID].remoteState == 'paused') {
+                    name += '<sup>2</sup>';
+                }
+            }
+            return name;
+        };
+
         $scope.sharesFolder = function (folderCfg) {
             var names = [];
             folderCfg.devices.forEach(function (device) {
                 if (device.deviceID !== $scope.myID) {
-                    names.push($scope.deviceName($scope.devices[device.deviceID]));
+                    names.push($scope.deviceNameMarkRemoteState(device.deviceID, folderCfg.id));
                 }
             });
             names.sort();
             return names.join(", ");
+        };
+
+        $scope.folderHasUnacceptedDevices = function (folderCfg) {
+            for (var deviceID in $scope.completion) {
+                if (deviceID in $scope.devices
+                    && folderCfg.id in $scope.completion[deviceID]
+                    && $scope.completion[deviceID][folderCfg.id].remoteState == 'notSharing') {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $scope.folderHasPausedDevices = function (folderCfg) {
+            for (var deviceID in $scope.completion) {
+                if (deviceID in $scope.devices
+                    && folderCfg.id in $scope.completion[deviceID]
+                    && $scope.completion[deviceID][folderCfg.id].remoteState == 'paused') {
+                    return true;
+                }
+            }
+            return false;
         };
 
         $scope.deviceFolders = function (deviceCfg) {
@@ -2280,9 +2441,56 @@ angular.module('syncthing.core')
             return label && label.length > 0 ? label : folderID;
         };
 
+        $scope.folderLabelMarkRemoteState = function (folderID, deviceID) {
+            var label = $scope.folderLabel(folderID);
+            // Add footnote if sharing was not accepted on the remote device
+            if (deviceID in $scope.completion && folderID in $scope.completion[deviceID]) {
+                if ($scope.completion[deviceID][folderID].remoteState == 'notSharing') {
+                    label += '<sup>1</sup>';
+                } else if ($scope.completion[deviceID][folderID].remoteState == 'paused') {
+                    label += '<sup>2</sup>';
+                }
+            }
+            return label;
+        };
+
+        $scope.sharedFolders = function (deviceCfg) {
+            var labels = [];
+            $scope.deviceFolders(deviceCfg).forEach(function (folderID) {
+                labels.push($scope.folderLabelMarkRemoteState(folderID, deviceCfg.deviceID));
+            });
+            return labels.join(', ');
+        };
+
+        $scope.deviceHasUnacceptedFolders = function (deviceCfg) {
+            if (!(deviceCfg.deviceID in $scope.completion)) {
+                return false;
+            }
+            for (var folderID in $scope.completion[deviceCfg.deviceID]) {
+                if (folderID in $scope.folders
+                    && $scope.completion[deviceCfg.deviceID][folderID].remoteState == 'notSharing') {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $scope.deviceHasPausedFolders = function (deviceCfg) {
+            if (!(deviceCfg.deviceID in $scope.completion)) {
+                return false;
+            }
+            for (var folderID in $scope.completion[deviceCfg.deviceID]) {
+                if (folderID in $scope.folders
+                    && $scope.completion[deviceCfg.deviceID][folderID].remoteState == 'paused') {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         $scope.deleteFolder = function (id) {
-            $('#editFolder').modal('hide');
-            if (!$scope.editingExisting) {
+            hideFolderModal();
+            if ($scope.currentFolder._editing != "existing") {
                 return;
             }
 
@@ -2293,6 +2501,10 @@ angular.module('syncthing.core')
 
             $scope.saveConfig();
         };
+
+        function hideFolderModal() {
+            $('#editFolder').modal('hide');
+        }
 
         function resetRestoreVersions() {
             $scope.restoreVersions = {
@@ -2400,32 +2612,44 @@ angular.module('syncthing.core')
                             }
 
                             $scope.restoreVersions.tree = $("#restoreTree").fancytree({
-                                extensions: ["table", "filter"],
+                                extensions: ["table", "filter", "glyph"],
                                 quicksearch: true,
                                 filter: {
-                                    autoApply: true,
-                                    counter: true,
-                                    hideExpandedCounter: true,
                                     hideExpanders: true,
-                                    highlight: true,
-                                    leavesOnly: false,
-                                    nodata: true,
                                     mode: "hide"
                                 },
-                                table: {
-                                    indentation: 20,
-                                    nodeColumnIdx: 0,
+                                glyph: {
+                                    preset: "awesome5",
                                 },
-                                debugLevel: 2,
+                                table: {
+                                    indentation: 24,
+                                },
+                                strings: {
+                                    loading: $translate.instant("Loading..."),
+                                    loadError: $translate.instant("Failed to load file versions."),
+                                    noData: $translate.instant("There are no file versions to restore.")
+                                },
+                                // Set to '1' to silence errors after pressing arrow keys on file nodes.
+                                // Happens on the official option cofiguration from the developer's site
+                                // too, so probably a bug?
+                                debugLevel: 1,
                                 source: buildTree($scope.restoreVersions.versions),
                                 renderColumns: function (event, data) {
+                                    // Case insensitive sort with folders on top.
+                                    var cmp = function(a, b) {
+                                        var x = (a.isFolder() ? "0" : "1") + a.title.toLowerCase(),
+                                            y = (b.isFolder() ? "0" : "1") + b.title.toLowerCase();
+                                        return x === y ? 0 : x > y ? 1 : -1;
+                                    };
+                                    data.tree.getRootNode().sortChildren(cmp, true);
+
                                     var node = data.node,
                                         $tdList = $(node.tr).find(">td"),
                                         template;
                                     if (node.folder) {
-                                        template = '<div ng-include="\'syncthing/folder/restoreVersionsMassActions.html\'" class="pull-right"/>';
+                                        template = '<div ng-include="\'syncthing/folder/restoreVersionsMassActions.html\'"/>';
                                     } else {
-                                        template = '<div ng-include="\'syncthing/folder/restoreVersionsVersionSelector.html\'" class="pull-right"/>';
+                                        template = '<div ng-include="\'syncthing/folder/restoreVersionsVersionSelector.html\'"/>';
                                     }
 
                                     var scope = $rootScope.$new(true);
@@ -2463,15 +2687,14 @@ angular.module('syncthing.core')
                             $scope.restoreVersions.filters['start'] = minDate;
                             $scope.restoreVersions.filters['end'] = maxDate;
 
-                            var ranges = {
-                                'All time': [minDate, maxDate],
-                                'Today': [moment(), moment()],
-                                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                            };
+                            var ranges = {};
+                            ranges[$translate.instant("All Time")] = [minDate, maxDate];
+                            ranges[$translate.instant("Today")] = [moment().startOf('day'), moment()];
+                            ranges[$translate.instant("Yesterday")] = [moment().subtract(1, 'days').startOf('day'), moment().startOf('day')];
+                            ranges[$translate.instant("Last 7 Days")] = [moment().subtract(6, 'days').startOf('day'), moment()];
+                            ranges[$translate.instant("Last 30 Days")] = [moment().subtract(29, 'days').startOf('day'), moment()];
+                            ranges[$translate.instant("This Month")] = [moment().startOf('month'), moment()];
+                            ranges[$translate.instant("Last Month")] = [moment().subtract(1, 'month').startOf('month'), moment().startOf('month')];
 
                             // Filter out invalid ranges.
                             $.each(ranges, function (key, range) {
@@ -2484,7 +2707,6 @@ angular.module('syncthing.core')
                                 timePicker: true,
                                 timePicker24Hour: true,
                                 timePickerSeconds: true,
-                                autoUpdateInput: true,
                                 opens: "left",
                                 drops: "up",
                                 startDate: minDate,
@@ -2493,6 +2715,9 @@ angular.module('syncthing.core')
                                 maxDate: maxDate,
                                 ranges: ranges,
                                 locale: {
+                                    applyLabel: $translate.instant("Apply"),
+                                    cancelLabel: $translate.instant("Cancel"),
+                                    customRangeLabel: $translate.instant("Custom Range"),
                                     format: 'YYYY/MM/DD HH:mm:ss',
                                 }
                             }).on('apply.daterangepicker', function (ev, picker) {
@@ -2600,27 +2825,12 @@ angular.module('syncthing.core')
         };
 
         $scope.hasReceiveOnlyChanged = function (folderCfg) {
-            if (!folderCfg || folderCfg.type !== "receiveonly") {
+            if (!folderCfg || folderCfg.type !== ["receiveonly",  "receiveencrypted"].indexOf(folderCfg.type) === -1) {
                 return false;
             }
             var counts = $scope.model[folderCfg.id];
             return counts && counts.receiveOnlyTotalItems > 0;
         };
-
-        $scope.hasReceiveEncryptedItems = function (folderCfg) {
-            if (!folderCfg || folderCfg.type !== "receiveencrypted") {
-                return false;
-            }
-            return $scope.receiveEncryptedItemsCount(folderCfg) > 0;
-        };
-
-        $scope.receiveEncryptedItemsCount = function (folderCfg) {
-            var counts = $scope.model[folderCfg.id];
-            if (!counts) {
-                return 0;
-            }
-            return counts.receiveOnlyTotalItems - counts.receiveOnlyChangedDeletes;
-        }
 
         $scope.revertOverride = function () {
             $http.post(
@@ -2658,6 +2868,12 @@ angular.module('syncthing.core')
             $scope.advancedConfig = angular.copy($scope.config);
             $scope.advancedConfig.devices.sort(deviceCompare);
             $scope.advancedConfig.folders.sort(folderCompare);
+            $scope.advancedConfig.defaults.ignores._lines = function (newValue) {
+                if (arguments.length) {
+                    $scope.advancedConfig.defaults.ignores.lines = newValue.split('\n');
+                }
+                return $scope.advancedConfig.defaults.ignores.lines.join('\n');
+            };
             $('#advanced').modal('show');
         };
 
@@ -2790,6 +3006,36 @@ angular.module('syncthing.core')
             return $scope.version.version + ', ' + os + ' (' + arch + ')';
         };
 
+        $scope.versionBase = function () {
+            if (!$scope.version.version) {
+                return '';
+            }
+            var version = $scope.version.version;
+            var pos = version.indexOf('-');
+            if (pos > 0) {
+                version = version.slice(0, pos);
+            }
+            return version;
+        };
+
+        $scope.docsURL = function (path) {
+            var url = 'https://docs.syncthing.net';
+            if (!path) {
+                // Undefined or null should become a valid string.
+                path = '';
+            }
+            var hash = path.indexOf('#');
+            if (hash != -1) {
+                url += '/' + path.slice(0, hash);
+                url += '?version=' + $scope.versionBase();
+                url += path.slice(hash);
+            } else {
+                url += '/' + path;
+                url += '?version=' + $scope.versionBase();
+            }
+            return url;
+        };
+
         $scope.inputTypeFor = function (key, value) {
             if (key.substr(0, 1) === '_') {
                 return 'skip';
@@ -2813,9 +3059,14 @@ angular.module('syncthing.core')
         };
 
         $scope.themeName = function (theme) {
-            return theme.replace('-', ' ').replace(/(?:^|\s)\S/g, function (a) {
-                return a.toUpperCase();
-            });
+            var translation = $translate.instant("theme-name-" + theme);
+            if (translation.indexOf("theme-name-") == 0) {
+                // Fall back to simple Title Casing on missing translation
+                translation = theme.toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
+                    return a.toUpperCase();
+                });
+            }
+            return translation;
         };
 
         $scope.modalLoaded = function () {
@@ -2838,6 +3089,10 @@ angular.module('syncthing.core')
                 return 0;
             }
             return Object.keys(dict).length;
+        };
+
+        $scope.has = function (array, element) {
+            return array.indexOf(element) >= 0;
         };
 
         $scope.dismissNotification = function (id) {
