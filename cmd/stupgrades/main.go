@@ -8,20 +8,52 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
+	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"sort"
+	"strings"
 
+	"github.com/alecthomas/kong"
 	"github.com/syncthing/syncthing/lib/upgrade"
 )
 
-const defaultURL = "https://api.github.com/repos/syncthing/syncthing/releases?per_page=25"
+type cli struct {
+	Listen  string   `default:":8080" help:"Listen address"`
+	URL     string   `short:"u" default:"https://api.github.com/repos/syncthing/syncthing/releases?per_page=25" help:"GitHub releases url"`
+	Forward []string `short:"f" help:"Forwarded pages, format: /path->https://example/com/url"`
+}
 
 func main() {
-	url := flag.String("u", defaultURL, "GitHub releases url")
-	flag.Parse()
+	var params cli
+	kong.Parse(&params)
+	if err := server(&params); err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+}
 
-	rels := upgrade.FetchLatestReleases(*url, "")
+func server(params *cli) error {
+	http.HandleFunc("/meta.json", (&githubReleases{params.URL}).serve)
+
+	for _, fwd := range params.Forward {
+		path, url, ok := strings.Cut(fwd, "->")
+		if !ok {
+			return fmt.Errorf("invalid forward: %q", fwd)
+		}
+		http.HandleFunc(path, (&proxy{url}).serve)
+	}
+
+	return http.ListenAndServe(params.Listen, nil)
+}
+
+type githubReleases struct {
+	url string
+}
+
+func (p *githubReleases) serve(w http.ResponseWriter, req *http.Request) {
+	rels := upgrade.FetchLatestReleases(p.url, "")
 	if rels == nil {
 		// An error was already logged
 		os.Exit(1)
@@ -30,8 +62,48 @@ func main() {
 	sort.Sort(upgrade.SortByRelease(rels))
 	rels = filterForLatest(rels)
 
-	if err := json.NewEncoder(os.Stdout).Encode(rels); err != nil {
-		os.Exit(1)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "public, max-age=900")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET")
+	_ = json.NewEncoder(w).Encode(rels)
+}
+
+type proxy struct {
+	url string
+}
+
+func (p *proxy) serve(w http.ResponseWriter, req *http.Request) {
+	req, err := http.NewRequestWithContext(req.Context(), http.MethodGet, p.url, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	ct := resp.Header.Get("Content-Type")
+	w.Header().Set("Content-Type", ct)
+	if resp.StatusCode == http.StatusOK {
+		w.Header().Set("Cache-Control", "public, max-age=900")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET")
+	}
+	w.WriteHeader(resp.StatusCode)
+	if strings.HasPrefix(ct, "application/json") {
+		// Special JSON handling; clean it up a bit.
+		var v interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&v); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(v)
+	} else {
+		_, _ = io.Copy(w, resp.Body)
 	}
 }
 
