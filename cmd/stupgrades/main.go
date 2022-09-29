@@ -38,14 +38,14 @@ func main() {
 }
 
 func server(params *cli) error {
-	http.HandleFunc("/meta.json", (&githubReleases{params.URL}).serve)
+	http.HandleFunc("/meta.json", (&githubReleases{url: params.URL}).serve)
 
 	for _, fwd := range params.Forward {
 		path, url, ok := strings.Cut(fwd, "->")
 		if !ok {
 			return fmt.Errorf("invalid forward: %q", fwd)
 		}
-		http.HandleFunc(path, (&proxy{url}).serve)
+		http.HandleFunc(path, (&proxy{url: url}).serve)
 	}
 
 	return http.ListenAndServe(params.Listen, nil)
