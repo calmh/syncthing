@@ -206,6 +206,12 @@ var targets = map[string]target{
 			{src: "AUTHORS", dst: "deb/usr/share/doc/syncthing-relaypoolsrv/AUTHORS.txt", perm: 0644},
 		},
 	},
+	"stupgrades": {
+		name:        "stupgrades",
+		description: "Syncthing Upgrade Check Server",
+		buildPkgs:   []string{"github.com/syncthing/syncthing/cmd/stupgrades"},
+		binaryName:  "stupgrades", // .exe will be added automatically for Windows builds
+	},
 }
 
 func initTargets() {
