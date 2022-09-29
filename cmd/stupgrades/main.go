@@ -7,6 +7,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,8 +15,10 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/alecthomas/kong"
+	"github.com/syncthing/syncthing/lib/sync"
 	"github.com/syncthing/syncthing/lib/upgrade"
 )
 
@@ -50,23 +53,37 @@ func server(params *cli) error {
 
 type githubReleases struct {
 	url string
+
+	mut  sync.Mutex
+	data []byte
+	when time.Time
 }
 
 func (p *githubReleases) serve(w http.ResponseWriter, req *http.Request) {
-	rels := upgrade.FetchLatestReleases(p.url, "")
-	if rels == nil {
-		// An error was already logged
-		os.Exit(1)
-	}
+	p.mut.Lock()
+	defer p.mut.Unlock()
 
-	sort.Sort(upgrade.SortByRelease(rels))
-	rels = filterForLatest(rels)
+	if time.Since(p.when) > 5*time.Minute {
+		rels := upgrade.FetchLatestReleases(p.url, "")
+		if rels == nil {
+			http.Error(w, "no releases", http.StatusInternalServerError)
+			return
+		}
+
+		sort.Sort(upgrade.SortByRelease(rels))
+		rels = filterForLatest(rels)
+
+		buf := new(bytes.Buffer)
+		_ = json.NewEncoder(buf).Encode(rels)
+		p.data = buf.Bytes()
+		p.when = time.Now()
+	}
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Cache-Control", "public, max-age=900")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET")
-	_ = json.NewEncoder(w).Encode(rels)
+	w.Write(p.data)
 }
 
 type proxy struct {
