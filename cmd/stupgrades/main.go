@@ -11,21 +11,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/syncthing/syncthing/lib/upgrade"
+	cache "github.com/victorspringer/http-cache"
+	"github.com/victorspringer/http-cache/adapter/memory"
 )
 
 type cli struct {
-	Listen  string   `default:":8080" help:"Listen address"`
-	URL     string   `short:"u" default:"https://api.github.com/repos/syncthing/syncthing/releases?per_page=25" help:"GitHub releases url"`
-	Forward []string `short:"f" help:"Forwarded pages, format: /path->https://example/com/url"`
+	Listen     string        `default:":8080" help:"Listen address"`
+	URL        string        `short:"u" default:"https://api.github.com/repos/syncthing/syncthing/releases?per_page=25" help:"GitHub releases url"`
+	Forward    []string      `short:"f" help:"Forwarded pages, format: /path->https://example/com/url"`
+	CacheBytes int           `default:"10000000" help:"Cache size"`
+	CacheTime  time.Duration `default:"15m" help:"Cache time"`
 }
 
 func main() {
@@ -38,14 +42,29 @@ func main() {
 }
 
 func server(params *cli) error {
-	http.HandleFunc("/meta.json", (&githubReleases{url: params.URL}).serve)
+	cacheBackend, err := memory.NewAdapter(
+		memory.AdapterWithAlgorithm(memory.LRU),
+		memory.AdapterWithCapacity(params.CacheBytes),
+	)
+	if err != nil {
+		return err
+	}
+	cacheClient, err := cache.NewClient(
+		cache.ClientWithAdapter(cacheBackend),
+		cache.ClientWithTTL(params.CacheTime),
+	)
+	if err != nil {
+		return err
+	}
+
+	http.Handle("/meta.json", cacheClient.Middleware(&githubReleases{url: params.URL}))
 
 	for _, fwd := range params.Forward {
 		path, url, ok := strings.Cut(fwd, "->")
 		if !ok {
 			return fmt.Errorf("invalid forward: %q", fwd)
 		}
-		http.HandleFunc(path, (&proxy{url: url}).serve)
+		http.Handle(path, cacheClient.Middleware(&proxy{url: url}))
 	}
 
 	return http.ListenAndServe(params.Listen, nil)
@@ -53,44 +72,34 @@ func server(params *cli) error {
 
 type githubReleases struct {
 	url string
-
-	mut  sync.Mutex
-	data []byte
-	when time.Time
 }
 
-func (p *githubReleases) serve(w http.ResponseWriter, req *http.Request) {
-	p.mut.Lock()
-	defer p.mut.Unlock()
-
-	if time.Since(p.when) > 5*time.Minute {
-		rels := upgrade.FetchLatestReleases(p.url, "")
-		if rels == nil {
-			http.Error(w, "no releases", http.StatusInternalServerError)
-			return
-		}
-
-		sort.Sort(upgrade.SortByRelease(rels))
-		rels = filterForLatest(rels)
-
-		buf := new(bytes.Buffer)
-		_ = json.NewEncoder(buf).Encode(rels)
-		p.data = buf.Bytes()
-		p.when = time.Now()
+func (p *githubReleases) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	log.Println("Fetching", p.url)
+	rels := upgrade.FetchLatestReleases(p.url, "")
+	if rels == nil {
+		http.Error(w, "no releases", http.StatusInternalServerError)
+		return
 	}
 
+	sort.Sort(upgrade.SortByRelease(rels))
+	rels = filterForLatest(rels)
+
+	buf := new(bytes.Buffer)
+	_ = json.NewEncoder(buf).Encode(rels)
+
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Header().Set("Cache-Control", "public, max-age=900")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET")
-	w.Write(p.data)
+	w.Write(buf.Bytes())
 }
 
 type proxy struct {
 	url string
 }
 
-func (p *proxy) serve(w http.ResponseWriter, req *http.Request) {
+func (p *proxy) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	log.Println("Fetching", p.url)
 	req, err := http.NewRequestWithContext(req.Context(), http.MethodGet, p.url, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
