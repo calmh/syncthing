@@ -16,12 +16,11 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/syncthing/syncthing/lib/upgrade"
-	cache "github.com/victorspringer/http-cache"
-	"github.com/victorspringer/http-cache/adapter/memory"
 )
 
 type cli struct {
@@ -42,29 +41,14 @@ func main() {
 }
 
 func server(params *cli) error {
-	cacheBackend, err := memory.NewAdapter(
-		memory.AdapterWithAlgorithm(memory.LRU),
-		memory.AdapterWithCapacity(params.CacheBytes),
-	)
-	if err != nil {
-		return err
-	}
-	cacheClient, err := cache.NewClient(
-		cache.ClientWithAdapter(cacheBackend),
-		cache.ClientWithTTL(params.CacheTime),
-	)
-	if err != nil {
-		return err
-	}
-
-	http.Handle("/meta.json", cacheClient.Middleware(&githubReleases{url: params.URL}))
+	http.Handle("/meta.json", &simpleCache{next: &githubReleases{url: params.URL}})
 
 	for _, fwd := range params.Forward {
 		path, url, ok := strings.Cut(fwd, "->")
 		if !ok {
 			return fmt.Errorf("invalid forward: %q", fwd)
 		}
-		http.Handle(path, cacheClient.Middleware(&proxy{url: url}))
+		http.Handle(path, &simpleCache{next: &proxy{url: url}})
 	}
 
 	return http.ListenAndServe(params.Listen, nil)
@@ -152,4 +136,57 @@ func filterForLatest(rels []upgrade.Release) []upgrade.Release {
 		}
 	}
 	return filtered
+}
+
+type simpleCache struct {
+	next http.Handler
+
+	mut  sync.Mutex
+	when time.Time
+	resp *recordedResponse
+}
+
+type recordedResponse struct {
+	status int
+	header http.Header
+	data   []byte
+}
+
+type responseRecorder struct {
+	resp *recordedResponse
+	http.ResponseWriter
+}
+
+func (r *responseRecorder) WriteHeader(status int) {
+	r.resp.status = status
+	r.ResponseWriter.WriteHeader(status)
+}
+
+func (r *responseRecorder) Write(data []byte) (int, error) {
+	r.resp.data = append(r.resp.data, data...)
+	return r.ResponseWriter.Write(data)
+}
+
+func (r *responseRecorder) Header() http.Header {
+	return r.resp.header
+}
+
+func (s *simpleCache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+
+	if time.Since(s.when) < 15*time.Minute {
+		for k, v := range s.resp.header {
+			w.Header()[k] = v
+		}
+		w.WriteHeader(s.resp.status)
+		_, _ = w.Write(s.resp.data)
+		return
+	}
+
+	rec := &recordedResponse{status: http.StatusOK, header: make(http.Header)}
+	w = &responseRecorder{ResponseWriter: w, resp: rec}
+	s.next.ServeHTTP(w, r)
+	s.resp = rec
+	s.when = time.Now()
 }
