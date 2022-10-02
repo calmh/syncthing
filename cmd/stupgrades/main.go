@@ -142,7 +142,7 @@ type simpleCache struct {
 	next http.Handler
 	keep time.Duration
 
-	mut  sync.Mutex
+	mut  sync.RWMutex
 	when time.Time
 	resp *recordedResponse
 }
@@ -169,23 +169,21 @@ func (r *responseRecorder) Write(data []byte) (int, error) {
 }
 
 func (s *simpleCache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.mut.Lock()
-	defer s.mut.Unlock()
-
 	if r.Method != http.MethodGet {
 		s.next.ServeHTTP(w, r)
 		return
 	}
 
-	if time.Since(s.when) < s.keep {
-		for k, v := range s.resp.header {
-			w.Header()[k] = v
-		}
-		w.Header().Set("X-Cache", "HIT")
-		w.Header().Set("X-Cache-From", s.when.Format(time.RFC3339))
-		w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(s.keep.Seconds())))
-		w.WriteHeader(s.resp.status)
-		_, _ = w.Write(s.resp.data)
+	s.mut.RLock()
+	ok := s.serveCached(w)
+	s.mut.RUnlock()
+	if ok {
+		return
+	}
+
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	if s.serveCached(w) {
 		return
 	}
 
@@ -197,4 +195,19 @@ func (s *simpleCache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		rec.header = w.Header()
 		s.resp = rec
 	}
+}
+
+func (s *simpleCache) serveCached(w http.ResponseWriter) bool {
+	if time.Since(s.when) > s.keep {
+		return false
+	}
+	for k, v := range s.resp.header {
+		w.Header()[k] = v
+	}
+	w.Header().Set("X-Cache", "HIT")
+	w.Header().Set("X-Cache-From", s.when.Format(time.RFC3339))
+	w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(s.keep.Seconds())))
+	w.WriteHeader(s.resp.status)
+	_, _ = w.Write(s.resp.data)
+	return true
 }
