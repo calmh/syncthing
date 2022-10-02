@@ -41,14 +41,14 @@ func main() {
 }
 
 func server(params *cli) error {
-	http.Handle("/meta.json", &simpleCache{next: &githubReleases{url: params.URL}})
+	http.Handle("/meta.json", &simpleCache{keep: params.CacheTime, next: &githubReleases{url: params.URL}})
 
 	for _, fwd := range params.Forward {
 		path, url, ok := strings.Cut(fwd, "->")
 		if !ok {
 			return fmt.Errorf("invalid forward: %q", fwd)
 		}
-		http.Handle(path, &simpleCache{next: &proxy{url: url}})
+		http.Handle(path, &simpleCache{keep: params.CacheTime, next: &proxy{url: url}})
 	}
 
 	return http.ListenAndServe(params.Listen, nil)
@@ -140,6 +140,7 @@ func filterForLatest(rels []upgrade.Release) []upgrade.Release {
 
 type simpleCache struct {
 	next http.Handler
+	keep time.Duration
 
 	mut  sync.Mutex
 	when time.Time
@@ -167,18 +168,22 @@ func (r *responseRecorder) Write(data []byte) (int, error) {
 	return r.ResponseWriter.Write(data)
 }
 
-func (r *responseRecorder) Header() http.Header {
-	return r.resp.header
-}
-
 func (s *simpleCache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 
-	if time.Since(s.when) < 15*time.Minute {
+	if r.Method != http.MethodGet {
+		s.next.ServeHTTP(w, r)
+		return
+	}
+
+	if time.Since(s.when) < s.keep {
 		for k, v := range s.resp.header {
 			w.Header()[k] = v
 		}
+		w.Header().Set("X-Cache", "HIT")
+		w.Header().Set("X-Cache-From", s.when.Format(time.RFC3339))
+		w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%d", int(s.keep.Seconds())))
 		w.WriteHeader(s.resp.status)
 		_, _ = w.Write(s.resp.data)
 		return
@@ -187,6 +192,9 @@ func (s *simpleCache) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	rec := &recordedResponse{status: http.StatusOK, header: make(http.Header)}
 	w = &responseRecorder{ResponseWriter: w, resp: rec}
 	s.next.ServeHTTP(w, r)
-	s.resp = rec
-	s.when = time.Now()
+	if rec.status == http.StatusOK {
+		s.when = time.Now()
+		rec.header = w.Header()
+		s.resp = rec
+	}
 }
