@@ -15,8 +15,9 @@ import (
 )
 
 type jobQueue struct {
-	progress []string
-	queued   []jobQueueEntry
+	progress []string            // files currently being processed
+	queued   []jobQueueEntry     // files queued to be pulled
+	has      map[string]struct{} // files currently queued or in progress
 	mut      sync.Mutex
 }
 
@@ -24,19 +25,24 @@ type jobQueueEntry struct {
 	name     string
 	size     int64
 	modified int64
+	toFront  int64 // timestamp when manually brought to front; higher values float the to the top
 }
 
 func newJobQueue() *jobQueue {
 	return &jobQueue{
+		has: make(map[string]struct{}),
 		mut: sync.NewMutex(),
 	}
 }
 
 func (q *jobQueue) Push(file string, size int64, modified time.Time) {
 	q.mut.Lock()
-	// The range of UnixNano covers a range of reasonable timestamps.
-	q.queued = append(q.queued, jobQueueEntry{file, size, modified.UnixNano()})
-	q.mut.Unlock()
+	defer q.mut.Unlock()
+	if _, ok := q.has[file]; ok {
+		return
+	}
+	q.queued = append(q.queued, jobQueueEntry{file, size, modified.UnixNano(), 0})
+	q.has[file] = struct{}{}
 }
 
 func (q *jobQueue) Pop() (string, bool) {
@@ -60,6 +66,7 @@ func (q *jobQueue) BringToFront(filename string) {
 
 	for i, cur := range q.queued {
 		if cur.name == filename {
+			q.queued[i].toFront = time.Now().UnixNano()
 			if i > 0 {
 				// Shift the elements before the selected element one step to
 				// the right, overwriting the selected element
@@ -80,6 +87,7 @@ func (q *jobQueue) Done(file string) {
 		if q.progress[i] == file {
 			copy(q.progress[i:], q.progress[i+1:])
 			q.progress = q.progress[:len(q.progress)-1]
+			delete(q.has, file)
 			return
 		}
 	}
@@ -131,7 +139,16 @@ func (q *jobQueue) Shuffle() {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	rand.Shuffle(q.queued)
+	// Find index of first non-bringToFront item
+	idx := 0
+	for ; idx < len(q.queued); idx++ {
+		if q.queued[idx].toFront == 0 {
+			break
+		}
+	}
+
+	// Shuffle the items after the manually brought to front items
+	rand.Shuffle(q.queued[idx:])
 }
 
 func (q *jobQueue) Reset() {
@@ -157,40 +174,46 @@ func (q *jobQueue) SortSmallestFirst() {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	sort.Sort(smallestFirst(q.queued))
+	sort.Slice(q.queued, func(i, j int) bool {
+		if q.queued[i].toFront != q.queued[j].toFront {
+			return q.queued[i].toFront > q.queued[j].toFront
+		}
+		return q.queued[i].size < q.queued[j].size
+	})
 }
 
 func (q *jobQueue) SortLargestFirst() {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	sort.Sort(sort.Reverse(smallestFirst(q.queued)))
+	sort.Slice(q.queued, func(i, j int) bool {
+		if q.queued[i].toFront != q.queued[j].toFront {
+			return q.queued[i].toFront > q.queued[j].toFront
+		}
+		return q.queued[i].size > q.queued[j].size
+	})
 }
 
 func (q *jobQueue) SortOldestFirst() {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	sort.Sort(oldestFirst(q.queued))
+	sort.Slice(q.queued, func(i, j int) bool {
+		if q.queued[i].toFront != q.queued[j].toFront {
+			return q.queued[i].toFront > q.queued[j].toFront
+		}
+		return q.queued[i].modified < q.queued[j].modified
+	})
 }
 
 func (q *jobQueue) SortNewestFirst() {
 	q.mut.Lock()
 	defer q.mut.Unlock()
 
-	sort.Sort(sort.Reverse(oldestFirst(q.queued)))
+	sort.Slice(q.queued, func(i, j int) bool {
+		if q.queued[i].toFront != q.queued[j].toFront {
+			return q.queued[i].toFront > q.queued[j].toFront
+		}
+		return q.queued[i].modified > q.queued[j].modified
+	})
 }
-
-// The usual sort.Interface boilerplate
-
-type smallestFirst []jobQueueEntry
-
-func (q smallestFirst) Len() int           { return len(q) }
-func (q smallestFirst) Less(a, b int) bool { return q[a].size < q[b].size }
-func (q smallestFirst) Swap(a, b int)      { q[a], q[b] = q[b], q[a] }
-
-type oldestFirst []jobQueueEntry
-
-func (q oldestFirst) Len() int           { return len(q) }
-func (q oldestFirst) Less(a, b int) bool { return q[a].modified < q[b].modified }
-func (q oldestFirst) Swap(a, b int)      { q[a], q[b] = q[b], q[a] }
