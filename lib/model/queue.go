@@ -170,6 +170,18 @@ func (q *jobQueue) lenProgress() int {
 	return len(q.progress)
 }
 
+func (q *jobQueue) SortAlphabetic() {
+	q.mut.Lock()
+	defer q.mut.Unlock()
+
+	sort.Slice(q.queued, func(i, j int) bool {
+		if q.queued[i].toFront != q.queued[j].toFront {
+			return q.queued[i].toFront > q.queued[j].toFront
+		}
+		return q.queued[i].name < q.queued[j].name
+	})
+}
+
 func (q *jobQueue) SortSmallestFirst() {
 	q.mut.Lock()
 	defer q.mut.Unlock()

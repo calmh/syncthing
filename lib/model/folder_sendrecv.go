@@ -434,7 +434,7 @@ func (f *sendReceiveFolder) processNeeded(snap *db.Snapshot, dbUpdateChan chan<-
 	case config.PullOrderRandom:
 		f.queue.Shuffle()
 	case config.PullOrderAlphabetic:
-	// The queue is already in alphabetic order.
+		f.queue.SortAlphabetic()
 	case config.PullOrderSmallestFirst:
 		f.queue.SortSmallestFirst()
 	case config.PullOrderLargestFirst:
