@@ -13,7 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
+	mrand "math/rand"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
@@ -34,81 +34,12 @@ import (
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	protocolmocks "github.com/syncthing/syncthing/lib/protocol/mocks"
+	"github.com/syncthing/syncthing/lib/rand"
 	srand "github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/testutils"
 	"github.com/syncthing/syncthing/lib/util"
 	"github.com/syncthing/syncthing/lib/versioner"
 )
-
-var testDataExpected = map[string]protocol.FileInfo{
-	"foo": {
-		Name:      "foo",
-		Type:      protocol.FileInfoTypeFile,
-		ModifiedS: 0,
-		Blocks:    []protocol.BlockInfo{{Offset: 0x0, Size: 0x7, Hash: []uint8{0xae, 0xc0, 0x70, 0x64, 0x5f, 0xe5, 0x3e, 0xe3, 0xb3, 0x76, 0x30, 0x59, 0x37, 0x61, 0x34, 0xf0, 0x58, 0xcc, 0x33, 0x72, 0x47, 0xc9, 0x78, 0xad, 0xd1, 0x78, 0xb6, 0xcc, 0xdf, 0xb0, 0x1, 0x9f}}},
-	},
-	"empty": {
-		Name:      "empty",
-		Type:      protocol.FileInfoTypeFile,
-		ModifiedS: 0,
-		Blocks:    []protocol.BlockInfo{{Offset: 0x0, Size: 0x0, Hash: []uint8{0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55}}},
-	},
-	"bar": {
-		Name:      "bar",
-		Type:      protocol.FileInfoTypeFile,
-		ModifiedS: 0,
-		Blocks:    []protocol.BlockInfo{{Offset: 0x0, Size: 0xa, Hash: []uint8{0x2f, 0x72, 0xcc, 0x11, 0xa6, 0xfc, 0xd0, 0x27, 0x1e, 0xce, 0xf8, 0xc6, 0x10, 0x56, 0xee, 0x1e, 0xb1, 0x24, 0x3b, 0xe3, 0x80, 0x5b, 0xf9, 0xa9, 0xdf, 0x98, 0xf9, 0x2f, 0x76, 0x36, 0xb0, 0x5c}}},
-	},
-}
-
-func init() {
-	// Fix expected test data to match reality
-	for n, f := range testDataExpected {
-		fi, _ := os.Stat("testdata/" + n)
-		f.Permissions = uint32(fi.Mode())
-		f.ModifiedS = fi.ModTime().Unix()
-		f.Size = fi.Size()
-		testDataExpected[n] = f
-	}
-}
-
-func TestMain(m *testing.M) {
-	tmpName, err := prepareTmpFile(defaultFs)
-	if err != nil {
-		panic(err)
-	}
-
-	exitCode := m.Run()
-
-	defaultCfgWrapperCancel()
-	os.Remove(defaultCfgWrapper.ConfigPath())
-	defaultFs.Remove(tmpName)
-	defaultFs.RemoveAll(config.DefaultMarkerName)
-
-	os.Exit(exitCode)
-}
-
-func prepareTmpFile(to fs.Filesystem) (string, error) {
-	tmpName := fs.TempName("file")
-	in, err := defaultFs.Open("tmpfile")
-	if err != nil {
-		return "", err
-	}
-	defer in.Close()
-	out, err := to.Create(tmpName)
-	if err != nil {
-		return "", err
-	}
-	defer out.Close()
-	if _, err = io.Copy(out, in); err != nil {
-		return "", err
-	}
-	future := time.Now().Add(time.Hour)
-	if err := os.Chtimes(filepath.Join("testdata", tmpName), future, future); err != nil {
-		return "", err
-	}
-	return tmpName, nil
-}
 
 func newState(t testing.TB, cfg config.Configuration) (*testModel, context.CancelFunc) {
 	wcfg, cancel := createTmpWrapper(cfg)
@@ -271,7 +202,7 @@ func BenchmarkRequestOut(b *testing.B) {
 
 	fc := newFakeConnection(device1, m)
 	for _, f := range files {
-		fc.addFile(f.Name, 0644, protocol.FileInfoTypeFile, []byte("some data to return"))
+		fc.addFile(f.Name, 0o644, protocol.FileInfoTypeFile, []byte("some data to return"))
 	}
 	m.AddConnection(fc, protocol.Hello{})
 	must(b, m.Index(device1, "default", files))
@@ -289,15 +220,16 @@ func BenchmarkRequestOut(b *testing.B) {
 }
 
 func BenchmarkRequestInSingleFile(b *testing.B) {
-	m := setupModel(b, defaultCfgWrapper)
+	w, cancel := createTmpWrapper(defaultCfg)
+	defer cancel()
+	ffs := w.FolderList()[0].Filesystem(nil)
+	m := setupModel(b, w)
 	defer cleanupModel(m)
 
 	buf := make([]byte, 128<<10)
 	rand.Read(buf)
-	mustRemove(b, defaultFs.RemoveAll("request"))
-	defer func() { mustRemove(b, defaultFs.RemoveAll("request")) }()
-	must(b, defaultFs.MkdirAll("request/for/a/file/in/a/couple/of/dirs", 0755))
-	writeFile(b, defaultFs, "request/for/a/file/in/a/couple/of/dirs/128k", buf)
+	must(b, ffs.MkdirAll("request/for/a/file/in/a/couple/of/dirs", 0o755))
+	writeFile(b, ffs, "request/for/a/file/in/a/couple/of/dirs/128k", buf)
 
 	b.ResetTimer()
 
@@ -1148,8 +1080,8 @@ func TestAutoAcceptNameConflict(t *testing.T) {
 
 	id := srand.String(8)
 	label := srand.String(8)
-	testOs.MkdirAll(id, 0777)
-	testOs.MkdirAll(label, 0777)
+	testOs.MkdirAll(id, 0o777)
+	testOs.MkdirAll(label, 0o777)
 	defer os.RemoveAll(id)
 	defer os.RemoveAll(label)
 	m, cancel := newState(t, defaultAutoAcceptCfg)
@@ -1198,7 +1130,7 @@ func TestAutoAcceptFallsBackToID(t *testing.T) {
 	id := srand.String(8)
 	label := srand.String(8)
 	t.Log(id, label)
-	testOs.MkdirAll(label, 0777)
+	testOs.MkdirAll(label, 0o777)
 	defer os.RemoveAll(label)
 	defer os.RemoveAll(id)
 	defer cleanupModel(m)
@@ -1330,7 +1262,8 @@ func TestAutoAcceptEnc(t *testing.T) {
 			Folders: []protocol.Folder{{
 				ID:    id,
 				Label: id,
-			}}}
+			}},
+		}
 	}
 
 	// Earlier tests might cause the connection to get closed, thus ClusterConfig
@@ -1484,13 +1417,15 @@ func changeIgnores(t *testing.T, m *testModel, expected []string) {
 }
 
 func TestIgnores(t *testing.T) {
-	// Assure a clean start state
-	mustRemove(t, defaultFs.RemoveAll(config.DefaultMarkerName))
-	mustRemove(t, defaultFs.MkdirAll(config.DefaultMarkerName, 0644))
-	writeFile(t, defaultFs, ".stignore", []byte(".*\nquux\n"))
-
-	m := setupModel(t, defaultCfgWrapper)
+	w, cancel := createTmpWrapper(defaultCfg)
+	defer cancel()
+	ffs := w.FolderList()[0].Filesystem(nil)
+	m := setupModel(t, w)
 	defer cleanupModel(m)
+
+	// Assure a clean start state
+	must(t, ffs.MkdirAll(config.DefaultMarkerName, 0o644))
+	writeFile(t, ffs, ".stignore", []byte(".*\nquux\n"))
 
 	folderIgnoresAlwaysReload(t, m, defaultFolderConfig)
 
@@ -1539,38 +1474,37 @@ func TestIgnores(t *testing.T) {
 
 	// Make sure no .stignore file is considered valid
 	defer func() {
-		must(t, defaultFs.Rename(".stignore.bak", ".stignore"))
+		must(t, ffs.Rename(".stignore.bak", ".stignore"))
 	}()
-	must(t, defaultFs.Rename(".stignore", ".stignore.bak"))
+	must(t, ffs.Rename(".stignore", ".stignore.bak"))
 	changeIgnores(t, m, []string{})
 }
 
 func TestEmptyIgnores(t *testing.T) {
-	// Assure a clean start state
-	mustRemove(t, defaultFs.RemoveAll(config.DefaultMarkerName))
-	must(t, defaultFs.MkdirAll(config.DefaultMarkerName, 0644))
-
-	m := setupModel(t, defaultCfgWrapper)
+	w, cancel := createTmpWrapper(defaultCfg)
+	defer cancel()
+	ffs := w.FolderList()[0].Filesystem(nil)
+	m := setupModel(t, w)
 	defer cleanupModel(m)
 
 	if err := m.SetIgnores("default", []string{}); err != nil {
 		t.Error(err)
 	}
-	if _, err := os.Stat("testdata/.stignore"); err == nil {
+	if _, err := ffs.Stat(".stignore"); err == nil {
 		t.Error(".stignore was created despite being empty")
 	}
 
 	if err := m.SetIgnores("default", []string{".*", "quux"}); err != nil {
 		t.Error(err)
 	}
-	if _, err := os.Stat("testdata/.stignore"); os.IsNotExist(err) {
+	if _, err := ffs.Stat(".stignore"); os.IsNotExist(err) {
 		t.Error(".stignore does not exist")
 	}
 
 	if err := m.SetIgnores("default", []string{}); err != nil {
 		t.Error(err)
 	}
-	if _, err := os.Stat("testdata/.stignore"); err == nil {
+	if _, err := ffs.Stat(".stignore"); err == nil {
 		t.Error(".stignore should have been deleted because it is empty")
 	}
 }
@@ -1634,7 +1568,7 @@ func TestROScanRecovery(t *testing.T) {
 
 	waitForState(t, sub, "default", "folder path missing")
 
-	testOs.Mkdir(fcfg.Path, 0700)
+	testOs.Mkdir(fcfg.Path, 0o700)
 
 	waitForState(t, sub, "default", config.ErrMarkerMissing.Error())
 
@@ -1687,7 +1621,7 @@ func TestRWScanRecovery(t *testing.T) {
 
 	waitForState(t, sub, "default", "folder path missing")
 
-	testOs.Mkdir(fcfg.Path, 0700)
+	testOs.Mkdir(fcfg.Path, 0o700)
 
 	waitForState(t, sub, "default", config.ErrMarkerMissing.Error())
 
@@ -1971,13 +1905,13 @@ func TestGlobalDirectoryTree(t *testing.T) {
 }
 
 func genDeepFiles(n, d int) []protocol.FileInfo {
-	rand.Seed(int64(n))
+	mrand.Seed(int64(n))
 	files := make([]protocol.FileInfo, n)
 	t := time.Now().Unix()
 	for i := 0; i < n; i++ {
 		path := ""
 		for i := 0; i <= d; i++ {
-			path = filepath.Join(path, strconv.Itoa(rand.Int()))
+			path = filepath.Join(path, strconv.Itoa(mrand.Int()))
 		}
 
 		sofar := ""
@@ -2026,19 +1960,16 @@ func benchmarkTree(b *testing.B, n1, n2 int) {
 }
 
 func TestIssue3028(t *testing.T) {
+	w, cancel := createTmpWrapper(defaultCfg)
+	defer cancel()
+	ffs := w.FolderList()[0].Filesystem(nil)
+	m := setupModel(t, w)
+	defer cleanupModel(m)
+
 	// Create two files that we'll delete, one with a name that is a prefix of the other.
 
-	writeFile(t, defaultFs, "testrm", []byte("Hello"))
-	writeFile(t, defaultFs, "testrm2", []byte("Hello"))
-	defer func() {
-		mustRemove(t, defaultFs.Remove("testrm"))
-		mustRemove(t, defaultFs.Remove("testrm2"))
-	}()
-
-	// Create a model and default folder
-
-	m := setupModel(t, defaultCfgWrapper)
-	defer cleanupModel(m)
+	writeFile(t, ffs, "testrm", []byte("Hello"))
+	writeFile(t, ffs, "testrm2", []byte("Hello"))
 
 	// Get a count of how many files are there now
 
@@ -2047,8 +1978,8 @@ func TestIssue3028(t *testing.T) {
 
 	// Delete and rescan specifically these two
 
-	must(t, defaultFs.Remove("testrm"))
-	must(t, defaultFs.Remove("testrm2"))
+	must(t, ffs.Remove("testrm"))
+	must(t, ffs.Remove("testrm2"))
 	m.ScanFolderSubdirs("default", []string{"testrm", "testrm2"})
 
 	// Verify that the number of files decreased by two and the number of
@@ -2147,10 +2078,10 @@ func TestIssue2782(t *testing.T) {
 	if err := os.RemoveAll(testDir); err != nil {
 		t.Skip(err)
 	}
-	if err := os.MkdirAll(testDir+"/syncdir", 0755); err != nil {
+	if err := os.MkdirAll(testDir+"/syncdir", 0o755); err != nil {
 		t.Skip(err)
 	}
-	if err := os.WriteFile(testDir+"/syncdir/file", []byte("hello, world\n"), 0644); err != nil {
+	if err := os.WriteFile(testDir+"/syncdir/file", []byte("hello, world\n"), 0o644); err != nil {
 		t.Skip(err)
 	}
 	if err := os.Symlink("syncdir", testDir+"/synclink"); err != nil {
@@ -2394,80 +2325,6 @@ func TestIssue3829(t *testing.T) {
 	}
 }
 
-func TestNoRequestsFromPausedDevices(t *testing.T) {
-	t.Skip("broken, fails randomly, #3843")
-
-	wcfg, cancel := createTmpWrapper(defaultCfg)
-	defer cancel()
-	addDevice2(t, wcfg, wcfg.FolderList()[0])
-
-	m := setupModel(t, wcfg)
-	defer cleanupModel(m)
-
-	file := testDataExpected["foo"]
-	files := m.folderFiles["default"]
-	files.Update(device1, []protocol.FileInfo{file})
-	files.Update(device2, []protocol.FileInfo{file})
-
-	avail := m.testAvailability("default", file, file.Blocks[0])
-	if len(avail) != 0 {
-		t.Errorf("should not be available, no connections")
-	}
-
-	addFakeConn(m, device1, "default")
-	addFakeConn(m, device2, "default")
-
-	// !!! This is not what I'd expect to happen, as we don't even know if the peer has the original index !!!
-
-	avail = m.testAvailability("default", file, file.Blocks[0])
-	if len(avail) != 2 {
-		t.Errorf("should have two available")
-	}
-
-	cc := protocol.ClusterConfig{
-		Folders: []protocol.Folder{
-			{
-				ID: "default",
-				Devices: []protocol.Device{
-					{ID: device1},
-					{ID: device2},
-				},
-			},
-		},
-	}
-
-	m.ClusterConfig(device1, cc)
-	m.ClusterConfig(device2, cc)
-
-	avail = m.testAvailability("default", file, file.Blocks[0])
-	if len(avail) != 2 {
-		t.Errorf("should have two available")
-	}
-
-	m.Closed(device1, errDeviceUnknown)
-	m.Closed(device2, errDeviceUnknown)
-
-	avail = m.testAvailability("default", file, file.Blocks[0])
-	if len(avail) != 0 {
-		t.Errorf("should have no available")
-	}
-
-	// Test that remote paused folders are not used.
-
-	addFakeConn(m, device1, "default")
-	addFakeConn(m, device2, "default")
-
-	m.ClusterConfig(device1, cc)
-	ccp := cc
-	ccp.Folders[0].Paused = true
-	m.ClusterConfig(device1, ccp)
-
-	avail = m.testAvailability("default", file, file.Blocks[0])
-	if len(avail) != 1 {
-		t.Errorf("should have one available")
-	}
-}
-
 // TestIssue2571 tests replacing a directory with content with a symlink
 func TestIssue2571(t *testing.T) {
 	if build.IsWindows {
@@ -2480,7 +2337,7 @@ func TestIssue2571(t *testing.T) {
 	defer os.RemoveAll(testFs.URI())
 
 	for _, dir := range []string{"toLink", "linkTarget"} {
-		must(t, testFs.MkdirAll(dir, 0775))
+		must(t, testFs.MkdirAll(dir, 0o775))
 		fd, err := testFs.Create(filepath.Join(dir, "a"))
 		must(t, err)
 		fd.Close()
@@ -2518,8 +2375,8 @@ func TestIssue4573(t *testing.T) {
 	testFs := fcfg.Filesystem(nil)
 	defer os.RemoveAll(testFs.URI())
 
-	must(t, testFs.MkdirAll("inaccessible", 0755))
-	defer testFs.Chmod("inaccessible", 0777)
+	must(t, testFs.MkdirAll("inaccessible", 0o755))
+	defer testFs.Chmod("inaccessible", 0o777)
 
 	file := filepath.Join("inaccessible", "a")
 	fd, err := testFs.Create(file)
@@ -2529,7 +2386,7 @@ func TestIssue4573(t *testing.T) {
 	m := setupModel(t, w)
 	defer cleanupModel(m)
 
-	must(t, testFs.Chmod("inaccessible", 0000))
+	must(t, testFs.Chmod("inaccessible", 0o000))
 
 	m.ScanFolder("default")
 
@@ -2561,7 +2418,7 @@ func TestInternalScan(t *testing.T) {
 	for _, dir := range baseDirs {
 		sub := filepath.Join(dir, "subDir")
 		for _, dir := range []string{dir, sub} {
-			if err := testFs.MkdirAll(dir, 0775); err != nil {
+			if err := testFs.MkdirAll(dir, 0o775); err != nil {
 				t.Fatalf("%v: %v", dir, err)
 			}
 		}
@@ -2604,7 +2461,7 @@ func TestInternalScan(t *testing.T) {
 func TestCustomMarkerName(t *testing.T) {
 	testOs := &fatalOs{t}
 
-	fcfg := testFolderConfig(t.TempDir())
+	fcfg := testFolderConfigFake()
 	fcfg.ID = "default"
 	fcfg.RescanIntervalS = 1
 	fcfg.MarkerName = "myfile"
@@ -2633,7 +2490,7 @@ func TestCustomMarkerName(t *testing.T) {
 
 	waitForState(t, sub, "default", "folder path missing")
 
-	testOs.Mkdir(fcfg.Path, 0700)
+	testOs.Mkdir(fcfg.Path, 0o700)
 	fd := testOs.Create(filepath.Join(fcfg.Path, "myfile"))
 	fd.Close()
 
@@ -2646,7 +2503,7 @@ func TestRemoveDirWithContent(t *testing.T) {
 	tfs := fcfg.Filesystem(nil)
 	defer cleanupModelAndRemoveDir(m, tfs.URI())
 
-	tfs.MkdirAll("dirwith", 0755)
+	tfs.MkdirAll("dirwith", 0o755)
 	content := filepath.Join("dirwith", "content")
 	fd, err := tfs.Create(content)
 	must(t, err)
@@ -2712,7 +2569,7 @@ func TestIssue4475(t *testing.T) {
 	// This should result in the directory being recreated and added to the
 	// db locally.
 
-	must(t, testFs.MkdirAll("delDir", 0755))
+	must(t, testFs.MkdirAll("delDir", 0o755))
 
 	m.ScanFolder("default")
 
@@ -2721,7 +2578,7 @@ func TestIssue4475(t *testing.T) {
 	}
 
 	fileName := filepath.Join("delDir", "file")
-	conn.addFile(fileName, 0644, protocol.FileInfoTypeFile, nil)
+	conn.addFile(fileName, 0o644, protocol.FileInfoTypeFile, nil)
 	conn.sendIndexUpdate()
 
 	// Is there something we could trigger on instead of just waiting?
@@ -2761,9 +2618,8 @@ func TestVersionRestore(t *testing.T) {
 	// In each file, we write the filename as the content
 	// We verify that the content matches at the expected filenames
 	// after the restore operation.
-	dir := t.TempDir()
 
-	fcfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", fs.FilesystemTypeBasic, dir)
+	fcfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", fs.FilesystemTypeFake, rand.String(32))
 	fcfg.Versioning.Type = "simple"
 	fcfg.FSWatcherEnabled = false
 	filesystem := fcfg.Filesystem(nil)
@@ -2805,7 +2661,7 @@ func TestVersionRestore(t *testing.T) {
 			file = filepath.FromSlash(file)
 		}
 		dir := filepath.Dir(file)
-		must(t, filesystem.MkdirAll(dir, 0755))
+		must(t, filesystem.MkdirAll(dir, 0o755))
 		if fd, err := filesystem.Create(file); err != nil {
 			t.Fatal(err)
 		} else if _, err := fd.Write([]byte(file)); err != nil {
@@ -3110,7 +2966,7 @@ func TestFolderRestartZombies(t *testing.T) {
 			t0 := time.Now()
 			for time.Since(t0) < time.Second {
 				fcfg := folderCfg.Copy()
-				fcfg.MaxConflicts = rand.Int() // safe change that should cause a folder restart
+				fcfg.MaxConflicts = mrand.Int() // safe change that should cause a folder restart
 				setFolder(t, wrapper, fcfg)
 			}
 		}()
@@ -3654,7 +3510,7 @@ func TestBlockListMap(t *testing.T) {
 
 	// Change type
 	must(t, ffs.Remove("four"))
-	must(t, ffs.Mkdir("four", 0644))
+	must(t, ffs.Mkdir("four", 0o644))
 
 	m.ScanFolders()
 
@@ -3729,7 +3585,7 @@ func TestScanRenameCaseOnly(t *testing.T) {
 
 func TestClusterConfigOnFolderAdd(t *testing.T) {
 	testConfigChangeTriggersClusterConfigs(t, false, true, nil, func(wrapper config.Wrapper) {
-		fcfg := testFolderConfig(t.TempDir())
+		fcfg := testFolderConfigFake()
 		fcfg.ID = "second"
 		fcfg.Label = "second"
 		fcfg.Devices = []config.FolderDeviceConfiguration{{
@@ -3933,7 +3789,7 @@ func TestIssue6961(t *testing.T) {
 	// Remote, invalid (receive-only) and existing file
 	must(t, m.Index(device2, fcfg.ID, []protocol.FileInfo{{Name: name, RawInvalid: true, Sequence: 1}}))
 	// Create a local file
-	if fd, err := tfs.OpenFile(name, fs.OptCreate, 0666); err != nil {
+	if fd, err := tfs.OpenFile(name, fs.OptCreate, 0o666); err != nil {
 		t.Fatal(err)
 	} else {
 		fd.Close()

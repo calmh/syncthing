@@ -27,7 +27,6 @@ var (
 	defaultCfgWrapper       config.Wrapper
 	defaultCfgWrapperCancel context.CancelFunc
 	defaultFolderConfig     config.FolderConfiguration
-	defaultFs               fs.Filesystem
 	defaultCfg              config.Configuration
 	defaultAutoAcceptCfg    config.Configuration
 )
@@ -39,8 +38,7 @@ func init() {
 
 	defaultCfgWrapper, defaultCfgWrapperCancel = createTmpWrapper(config.New(myID))
 
-	defaultFolderConfig = testFolderConfig("testdata")
-	defaultFs = defaultFolderConfig.Filesystem(nil)
+	defaultFolderConfig = testFolderConfigFake()
 
 	waiter, _ := defaultCfgWrapper.Modify(func(cfg *config.Configuration) {
 		cfg.SetDevice(newDeviceConfiguration(cfg.Defaults.Device, device1, "device1"))
@@ -75,12 +73,7 @@ func init() {
 }
 
 func createTmpWrapper(cfg config.Configuration) (config.Wrapper, context.CancelFunc) {
-	tmpFile, err := os.CreateTemp("", "syncthing-testConfig-")
-	if err != nil {
-		panic(err)
-	}
-	wrapper := config.Wrap(tmpFile.Name(), cfg, myID, events.NoopLogger)
-	tmpFile.Close()
+	wrapper := config.Wrap("", cfg, myID, events.NoopLogger)
 	ctx, cancel := context.WithCancel(context.Background())
 	go wrapper.Serve(ctx)
 	return wrapper, cancel
@@ -88,18 +81,11 @@ func createTmpWrapper(cfg config.Configuration) (config.Wrapper, context.CancelF
 
 func tmpDefaultWrapper(t testing.TB) (config.Wrapper, config.FolderConfiguration, context.CancelFunc) {
 	w, cancel := createTmpWrapper(defaultCfgWrapper.RawCopy())
-	fcfg := testFolderConfig(t.TempDir())
+	fcfg := testFolderConfigFake()
 	_, _ = w.Modify(func(cfg *config.Configuration) {
 		cfg.SetFolder(fcfg)
 	})
 	return w, fcfg, cancel
-}
-
-func testFolderConfig(path string) config.FolderConfiguration {
-	cfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", fs.FilesystemTypeBasic, path)
-	cfg.FSWatcherEnabled = false
-	cfg.Devices = append(cfg.Devices, config.FolderDeviceConfiguration{DeviceID: device1})
-	return cfg
 }
 
 func testFolderConfigFake() config.FolderConfiguration {

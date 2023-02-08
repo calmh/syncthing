@@ -52,6 +52,7 @@ const randomBlockShift = 14 // 128k
 //     seed=n     to set the initial random seed (default 0)
 //     insens=b   "true" makes filesystem case-insensitive Windows- or OSX-style (default false)
 //     latency=d  to set the amount of time each "disk" operation takes, where d is time.ParseDuration format
+//     content=true to save actual file contents instead of generating pseudorandomly; n.b. memory usage
 //
 // - Two fakeFS:s pointing at the same root path see the same files.
 type fakeFS struct {
@@ -108,7 +109,7 @@ func newFakeFilesystem(rootURI string, _ ...Option) *fakeFS {
 		root: &fakeEntry{
 			name:      "/",
 			entryType: fakeEntryTypeDir,
-			mode:      0700,
+			mode:      0o700,
 			mtime:     time.Now(),
 			children:  make(map[string]*fakeEntry),
 		},
@@ -139,7 +140,7 @@ func newFakeFilesystem(rootURI string, _ ...Option) *fakeFS {
 		for (files == 0 || createdFiles < files) && (maxsize == 0 || writtenData>>20 < int64(maxsize)) {
 			dir := filepath.Join(fmt.Sprintf("%02x", rng.Intn(255)), fmt.Sprintf("%02x", rng.Intn(255)))
 			file := fmt.Sprintf("%016x", rng.Int63())
-			fs.MkdirAll(dir, 0755)
+			fs.MkdirAll(dir, 0o755)
 
 			fd, _ := fs.Create(filepath.Join(dir, file))
 			createdFiles++
@@ -154,7 +155,7 @@ func newFakeFilesystem(rootURI string, _ ...Option) *fakeFS {
 	}
 
 	// Also create a default folder marker for good measure
-	fs.Mkdir(".stfolder", 0700)
+	fs.Mkdir(".stfolder", 0o700)
 
 	// We only set the latency after doing the operations required to create
 	// the filesystem initially.
@@ -267,7 +268,7 @@ func (fs *fakeFS) create(name string) (*fakeEntry, error) {
 		}
 		entry.size = 0
 		entry.mtime = time.Now()
-		entry.mode = 0666
+		entry.mode = 0o666
 		entry.content = nil
 		if fs.withContent {
 			entry.content = make([]byte, 0)
@@ -283,7 +284,7 @@ func (fs *fakeFS) create(name string) (*fakeEntry, error) {
 	}
 	new := &fakeEntry{
 		name:  base,
-		mode:  0666,
+		mode:  0o666,
 		mtime: time.Now(),
 	}
 

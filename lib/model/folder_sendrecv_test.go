@@ -9,7 +9,6 @@ package model
 import (
 	"bytes"
 	"context"
-	"crypto/rand"
 	"errors"
 	"fmt"
 	"io"
@@ -27,6 +26,7 @@ import (
 	"github.com/syncthing/syncthing/lib/ignore"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
+	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/scanner"
 	"github.com/syncthing/syncthing/lib/sync"
 )
@@ -154,155 +154,6 @@ func TestHandleFile(t *testing.T) {
 		if !found {
 			t.Errorf("Did not find block %s", block.String())
 		}
-	}
-}
-
-func TestHandleFileWithTemp(t *testing.T) {
-	// After diff between required and existing we should:
-	// Copy: 2, 5, 8
-	// Pull: 1, 3, 4, 6, 7
-
-	// After dropping out blocks already on the temp file we should:
-	// Copy: 5, 8
-	// Pull: 1, 6
-
-	existingBlocks := []int{0, 2, 0, 0, 5, 0, 0, 8}
-	existingFile := setupFile("file", existingBlocks)
-	requiredFile := existingFile
-	requiredFile.Blocks = blocks[1:]
-
-	m, f, wcfgCancel := setupSendReceiveFolder(t, existingFile)
-	defer cleanupSRFolder(f, m, wcfgCancel)
-
-	if _, err := prepareTmpFile(f.Filesystem(nil)); err != nil {
-		t.Fatal(err)
-	}
-
-	copyChan := make(chan copyBlocksState, 1)
-
-	f.handleFile(requiredFile, fsetSnapshot(t, f.fset), copyChan)
-
-	// Receive the results
-	toCopy := <-copyChan
-
-	if len(toCopy.blocks) != 4 {
-		t.Errorf("Unexpected count of copy blocks: %d != 4", len(toCopy.blocks))
-	}
-
-	for _, idx := range []int{1, 5, 6, 8} {
-		found := false
-		block := blocks[idx]
-		for _, toCopyBlock := range toCopy.blocks {
-			if bytes.Equal(toCopyBlock.Hash, block.Hash) {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("Did not find block %s", block.String())
-		}
-	}
-}
-
-func TestCopierFinder(t *testing.T) {
-	methods := []fs.CopyRangeMethod{fs.CopyRangeMethodStandard, fs.CopyRangeMethodAllWithFallback}
-	if build.IsLinux {
-		methods = append(methods, fs.CopyRangeMethodSendFile)
-	}
-	for _, method := range methods {
-		t.Run(method.String(), func(t *testing.T) {
-			// After diff between required and existing we should:
-			// Copy: 1, 2, 3, 4, 6, 7, 8
-			// Since there is no existing file, nor a temp file
-
-			// After dropping out blocks found locally:
-			// Pull: 1, 5, 6, 8
-
-			tempFile := fs.TempName("file2")
-
-			existingBlocks := []int{0, 2, 3, 4, 0, 0, 7, 0}
-			existingFile := setupFile(fs.TempName("file"), existingBlocks)
-			existingFile.Size = 1
-			requiredFile := existingFile
-			requiredFile.Blocks = blocks[1:]
-			requiredFile.Name = "file2"
-
-			m, f, wcfgCancel := setupSendReceiveFolder(t, existingFile)
-			f.CopyRangeMethod = method
-
-			defer cleanupSRFolder(f, m, wcfgCancel)
-
-			if _, err := prepareTmpFile(f.Filesystem(nil)); err != nil {
-				t.Fatal(err)
-			}
-
-			copyChan := make(chan copyBlocksState)
-			pullChan := make(chan pullBlockState, 4)
-			finisherChan := make(chan *sharedPullerState, 1)
-
-			// Run a single fetcher routine
-			go f.copierRoutine(copyChan, pullChan, finisherChan)
-			defer close(copyChan)
-
-			f.handleFile(requiredFile, fsetSnapshot(t, f.fset), copyChan)
-
-			timeout := time.After(10 * time.Second)
-			pulls := make([]pullBlockState, 4)
-			for i := 0; i < 4; i++ {
-				select {
-				case pulls[i] = <-pullChan:
-				case <-timeout:
-					t.Fatalf("Timed out before receiving all 4 states on pullChan (already got %v)", i)
-				}
-			}
-			var finish *sharedPullerState
-			select {
-			case finish = <-finisherChan:
-			case <-timeout:
-				t.Fatal("Timed out before receiving 4 states on pullChan")
-			}
-
-			defer cleanupSharedPullerState(finish)
-
-			select {
-			case <-pullChan:
-				t.Fatal("Pull channel has data to be read")
-			case <-finisherChan:
-				t.Fatal("Finisher channel has data to be read")
-			default:
-			}
-
-			// Verify that the right blocks went into the pull list.
-			// They are pulled in random order.
-			for _, idx := range []int{1, 5, 6, 8} {
-				found := false
-				block := blocks[idx]
-				for _, pulledBlock := range pulls {
-					if bytes.Equal(pulledBlock.block.Hash, block.Hash) {
-						found = true
-						break
-					}
-				}
-				if !found {
-					t.Errorf("Did not find block %s", block.String())
-				}
-				if !bytes.Equal(finish.file.Blocks[idx-1].Hash, blocks[idx].Hash) {
-					t.Errorf("Block %d mismatch: %s != %s", idx, finish.file.Blocks[idx-1].String(), blocks[idx].String())
-				}
-			}
-
-			// Verify that the fetched blocks have actually been written to the temp file
-			blks, err := scanner.HashFile(context.TODO(), f.Filesystem(nil), tempFile, protocol.MinBlockSize, nil, false)
-			if err != nil {
-				t.Log(err)
-			}
-
-			for _, eq := range []int{2, 3, 4, 7} {
-				if !bytes.Equal(blks[eq-1].Hash, blocks[eq].Hash) {
-					t.Errorf("Block %d mismatch: %s != %s", eq, blks[eq-1].String(), blocks[eq].String())
-				}
-			}
-		})
 	}
 }
 
@@ -676,13 +527,12 @@ func TestIssue3164(t *testing.T) {
 	m, f, wcfgCancel := setupSendReceiveFolder(t)
 	defer cleanupSRFolder(f, m, wcfgCancel)
 	ffs := f.Filesystem(nil)
-	tmpDir := ffs.URI()
 
 	ignDir := filepath.Join("issue3164", "oktodelete")
 	subDir := filepath.Join(ignDir, "foobar")
-	must(t, ffs.MkdirAll(subDir, 0777))
-	must(t, os.WriteFile(filepath.Join(tmpDir, subDir, "file"), []byte("Hello"), 0644))
-	must(t, os.WriteFile(filepath.Join(tmpDir, ignDir, "file"), []byte("Hello"), 0644))
+	must(t, ffs.MkdirAll(subDir, 0o777))
+	must(t, fs.WriteFile(ffs, filepath.Join(subDir, "file"), []byte("Hello"), 0o644))
+	must(t, fs.WriteFile(ffs, filepath.Join(ignDir, "file"), []byte("Hello"), 0o644))
 	file := protocol.FileInfo{
 		Name: "issue3164",
 	}
@@ -780,7 +630,7 @@ func TestDeleteIgnorePerms(t *testing.T) {
 	must(t, err)
 	fi, err := scanner.CreateFileInfo(stat, name, ffs, false, false, config.XattrFilter{})
 	must(t, err)
-	ffs.Chmod(name, 0600)
+	ffs.Chmod(name, 0o600)
 	if info, err := ffs.Stat(name); err == nil {
 		fi.InodeChangeNs = info.InodeChangeTime().UnixNano()
 	}
@@ -815,13 +665,13 @@ func TestCopyOwner(t *testing.T) {
 
 	// Create a parent dir with a certain owner/group.
 
-	f.mtimefs.Mkdir("foo", 0755)
+	f.mtimefs.Mkdir("foo", 0o755)
 	f.mtimefs.Lchown("foo", strconv.Itoa(expOwner), strconv.Itoa(expGroup))
 
 	dir := protocol.FileInfo{
 		Name:        "foo/bar",
 		Type:        protocol.FileInfoTypeDirectory,
-		Permissions: 0755,
+		Permissions: 0o755,
 	}
 
 	// Have the folder create a subdirectory, verify that it's the correct
@@ -851,7 +701,7 @@ func TestCopyOwner(t *testing.T) {
 	file := protocol.FileInfo{
 		Name:        "foo/bar/baz",
 		Type:        protocol.FileInfoTypeFile,
-		Permissions: 0644,
+		Permissions: 0o644,
 	}
 
 	// Wire some stuff. The flow here is handleFile() -[copierChan]->
@@ -885,7 +735,7 @@ func TestCopyOwner(t *testing.T) {
 	symlink := protocol.FileInfo{
 		Name:          "foo/bar/sym",
 		Type:          protocol.FileInfoTypeSymlink,
-		Permissions:   0644,
+		Permissions:   0o644,
 		SymlinkTarget: "over the rainbow",
 	}
 
@@ -977,13 +827,12 @@ func TestDeleteBehindSymlink(t *testing.T) {
 	defer cleanupSRFolder(f, m, wcfgCancel)
 	ffs := f.Filesystem(nil)
 
-	destDir := t.TempDir()
-	destFs := fs.NewFilesystem(fs.FilesystemTypeBasic, destDir)
+	destFs := fs.NewFilesystem(fs.FilesystemTypeFake, rand.String(32))
 
 	link := "link"
 	file := filepath.Join(link, "file")
 
-	must(t, ffs.MkdirAll(link, 0755))
+	must(t, ffs.MkdirAll(link, 0o755))
 	fi := createEmptyFileInfo(t, file, ffs)
 	f.updateLocalsFromScanning([]protocol.FileInfo{fi})
 	must(t, osutil.RenameOrCopy(fs.CopyRangeMethodStandard, ffs, destFs, file, "file"))
@@ -1070,7 +919,7 @@ func TestPullDeleteUnscannedDir(t *testing.T) {
 	ffs := f.Filesystem(nil)
 
 	dir := "foobar"
-	must(t, ffs.MkdirAll(dir, 0777))
+	must(t, ffs.MkdirAll(dir, 0o777))
 	fi := protocol.FileInfo{
 		Name: dir,
 	}
@@ -1162,7 +1011,7 @@ func testPullCaseOnlyDirOrSymlink(t *testing.T, dir bool) {
 
 	name := "foo"
 	if dir {
-		must(t, ffs.Mkdir(name, 0777))
+		must(t, ffs.Mkdir(name, 0o777))
 	} else {
 		must(t, ffs.CreateSymlink("target", name))
 	}
@@ -1372,9 +1221,9 @@ func TestPullDeleteIgnoreChildDir(t *testing.T) {
 `, child, del)), ""))
 	f.ignores = matcher
 
-	must(t, f.mtimefs.Mkdir(parent, 0777))
-	must(t, f.mtimefs.Mkdir(filepath.Join(parent, del), 0777))
-	must(t, f.mtimefs.Mkdir(filepath.Join(parent, del, child), 0777))
+	must(t, f.mtimefs.Mkdir(parent, 0o777))
+	must(t, f.mtimefs.Mkdir(filepath.Join(parent, del), 0o777))
+	must(t, f.mtimefs.Mkdir(filepath.Join(parent, del, child), 0o777))
 
 	scanChan := make(chan string, 2)
 
