@@ -1971,22 +1971,24 @@ func TestIssue3028(t *testing.T) {
 	writeFile(t, ffs, "testrm", []byte("Hello"))
 	writeFile(t, ffs, "testrm2", []byte("Hello"))
 
-	// Get a count of how many files are there now
+	// Scan, and get a count of how many files are there now
 
+	m.ScanFolderSubdirs("default", []string{"testrm", "testrm2"})
 	locorigfiles := localSize(t, m, "default").Files
 	globorigfiles := globalSize(t, m, "default").Files
 
-	// Delete and rescan specifically these two
+	// Delete
 
 	must(t, ffs.Remove("testrm"))
 	must(t, ffs.Remove("testrm2"))
-	m.ScanFolderSubdirs("default", []string{"testrm", "testrm2"})
 
 	// Verify that the number of files decreased by two and the number of
 	// deleted files increases by two
 
+	m.ScanFolderSubdirs("default", []string{"testrm", "testrm2"})
 	loc := localSize(t, m, "default")
 	glob := globalSize(t, m, "default")
+
 	if loc.Files != locorigfiles-2 {
 		t.Errorf("Incorrect local accounting; got %d current files, expected %d", loc.Files, locorigfiles-2)
 	}
