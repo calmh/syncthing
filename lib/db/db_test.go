@@ -11,10 +11,12 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/syncthing/syncthing/lib/db/backend"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
+	"github.com/syncthing/syncthing/lib/rand"
 )
 
 func genBlocks(n int) []protocol.BlockInfo {
@@ -28,6 +30,33 @@ func genBlocks(n int) []protocol.BlockInfo {
 		b[i].Hash = h
 	}
 	return b
+}
+
+func TestSimpleGetSetDelete(t *testing.T) {
+	be, err := backend.OpenLevelDBAuto(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t0 := time.Now()
+	i := 0
+	for time.Since(t0) < 5*time.Second {
+		key := []byte(rand.String(16))
+		value := []byte(rand.String(16))
+		if err := be.Put(key, value); err != nil {
+			t.Fatal(err)
+		}
+		if res, err := be.Get(key); err != nil {
+			t.Fatal(err)
+		} else if !bytes.Equal(res, value) {
+			t.Fatal("value mismatch")
+		}
+		if err := be.Delete(key); err != nil {
+			t.Fatal(err)
+		}
+		i++
+	}
+	t.Log(i)
 }
 
 func TestIgnoredFiles(t *testing.T) {
@@ -159,7 +188,6 @@ func init() {
 
 func TestUpdate0to3(t *testing.T) {
 	ldb, err := openJSONS("testdata/v0.14.45-update0to3.db.jsons")
-
 	if err != nil {
 		t.Fatal(err)
 	}
