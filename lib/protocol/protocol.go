@@ -270,7 +270,7 @@ type Underlying interface {
 
 var ErrSecondaryStreamsUnsupported = errors.New("secondary streams not supported")
 
-func NewConnection(deviceID DeviceID, reader io.Reader, writer io.Writer, closer io.Closer, receiver Model, connInfo ConnectionInfo, compress Compression, passwords map[string]string, keyGen *KeyGenerator) Connection {
+func NewConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo ConnectionInfo, compress Compression, passwords map[string]string, keyGen *KeyGenerator) Connection {
 	// Encryption / decryption is first (outermost) before conversion to
 	// native path formats.
 	nm := makeNative(receiver)
@@ -278,16 +278,16 @@ func NewConnection(deviceID DeviceID, reader io.Reader, writer io.Writer, closer
 
 	// We do the wire format conversion first (outermost) so that the
 	// metadata is in wire format when it reaches the encryption step.
-	rc := newRawConnection(deviceID, reader, writer, closer, em, connInfo, compress)
+	rc := newRawConnection(deviceID, under, em, connInfo, compress)
 	ec := newEncryptedConnection(rc, rc, em.folderKeys, keyGen)
 	wc := wireFormatConnection{ec}
 
 	return wc
 }
 
-func newRawConnection(deviceID DeviceID, reader io.Reader, writer io.Writer, closer io.Closer, receiver Model, connInfo ConnectionInfo, compress Compression) *rawConnection {
-	cr := &countingReader{Reader: reader}
-	cw := &countingWriter{Writer: writer}
+func newRawConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo ConnectionInfo, compress Compression) *rawConnection {
+	cr := &countingReader{Reader: under}
+	cw := &countingWriter{Writer: under}
 
 	return &rawConnection{
 		ConnectionInfo:        connInfo,
@@ -295,7 +295,7 @@ func newRawConnection(deviceID DeviceID, reader io.Reader, writer io.Writer, clo
 		receiver:              receiver,
 		cr:                    cr,
 		cw:                    cw,
-		closer:                closer,
+		closer:                under,
 		awaiting:              make(map[int]chan asyncResult),
 		inbox:                 make(chan message),
 		outbox:                make(chan asyncMessage),
