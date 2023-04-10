@@ -25,6 +25,7 @@ import (
 	"time"
 
 	lz4 "github.com/pierrec/lz4/v4"
+	"github.com/syncthing/syncthing/lib/netutil"
 )
 
 const (
@@ -175,9 +176,7 @@ type rawConnection struct {
 	receiver  Model
 	startTime time.Time
 
-	cr counter
-	cw counter
-	un Underlying
+	stream netutil.CountedStream
 
 	awaitingMut sync.Mutex // Protects awaiting and nextID.
 	awaiting    map[int]chan asyncResult
@@ -229,48 +228,7 @@ const (
 // Should not be modified in production code, just for testing.
 var CloseTimeout = 10 * time.Second
 
-// Underlying is the underlying connection we use for wire communication.
-// Mostly this is a ReadWriteCloser, i.e. a regular network socket of some
-// kind. This is referred to as the "primary" stream, and it is used for all
-// metadata messages.
-//
-// We also support "secondary" streams, which are used for sending data
-// requests and responses (only). Connection types that do not support this
-// should return ErrSecondaryStreamsUnsupported to indicate that all
-// communication should happen on the primary stream.
-//
-// When secondary streams are supported we will use one or more such streams
-// for data requests, for the purpose of increasing concurrency and
-// bandwidth.
-type Underlying interface {
-	io.ReadWriteCloser
-
-	// CreateSecondaryStream requests a new secondary stream. The returned
-	// ReadWriteCloser is the new stream, and the error is any error that
-	// occurred while creating the stream. An error in creating a secondary
-	// stream is not fatal -- the connection will continue to operate
-	// normally, using the primary stream instead. Creating a stream may
-	// have a certain overhead (e.g. TLS handshakes), so it is recommended
-	// to reuse streams for multiple requests. The stream should be closed
-	// once it is no longer required. Returning ErrSecondaryStreamsUnsupported
-	// from this method indicates that the connection does not support
-	// secondary streams.
-	CreateSecondaryStream() (io.ReadWriteCloser, error)
-
-	// AcceptSecondaryStream accepts a new secondary stream. The returned
-	// ReadWriteCloser is the new stream, and the error is any error that
-	// occurred while accepting the stream. An error in accepting a
-	// secondary stream is not fatal -- the connection will continue to
-	// operate normally, using the primary stream instead. If the underlying
-	// connection does not support secondary streams, this method should
-	// return ErrSecondaryStreamsUnsupported, in which case the accept call
-	// will not be retried for this connection.
-	AcceptSecondaryStream() (io.ReadWriter, error)
-}
-
-var ErrSecondaryStreamsUnsupported = errors.New("secondary streams not supported")
-
-func NewConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo ConnectionInfo, compress Compression, passwords map[string]string, keyGen *KeyGenerator) Connection {
+func NewConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, connInfo ConnectionInfo, compress Compression, passwords map[string]string, keyGen *KeyGenerator) Connection {
 	// Encryption / decryption is first (outermost) before conversion to
 	// native path formats.
 	nm := makeNative(receiver)
@@ -278,18 +236,27 @@ func NewConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo
 
 	// We do the wire format conversion first (outermost) so that the
 	// metadata is in wire format when it reaches the encryption step.
-	rc := newRawConnection(deviceID, under, em, connInfo, compress)
+	rc := newRawConnection(deviceID, stream, em, connInfo, compress)
 	ec := newEncryptedConnection(rc, rc, em.folderKeys, keyGen)
 	wc := wireFormatConnection{ec}
 
 	return wc
 }
 
-func newRawConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo ConnectionInfo, compress Compression) *rawConnection {
+func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, connInfo ConnectionInfo, compress Compression) *rawConnection {
+	// The stream may already be a counted stream, in which case we can use
+	// it as-is. If it isn't, set it up as a counting stream for our own
+	// purposes.
+	cs, ok := stream.(netutil.CountedStream)
+	if !ok {
+		cs = netutil.NewCountingStream(stream, nil)
+	}
+
 	c := &rawConnection{
 		ConnectionInfo:        connInfo,
 		id:                    deviceID,
 		receiver:              receiver,
+		stream:                cs,
 		awaiting:              make(map[int]chan asyncResult),
 		inbox:                 make(chan message),
 		outbox:                make(chan asyncMessage),
@@ -300,7 +267,6 @@ func newRawConnection(deviceID DeviceID, under Underlying, receiver Model, connI
 		compression:           compress,
 		loopWG:                sync.WaitGroup{},
 	}
-	c.un = &countingUnderlying{under, &c.cr, &c.cw}
 	return c
 }
 
@@ -534,7 +500,7 @@ func (c *rawConnection) readMessage(fourByteBuf []byte) (message, error) {
 func (c *rawConnection) readMessageAfterHeader(hdr Header, fourByteBuf []byte) (message, error) {
 	// First comes a 4 byte message length
 
-	if _, err := io.ReadFull(c.un, fourByteBuf[:4]); err != nil {
+	if _, err := io.ReadFull(c.stream, fourByteBuf[:4]); err != nil {
 		return nil, fmt.Errorf("reading message length: %w", err)
 	}
 	msgLen := int32(binary.BigEndian.Uint32(fourByteBuf))
@@ -547,7 +513,7 @@ func (c *rawConnection) readMessageAfterHeader(hdr Header, fourByteBuf []byte) (
 	// Then comes the message
 
 	buf := BufferPool.Get(int(msgLen))
-	if _, err := io.ReadFull(c.un, buf); err != nil {
+	if _, err := io.ReadFull(c.stream, buf); err != nil {
 		BufferPool.Put(buf)
 		return nil, fmt.Errorf("reading message: %w", err)
 	}
@@ -589,7 +555,7 @@ func (c *rawConnection) readMessageAfterHeader(hdr Header, fourByteBuf []byte) (
 func (c *rawConnection) readHeader(fourByteBuf []byte) (Header, error) {
 	// First comes a 2 byte header length
 
-	if _, err := io.ReadFull(c.un, fourByteBuf[:2]); err != nil {
+	if _, err := io.ReadFull(c.stream, fourByteBuf[:2]); err != nil {
 		return Header{}, fmt.Errorf("reading length: %w", err)
 	}
 	hdrLen := int16(binary.BigEndian.Uint16(fourByteBuf))
@@ -600,7 +566,7 @@ func (c *rawConnection) readHeader(fourByteBuf []byte) (Header, error) {
 	// Then comes the header
 
 	buf := BufferPool.Get(int(hdrLen))
-	if _, err := io.ReadFull(c.un, buf); err != nil {
+	if _, err := io.ReadFull(c.stream, buf); err != nil {
 		BufferPool.Put(buf)
 		return Header{}, fmt.Errorf("reading header: %w", err)
 	}
@@ -812,7 +778,7 @@ func (c *rawConnection) writeMessage(msg message) error {
 	// Message length
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(size))
 
-	n, err := c.un.Write(buf)
+	n, err := c.stream.Write(buf)
 
 	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message), err=%v", n, hdrSize, size, err)
 	if err != nil {
@@ -858,7 +824,7 @@ func (c *rawConnection) writeCompressedMessage(msg message, marshaled []byte) (o
 	// Message length
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(compressedSize))
 
-	n, err := c.un.Write(buf[:totSize])
+	n, err := c.stream.Write(buf[:totSize])
 	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message (%d uncompressed)), err=%v", n, hdrSize, compressedSize, len(marshaled), err)
 	if err != nil {
 		return true, fmt.Errorf("writing message: %w", err)
@@ -961,7 +927,7 @@ func (c *rawConnection) Close(err error) {
 func (c *rawConnection) internalClose(err error) {
 	c.closeOnce.Do(func() {
 		l.Debugln("close due to", err)
-		if cerr := c.un.Close(); cerr != nil {
+		if cerr := c.stream.Close(); cerr != nil {
 			l.Debugln(c.id, "failed to close underlying conn:", cerr)
 		}
 		close(c.closed)
@@ -984,7 +950,7 @@ func (c *rawConnection) internalClose(err error) {
 // The pingSender makes sure that we've sent a message within the last
 // PingSendInterval. If we already have something sent in the last
 // PingSendInterval/2, we do nothing. Otherwise we send a ping message. This
-// results in an effecting ping interval of somewhere between
+// results in an effective ping interval of somewhere between
 // PingSendInterval/2 and PingSendInterval.
 func (c *rawConnection) pingSender() {
 	ticker := time.NewTicker(PingSendInterval / 2)
@@ -993,7 +959,7 @@ func (c *rawConnection) pingSender() {
 	for {
 		select {
 		case <-ticker.C:
-			d := time.Since(c.cw.Last())
+			d := time.Since(c.stream.LastWrite())
 			if d < PingSendInterval/2 {
 				l.Debugln(c.id, "ping skipped after wr", d)
 				continue
@@ -1018,7 +984,7 @@ func (c *rawConnection) pingReceiver() {
 	for {
 		select {
 		case <-ticker.C:
-			d := time.Since(c.cr.Last())
+			d := time.Since(c.stream.LastRead())
 			if d > ReceiveTimeout {
 				l.Debugln(c.id, "ping timeout", d)
 				c.internalClose(ErrTimeout)
@@ -1042,8 +1008,8 @@ type Statistics struct {
 func (c *rawConnection) Statistics() Statistics {
 	return Statistics{
 		At:            time.Now().Truncate(time.Second),
-		InBytesTotal:  c.cr.Tot(),
-		OutBytesTotal: c.cw.Tot(),
+		InBytesTotal:  c.stream.BytesRead(),
+		OutBytesTotal: c.stream.BytesWritten(),
 		StartedAt:     c.startTime,
 	}
 }

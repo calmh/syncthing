@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
@@ -19,6 +18,7 @@ import (
 
 	lz4 "github.com/pierrec/lz4/v4"
 	"github.com/syncthing/syncthing/lib/build"
+	"github.com/syncthing/syncthing/lib/netutil"
 	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/testutils"
 )
@@ -32,8 +32,8 @@ var (
 func TestPing(t *testing.T) {
 	ar, aw := io.Pipe()
 	br, bw := io.Pipe()
-	au := newTrivialUnderlying(ar, bw)
-	bu := newTrivialUnderlying(br, aw)
+	au := netutil.NewRWStream(ar, bw)
+	bu := netutil.NewRWStream(br, aw)
 
 	c0 := getRawConnection(NewConnection(c0ID, au, newTestModel(), new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	c0.Start()
@@ -60,8 +60,8 @@ func TestClose(t *testing.T) {
 
 	ar, aw := io.Pipe()
 	br, bw := io.Pipe()
-	au := newTrivialUnderlying(ar, bw)
-	bu := newTrivialUnderlying(br, aw)
+	au := netutil.NewRWStream(ar, bw)
+	bu := netutil.NewRWStream(br, aw)
 
 	c0 := getRawConnection(NewConnection(c0ID, au, m0, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	c0.Start()
@@ -108,8 +108,8 @@ func TestCloseOnBlockingSend(t *testing.T) {
 	m := newTestModel()
 
 	rw := testutils.NewBlockingRW()
-	un := newTrivialUnderlying(rw, rw)
-	c := getRawConnection(NewConnection(c0ID, un, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
+	strm := netutil.NewRWStream(rw, rw)
+	c := getRawConnection(NewConnection(c0ID, strm, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	c.Start()
 	defer closeAndWait(c, rw)
 
@@ -159,8 +159,8 @@ func TestCloseRace(t *testing.T) {
 
 	ar, aw := io.Pipe()
 	br, bw := io.Pipe()
-	au := newTrivialUnderlying(ar, bw)
-	bu := newTrivialUnderlying(br, aw)
+	au := netutil.NewRWStream(ar, bw)
+	bu := netutil.NewRWStream(br, aw)
 
 	c0 := getRawConnection(NewConnection(c0ID, au, m0, new(mockedConnectionInfo), CompressionNever, nil, testKeyGen))
 	c0.Start()
@@ -202,8 +202,8 @@ func TestClusterConfigFirst(t *testing.T) {
 	m := newTestModel()
 
 	rw := testutils.NewBlockingRW()
-	un := newTrivialUnderlying(rw, &testutils.NoopRW{})
-	c := getRawConnection(NewConnection(c0ID, un, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
+	strm := netutil.NewRWStream(rw, &testutils.NoopRW{})
+	c := getRawConnection(NewConnection(c0ID, strm, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	c.Start()
 	defer closeAndWait(c, rw)
 
@@ -255,8 +255,8 @@ func TestCloseTimeout(t *testing.T) {
 	m := newTestModel()
 
 	rw := testutils.NewBlockingRW()
-	un := newTrivialUnderlying(rw, &testutils.NoopRW{})
-	c := getRawConnection(NewConnection(c0ID, un, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
+	strm := netutil.NewRWStream(rw, &testutils.NoopRW{})
+	c := getRawConnection(NewConnection(c0ID, strm, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	c.Start()
 	defer closeAndWait(c, rw)
 
@@ -454,7 +454,7 @@ func TestWriteCompressed(t *testing.T) {
 	for _, random := range []bool{false, true} {
 		buf := new(bytes.Buffer)
 		c := &rawConnection{
-			un:          newTrivialUnderlying(buf, buf),
+			stream:      netutil.NewCountingStream(netutil.NewRWStream(buf, buf), nil),
 			compression: CompressionAlways,
 		}
 
@@ -477,9 +477,9 @@ func TestWriteCompressed(t *testing.T) {
 
 		hdr := Header{Type: typeOf(msg)}
 		size := int64(2 + hdr.ProtoSize() + 4 + msg.ProtoSize())
-		if c.cr.Tot() > size {
+		if read := c.stream.BytesRead(); read > size {
 			t.Errorf("compression enlarged message from %d to %d",
-				size, c.cr.Tot())
+				size, read)
 		}
 	}
 }
@@ -908,8 +908,8 @@ func TestClusterConfigAfterClose(t *testing.T) {
 	m := newTestModel()
 
 	rw := testutils.NewBlockingRW()
-	un := newTrivialUnderlying(rw, rw)
-	c := getRawConnection(NewConnection(c0ID, un, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
+	strm := netutil.NewRWStream(rw, rw)
+	c := getRawConnection(NewConnection(c0ID, strm, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	c.Start()
 	defer closeAndWait(c, rw)
 
@@ -933,8 +933,8 @@ func TestDispatcherToCloseDeadlock(t *testing.T) {
 	// the model callbacks (ClusterConfig).
 	m := newTestModel()
 	rw := testutils.NewBlockingRW()
-	un := newTrivialUnderlying(rw, &testutils.NoopRW{})
-	c := getRawConnection(NewConnection(c0ID, un, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
+	strm := netutil.NewRWStream(rw, &testutils.NoopRW{})
+	c := getRawConnection(NewConnection(c0ID, strm, m, new(mockedConnectionInfo), CompressionAlways, nil, testKeyGen))
 	m.ccFn = func(devID DeviceID, cc ClusterConfig) {
 		c.Close(errManual)
 	}
@@ -1031,26 +1031,4 @@ func getRawConnection(c Connection) *rawConnection {
 		raw = i.conn
 	}
 	return raw
-}
-
-type trivialUnderlying struct {
-	io.Reader
-	io.Writer
-	io.Closer
-}
-
-func newTrivialUnderlying(r io.Reader, w io.Writer) *trivialUnderlying {
-	return &trivialUnderlying{
-		Reader: r,
-		Writer: w,
-		Closer: ioutil.NopCloser(nil),
-	}
-}
-
-func (trivialUnderlying) CreateSecondaryStream() (io.ReadWriteCloser, error) {
-	return nil, ErrSecondaryStreamsUnsupported
-}
-
-func (trivialUnderlying) AcceptSecondaryStream() (io.ReadWriter, error) {
-	return nil, ErrSecondaryStreamsUnsupported
 }

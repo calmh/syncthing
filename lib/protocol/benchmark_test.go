@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/syncthing/syncthing/lib/dialer"
+	"github.com/syncthing/syncthing/lib/netutil"
 )
 
 func BenchmarkRequestsRawTCP(b *testing.B) {
@@ -59,10 +60,10 @@ func benchmarkRequestsTLS(b *testing.B, conn0, conn1 net.Conn) {
 
 func benchmarkRequestsConnPair(b *testing.B, conn0, conn1 net.Conn) {
 	// Start up Connections on them
-	u0 := newTrivialUnderlying(conn0, conn0)
+	u0 := netutil.NewRWStream(conn0, conn0)
 	c0 := NewConnection(LocalDeviceID, u0, new(fakeModel), new(mockedConnectionInfo), CompressionMetadata, nil, testKeyGen)
 	c0.Start()
-	u1 := newTrivialUnderlying(conn1, conn1)
+	u1 := netutil.NewRWStream(conn1, conn1)
 	c1 := NewConnection(LocalDeviceID, u1, new(fakeModel), new(mockedConnectionInfo), CompressionMetadata, nil, testKeyGen)
 	c1.Start()
 
