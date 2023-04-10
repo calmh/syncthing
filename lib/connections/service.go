@@ -28,6 +28,7 @@ import (
 	"github.com/syncthing/syncthing/lib/discover"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/nat"
+	"github.com/syncthing/syncthing/lib/netutil"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/svcutil"
@@ -412,8 +413,8 @@ func (s *service) handleHellos(ctx context.Context) error {
 		// keep up with config changes to the rate and whether or not LAN
 		// connections are limited.
 		rd, wr := s.limiter.getLimiters(remoteID, c, c.IsLocal())
-
-		protoConn := protocol.NewConnection(remoteID, rd, wr, c, s.model, c, deviceCfg.Compression, s.cfg.FolderPasswords(remoteID), s.keyGen)
+		strm := netutil.NewRWCStream(rd, wr, c)
+		protoConn := protocol.NewConnection(remoteID, strm, s.model, c, deviceCfg.Compression, s.cfg.FolderPasswords(remoteID), s.keyGen)
 		go func() {
 			<-protoConn.Closed()
 			s.dialNowDevicesMut.Lock()

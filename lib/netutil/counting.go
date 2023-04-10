@@ -13,6 +13,12 @@ type Counted interface {
 	LastWrite() time.Time
 }
 
+var rootCounter Counter
+
+func RootCounter() Counted {
+	return &rootCounter
+}
+
 type CountedStream interface {
 	Counted
 	Stream
@@ -26,7 +32,11 @@ type Counter struct {
 	parent     *Counter
 }
 
-func NewCounter(parent *Counter) *Counter {
+func NewCounter() *Counter {
+	return newCounterWithParent(&rootCounter)
+}
+
+func newCounterWithParent(parent *Counter) *Counter {
 	return &Counter{
 		parent: parent,
 	}
@@ -69,10 +79,10 @@ type CountingStream struct {
 	*Counter
 }
 
-func NewCountingStream(s Stream, pc *Counter) *CountingStream {
+func NewCountingStream(s Stream) *CountingStream {
 	return &CountingStream{
 		Stream:  s,
-		Counter: NewCounter(pc),
+		Counter: NewCounter(),
 	}
 }
 

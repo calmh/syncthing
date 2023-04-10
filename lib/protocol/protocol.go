@@ -249,7 +249,7 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 	// purposes.
 	cs, ok := stream.(netutil.CountedStream)
 	if !ok {
-		cs = netutil.NewCountingStream(stream, nil)
+		cs = netutil.NewCountingStream(stream)
 	}
 
 	c := &rawConnection{
