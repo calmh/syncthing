@@ -8,51 +8,96 @@ import (
 	"time"
 )
 
-type countingReader struct {
-	io.Reader
-	tot  atomic.Int64 // bytes
-	last atomic.Int64 // unix nanos
-}
-
 var (
 	totalIncoming atomic.Int64
 	totalOutgoing atomic.Int64
 )
 
-func (c *countingReader) Read(bs []byte) (int, error) {
-	n, err := c.Reader.Read(bs)
-	c.tot.Add(int64(n))
-	totalIncoming.Add(int64(n))
-	c.last.Store(time.Now().UnixNano())
-	return n, err
+func TotalInOut() (int64, int64) {
+	return totalIncoming.Load(), totalOutgoing.Load()
 }
 
-func (c *countingReader) Tot() int64 { return c.tot.Load() }
-
-func (c *countingReader) Last() time.Time {
-	return time.Unix(0, c.last.Load())
-}
-
-type countingWriter struct {
-	io.Writer
+type counter struct {
 	tot  atomic.Int64 // bytes
 	last atomic.Int64 // unix nanos
 }
 
-func (c *countingWriter) Write(bs []byte) (int, error) {
-	n, err := c.Writer.Write(bs)
+func (c *counter) Add(n int) {
 	c.tot.Add(int64(n))
-	totalOutgoing.Add(int64(n))
 	c.last.Store(time.Now().UnixNano())
-	return n, err
 }
 
-func (c *countingWriter) Tot() int64 { return c.tot.Load() }
-
-func (c *countingWriter) Last() time.Time {
+func (c *counter) Last() time.Time {
 	return time.Unix(0, c.last.Load())
 }
 
-func TotalInOut() (int64, int64) {
-	return totalIncoming.Load(), totalOutgoing.Load()
+func (c *counter) Tot() int64 {
+	return c.tot.Load()
+}
+
+type countingUnderlying struct {
+	Underlying
+	read  *counter
+	write *counter
+}
+
+func (c *countingUnderlying) Read(bs []byte) (int, error) {
+	n, err := c.Underlying.Read(bs)
+	c.read.Add(n)
+	totalIncoming.Add(int64(n))
+	return n, err
+}
+
+func (c *countingUnderlying) Write(bs []byte) (int, error) {
+	n, err := c.Underlying.Write(bs)
+	c.write.Add(n)
+	totalOutgoing.Add(int64(n))
+	return n, err
+}
+
+func (c *countingUnderlying) CreateSecondaryStream() (io.ReadWriteCloser, error) {
+	s, err := c.Underlying.CreateSecondaryStream()
+	if err != nil {
+		return nil, err
+	}
+	return &countingReandWriteCloser{
+		ReadWriter: s,
+		Closer:     s,
+		read:       c.read,
+		write:      c.write,
+	}, nil
+}
+
+func (c *countingUnderlying) AcceptSecondaryStream() (io.ReadWriter, error) {
+	s, err := c.Underlying.AcceptSecondaryStream()
+	if err != nil {
+		return nil, err
+	}
+	return &countingReandWriteCloser{
+		ReadWriter: s,
+		Closer:     io.NopCloser(s),
+		read:       c.read,
+		write:      c.write,
+	}, nil
+}
+
+type countingReandWriteCloser struct {
+	io.ReadWriter
+	io.Closer
+	read  *counter
+	write *counter
+}
+
+func (c *countingReandWriteCloser) Read(bs []byte) (int, error) {
+	n, err := c.ReadWriter.Read(bs)
+	c.read.Add(n)
+	totalIncoming.Add(int64(n))
+	return n, err
+}
+
+func (c *countingReandWriteCloser) Write(bs []byte) (int, error) {
+	n, err := c.ReadWriter.Write(bs)
+	c.write.Add(n)
+	totalOutgoing.Add(int64(n))
+	return n, err
 }

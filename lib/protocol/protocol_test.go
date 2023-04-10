@@ -454,8 +454,7 @@ func TestWriteCompressed(t *testing.T) {
 	for _, random := range []bool{false, true} {
 		buf := new(bytes.Buffer)
 		c := &rawConnection{
-			cr:          &countingReader{Reader: buf},
-			cw:          &countingWriter{Writer: buf},
+			un:          newTrivialUnderlying(buf, buf),
 			compression: CompressionAlways,
 		}
 

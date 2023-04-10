@@ -175,9 +175,9 @@ type rawConnection struct {
 	receiver  Model
 	startTime time.Time
 
-	cr     *countingReader
-	cw     *countingWriter
-	closer io.Closer // Closing the underlying connection and thus cr and cw
+	cr counter
+	cw counter
+	un Underlying
 
 	awaitingMut sync.Mutex // Protects awaiting and nextID.
 	awaiting    map[int]chan asyncResult
@@ -286,16 +286,10 @@ func NewConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo
 }
 
 func newRawConnection(deviceID DeviceID, under Underlying, receiver Model, connInfo ConnectionInfo, compress Compression) *rawConnection {
-	cr := &countingReader{Reader: under}
-	cw := &countingWriter{Writer: under}
-
-	return &rawConnection{
+	c := &rawConnection{
 		ConnectionInfo:        connInfo,
 		id:                    deviceID,
 		receiver:              receiver,
-		cr:                    cr,
-		cw:                    cw,
-		closer:                under,
 		awaiting:              make(map[int]chan asyncResult),
 		inbox:                 make(chan message),
 		outbox:                make(chan asyncMessage),
@@ -306,6 +300,8 @@ func newRawConnection(deviceID DeviceID, under Underlying, receiver Model, connI
 		compression:           compress,
 		loopWG:                sync.WaitGroup{},
 	}
+	c.un = &countingUnderlying{under, &c.cr, &c.cw}
+	return c
 }
 
 // Start creates the goroutines for sending and receiving of messages. It must
@@ -538,7 +534,7 @@ func (c *rawConnection) readMessage(fourByteBuf []byte) (message, error) {
 func (c *rawConnection) readMessageAfterHeader(hdr Header, fourByteBuf []byte) (message, error) {
 	// First comes a 4 byte message length
 
-	if _, err := io.ReadFull(c.cr, fourByteBuf[:4]); err != nil {
+	if _, err := io.ReadFull(c.un, fourByteBuf[:4]); err != nil {
 		return nil, fmt.Errorf("reading message length: %w", err)
 	}
 	msgLen := int32(binary.BigEndian.Uint32(fourByteBuf))
@@ -551,7 +547,7 @@ func (c *rawConnection) readMessageAfterHeader(hdr Header, fourByteBuf []byte) (
 	// Then comes the message
 
 	buf := BufferPool.Get(int(msgLen))
-	if _, err := io.ReadFull(c.cr, buf); err != nil {
+	if _, err := io.ReadFull(c.un, buf); err != nil {
 		BufferPool.Put(buf)
 		return nil, fmt.Errorf("reading message: %w", err)
 	}
@@ -593,7 +589,7 @@ func (c *rawConnection) readMessageAfterHeader(hdr Header, fourByteBuf []byte) (
 func (c *rawConnection) readHeader(fourByteBuf []byte) (Header, error) {
 	// First comes a 2 byte header length
 
-	if _, err := io.ReadFull(c.cr, fourByteBuf[:2]); err != nil {
+	if _, err := io.ReadFull(c.un, fourByteBuf[:2]); err != nil {
 		return Header{}, fmt.Errorf("reading length: %w", err)
 	}
 	hdrLen := int16(binary.BigEndian.Uint16(fourByteBuf))
@@ -604,7 +600,7 @@ func (c *rawConnection) readHeader(fourByteBuf []byte) (Header, error) {
 	// Then comes the header
 
 	buf := BufferPool.Get(int(hdrLen))
-	if _, err := io.ReadFull(c.cr, buf); err != nil {
+	if _, err := io.ReadFull(c.un, buf); err != nil {
 		BufferPool.Put(buf)
 		return Header{}, fmt.Errorf("reading header: %w", err)
 	}
@@ -816,7 +812,7 @@ func (c *rawConnection) writeMessage(msg message) error {
 	// Message length
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(size))
 
-	n, err := c.cw.Write(buf)
+	n, err := c.un.Write(buf)
 
 	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message), err=%v", n, hdrSize, size, err)
 	if err != nil {
@@ -862,7 +858,7 @@ func (c *rawConnection) writeCompressedMessage(msg message, marshaled []byte) (o
 	// Message length
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(compressedSize))
 
-	n, err := c.cw.Write(buf[:totSize])
+	n, err := c.un.Write(buf[:totSize])
 	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message (%d uncompressed)), err=%v", n, hdrSize, compressedSize, len(marshaled), err)
 	if err != nil {
 		return true, fmt.Errorf("writing message: %w", err)
@@ -965,7 +961,7 @@ func (c *rawConnection) Close(err error) {
 func (c *rawConnection) internalClose(err error) {
 	c.closeOnce.Do(func() {
 		l.Debugln("close due to", err)
-		if cerr := c.closer.Close(); cerr != nil {
+		if cerr := c.un.Close(); cerr != nil {
 			l.Debugln(c.id, "failed to close underlying conn:", cerr)
 		}
 		close(c.closed)
