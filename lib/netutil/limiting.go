@@ -4,14 +4,11 @@ import (
 	"io"
 )
 
-const (
-	limiterBurstSize = 4 * 128 << 10
-)
-
 type Limiter interface {
 	Unlimited() bool
 	Take(int)
 	Limit() int // events per second
+	Burst() int // maximum number of events
 }
 
 type limitedWriter struct {
@@ -38,10 +35,10 @@ func (w *limitedWriter) Write(buf []byte) (int, error) {
 	// try to be a bit adaptable. We range from the minimum write size of 1
 	// KiB up to the limiter burst size, aiming for about a write every
 	// 10ms.
-	singleWriteSize := int(w.Limiter.Limit() / 100)         // 10ms worth of data
+	singleWriteSize := w.Limiter.Limit() / 100              // 10ms worth of data
 	singleWriteSize = ((singleWriteSize / 1024) + 1) * 1024 // round up to the next kibibyte
-	if singleWriteSize > limiterBurstSize {
-		singleWriteSize = limiterBurstSize
+	if burst := w.Limiter.Burst(); singleWriteSize > burst {
+		singleWriteSize = burst
 	}
 
 	written := 0

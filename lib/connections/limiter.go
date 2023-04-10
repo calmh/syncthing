@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"sync/atomic"
 
 	"github.com/syncthing/syncthing/lib/config"
@@ -34,6 +35,7 @@ type waiter interface {
 	// This is the rate limiting operation
 	WaitN(ctx context.Context, n int) error
 	Limit() rate.Limit
+	Burst() int
 }
 
 const (
@@ -266,6 +268,10 @@ func (w waiterHolder) Limit() int {
 	return int(w.waiter.Limit())
 }
 
+func (w waiterHolder) Burst() int {
+	return w.waiter.Burst()
+}
+
 // totalWaiter waits for all of the waiters
 type totalWaiter []waiter
 
@@ -284,6 +290,16 @@ func (tw totalWaiter) Limit() rate.Limit {
 	min := rate.Inf
 	for _, w := range tw {
 		if l := w.Limit(); l < min {
+			min = l
+		}
+	}
+	return min
+}
+
+func (tw totalWaiter) Burst() int {
+	min := math.MaxInt
+	for _, w := range tw {
+		if l := w.Burst(); l < min {
 			min = l
 		}
 	}
