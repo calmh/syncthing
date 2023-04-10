@@ -454,7 +454,7 @@ func TestWriteCompressed(t *testing.T) {
 	for _, random := range []bool{false, true} {
 		buf := new(bytes.Buffer)
 		c := &rawConnection{
-			stream:      netutil.NewCountingStream(netutil.NewRWStream(buf, buf)),
+			stream:      netutil.NewCountingStream(netutil.NewRWStream(buf, buf), netutil.NewCounter()),
 			compression: CompressionAlways,
 		}
 

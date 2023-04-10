@@ -79,10 +79,10 @@ type CountingStream struct {
 	*Counter
 }
 
-func NewCountingStream(s Stream) *CountingStream {
+func NewCountingStream(s Stream, c *Counter) *CountingStream {
 	return &CountingStream{
 		Stream:  s,
-		Counter: NewCounter(),
+		Counter: c,
 	}
 }
 
@@ -103,10 +103,10 @@ func (c *CountingStream) CreateSubstream() (io.ReadWriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &countingReadWriteCloser{
-		ReadWriter: s,
-		Closer:     s,
-		Counter:    c.Counter,
+	return &readWriteCloser{
+		Reader: NewCountingReader(s, c.Counter),
+		Writer: NewCountingWriter(s, c.Counter),
+		Closer: s,
 	}, nil
 }
 
@@ -115,27 +115,45 @@ func (c *CountingStream) AcceptSubstream() (io.ReadWriter, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &countingReadWriteCloser{
-		ReadWriter: s,
-		Closer:     io.NopCloser(s),
-		Counter:    c.Counter,
+	return &readWriteCloser{
+		Reader: NewCountingReader(s, c.Counter),
+		Writer: NewCountingWriter(s, c.Counter),
+		Closer: io.NopCloser(s),
 	}, nil
 }
 
-type countingReadWriteCloser struct {
-	io.ReadWriter
-	io.Closer
+type countingReader struct {
+	io.Reader
 	*Counter
 }
 
-func (c *countingReadWriteCloser) Read(bs []byte) (int, error) {
-	n, err := c.ReadWriter.Read(bs)
+func NewCountingReader(r io.Reader, c *Counter) io.Reader {
+	return &countingReader{
+		Reader:  r,
+		Counter: c,
+	}
+}
+
+func (c *countingReader) Read(bs []byte) (int, error) {
+	n, err := c.Reader.Read(bs)
 	c.Counter.addRead(n)
 	return n, err
 }
 
-func (c *countingReadWriteCloser) Write(bs []byte) (int, error) {
-	n, err := c.ReadWriter.Write(bs)
+type countingWriter struct {
+	io.Writer
+	*Counter
+}
+
+func NewCountingWriter(w io.Writer, c *Counter) io.Writer {
+	return &countingWriter{
+		Writer:  w,
+		Counter: c,
+	}
+}
+
+func (c *countingWriter) Write(bs []byte) (int, error) {
+	n, err := c.Writer.Write(bs)
 	c.Counter.addWrite(n)
 	return n, err
 }

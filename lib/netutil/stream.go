@@ -46,10 +46,20 @@ type Stream interface {
 
 var ErrSubstreamsUnsupported = errors.New("secondary streams not supported")
 
-type rwcStream struct {
+type readWriteCloser struct {
 	io.Reader
 	io.Writer
 	io.Closer
+}
+
+type rwcStream readWriteCloser
+
+func (rwcStream) CreateSubstream() (io.ReadWriteCloser, error) {
+	return nil, ErrSubstreamsUnsupported
+}
+
+func (rwcStream) AcceptSubstream() (io.ReadWriter, error) {
+	return nil, ErrSubstreamsUnsupported
 }
 
 func NewRWStream(r io.Reader, w io.Writer) Stream {
@@ -66,12 +76,4 @@ func NewRWCStream(r io.Reader, w io.Writer, c io.Closer) Stream {
 		Writer: w,
 		Closer: c,
 	}
-}
-
-func (rwcStream) CreateSubstream() (io.ReadWriteCloser, error) {
-	return nil, ErrSubstreamsUnsupported
-}
-
-func (rwcStream) AcceptSubstream() (io.ReadWriter, error) {
-	return nil, ErrSubstreamsUnsupported
 }

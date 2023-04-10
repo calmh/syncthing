@@ -412,9 +412,10 @@ func (s *service) handleHellos(ctx context.Context) error {
 		// Wrap the connection in rate limiters. The limiter itself will
 		// keep up with config changes to the rate and whether or not LAN
 		// connections are limited.
-		rd, wr := s.limiter.getLimiters(remoteID, c, c.IsLocal())
-		strm := netutil.NewRWCStream(rd, wr, c)
-		protoConn := protocol.NewConnection(remoteID, strm, s.model, c, deviceCfg.Compression, s.cfg.FolderPasswords(remoteID), s.keyGen)
+		strm := netutil.NewRWCStream(c, c, c)
+		rlim, wlim := s.limiter.getLimiters(remoteID, c, c.IsLocal())
+		limStrm := netutil.NewLimitedStream(strm, rlim, wlim)
+		protoConn := protocol.NewConnection(remoteID, limStrm, s.model, c, deviceCfg.Compression, s.cfg.FolderPasswords(remoteID), s.keyGen)
 		go func() {
 			<-protoConn.Closed()
 			s.dialNowDevicesMut.Lock()
