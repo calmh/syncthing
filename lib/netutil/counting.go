@@ -1,6 +1,7 @@
 package netutil
 
 import (
+	"context"
 	"io"
 	"sync/atomic"
 	"time"
@@ -98,8 +99,8 @@ func (c *CountingStream) Write(bs []byte) (int, error) {
 	return n, err
 }
 
-func (c *CountingStream) CreateSubstream() (io.ReadWriteCloser, error) {
-	s, err := c.Stream.CreateSubstream()
+func (c *CountingStream) CreateSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
+	s, err := c.Stream.CreateSubstream(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -110,8 +111,8 @@ func (c *CountingStream) CreateSubstream() (io.ReadWriteCloser, error) {
 	}, nil
 }
 
-func (c *CountingStream) AcceptSubstream() (io.ReadWriter, error) {
-	s, err := c.Stream.AcceptSubstream()
+func (c *CountingStream) AcceptSubstream(ctx context.Context) (io.ReadWriter, error) {
+	s, err := c.Stream.AcceptSubstream(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package netutil
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"io"
@@ -32,7 +33,7 @@ type Stream interface {
 	// once it is no longer required. Returning ErrSecondaryStreamsUnsupported
 	// from this method indicates that the connection does not support
 	// secondary streams.
-	CreateSubstream() (io.ReadWriteCloser, error)
+	CreateSubstream(context.Context) (io.ReadWriteCloser, error)
 
 	// AcceptSubstream accepts a new secondary stream. The returned
 	// ReadWriteCloser is the new stream, and the error is any error that
@@ -42,7 +43,7 @@ type Stream interface {
 	// connection does not support secondary streams, this method should
 	// return ErrSecondaryStreamsUnsupported, in which case the accept call
 	// will not be retried for this connection.
-	AcceptSubstream() (io.ReadWriter, error)
+	AcceptSubstream(context.Context) (io.ReadWriter, error)
 }
 
 var ErrSubstreamsUnsupported = errors.New("secondary streams not supported")
@@ -55,11 +56,11 @@ type readWriteCloser struct {
 
 type rwcStream readWriteCloser
 
-func (rwcStream) CreateSubstream() (io.ReadWriteCloser, error) {
+func (rwcStream) CreateSubstream(_ context.Context) (io.ReadWriteCloser, error) {
 	return nil, ErrSubstreamsUnsupported
 }
 
-func (rwcStream) AcceptSubstream() (io.ReadWriter, error) {
+func (rwcStream) AcceptSubstream(_ context.Context) (io.ReadWriter, error) {
 	return nil, ErrSubstreamsUnsupported
 }
 
@@ -90,10 +91,10 @@ func NewTLSConnStream(c *tls.Conn) *TLSConnStream {
 	return &TLSConnStream{c}
 }
 
-func (TLSConnStream) CreateSubstream() (io.ReadWriteCloser, error) {
+func (TLSConnStream) CreateSubstream(_ context.Context) (io.ReadWriteCloser, error) {
 	return nil, ErrSubstreamsUnsupported
 }
 
-func (TLSConnStream) AcceptSubstream() (io.ReadWriter, error) {
+func (TLSConnStream) AcceptSubstream(_ context.Context) (io.ReadWriter, error) {
 	return nil, ErrSubstreamsUnsupported
 }

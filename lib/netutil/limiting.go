@@ -1,6 +1,7 @@
 package netutil
 
 import (
+	"context"
 	"io"
 )
 
@@ -105,8 +106,8 @@ func (c *limitedStream) Write(bs []byte) (int, error) {
 	return c.w.Write(bs)
 }
 
-func (c *limitedStream) CreateSubstream() (io.ReadWriteCloser, error) {
-	s, err := c.Stream.CreateSubstream()
+func (c *limitedStream) CreateSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
+	s, err := c.Stream.CreateSubstream(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +118,8 @@ func (c *limitedStream) CreateSubstream() (io.ReadWriteCloser, error) {
 	}, nil
 }
 
-func (c *limitedStream) AcceptSubstream() (io.ReadWriter, error) {
-	s, err := c.Stream.AcceptSubstream()
+func (c *limitedStream) AcceptSubstream(ctx context.Context) (io.ReadWriter, error) {
+	s, err := c.Stream.AcceptSubstream(ctx)
 	if err != nil {
 		return nil, err
 	}

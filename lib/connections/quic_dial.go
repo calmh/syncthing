@@ -92,7 +92,7 @@ func (d *quicDialer) Dial(ctx context.Context, _ protocol.DeviceID, uri *url.URL
 		return internalConn{}, fmt.Errorf("open stream: %w", err)
 	}
 
-	return newInternalConn(&quicTlsConn{session, stream, createdConn}, connTypeQUICClient, quicPriority), nil
+	return newInternalConn(&quicTlsConn{session, stream, createdConn, false}, connTypeQUICClient, quicPriority), nil
 }
 
 type quicDialerFactory struct{}

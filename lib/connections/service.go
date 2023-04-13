@@ -371,6 +371,12 @@ func (s *service) handleHellos(ctx context.Context) error {
 		}
 		_ = c.SetDeadline(time.Time{})
 
+		// If this is a QUIC connection, enable or disable streams support
+		// based on what the other side supports.
+		if qc, ok := c.tlsConn.(*quicTlsConn); ok {
+			qc.supportsSubstreams = hello.SupportsMultipleQUICStreams
+		}
+
 		// The Model will return an error for devices that we don't want to
 		// have a connection with for whatever reason, for example unknown devices.
 		if err := s.model.OnHello(remoteID, c.RemoteAddr(), hello); err != nil {
@@ -412,9 +418,8 @@ func (s *service) handleHellos(ctx context.Context) error {
 		// Wrap the connection in rate limiters. The limiter itself will
 		// keep up with config changes to the rate and whether or not LAN
 		// connections are limited.
-		strm := netutil.NewRWCStream(c, c, c)
 		rlim, wlim := s.limiter.getLimiters(remoteID, c, c.IsLocal())
-		limStrm := netutil.NewLimitedStream(strm, rlim, wlim)
+		limStrm := netutil.NewLimitedStream(c, rlim, wlim)
 		protoConn := protocol.NewConnection(remoteID, limStrm, s.model, c, deviceCfg.Compression, s.cfg.FolderPasswords(remoteID), s.keyGen)
 		go func() {
 			<-protoConn.Closed()

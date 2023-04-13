@@ -10,6 +10,7 @@
 package connections
 
 import (
+	"context"
 	"crypto/tls"
 	"io"
 	"net"
@@ -44,6 +45,11 @@ type quicTlsConn struct {
 	quic.Stream
 	// If we created this connection, we should be the ones closing it.
 	createdConn net.PacketConn
+
+	// We might support substreams, but we can't try to use them unless the
+	// other side does, too. This boolean controls that, and is set based on
+	// the Hello received from the other side.
+	supportsSubstreams bool
 }
 
 func (q *quicTlsConn) Close() error {
@@ -66,12 +72,18 @@ func (q *quicTlsConn) ConnectionState() tls.ConnectionState {
 	return q.Connection.ConnectionState().TLS.ConnectionState
 }
 
-func (q *quicTlsConn) CreateSubstream() (io.ReadWriteCloser, error) {
-	return nil, netutil.ErrSubstreamsUnsupported
+func (q *quicTlsConn) CreateSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
+	if !q.supportsSubstreams {
+		return nil, netutil.ErrSubstreamsUnsupported
+	}
+	return q.Connection.OpenStreamSync(ctx)
 }
 
-func (q *quicTlsConn) AcceptSubstream() (io.ReadWriter, error) {
-	return nil, netutil.ErrSubstreamsUnsupported
+func (q *quicTlsConn) AcceptSubstream(ctx context.Context) (io.ReadWriter, error) {
+	if !q.supportsSubstreams {
+		return nil, netutil.ErrSubstreamsUnsupported
+	}
+	return q.Connection.AcceptStream(ctx)
 }
 
 func packetConnUnspecified(conn interface{}) bool {
