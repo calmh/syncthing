@@ -11,12 +11,14 @@ package connections
 
 import (
 	"crypto/tls"
+	"io"
 	"net"
 	"net/url"
 	"time"
 
 	"github.com/quic-go/quic-go"
 
+	"github.com/syncthing/syncthing/lib/netutil"
 	"github.com/syncthing/syncthing/lib/osutil"
 )
 
@@ -62,6 +64,14 @@ func (q *quicTlsConn) Close() error {
 
 func (q *quicTlsConn) ConnectionState() tls.ConnectionState {
 	return q.Connection.ConnectionState().TLS.ConnectionState
+}
+
+func (q *quicTlsConn) CreateSubstream() (io.ReadWriteCloser, error) {
+	return nil, netutil.ErrSubstreamsUnsupported
+}
+
+func (q *quicTlsConn) AcceptSubstream() (io.ReadWriter, error) {
+	return nil, netutil.ErrSubstreamsUnsupported
 }
 
 func packetConnUnspecified(conn interface{}) bool {

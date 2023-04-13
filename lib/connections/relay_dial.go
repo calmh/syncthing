@@ -15,6 +15,7 @@ import (
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
+	"github.com/syncthing/syncthing/lib/netutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/relay/client"
 )
@@ -64,7 +65,7 @@ func (d *relayDialer) Dial(ctx context.Context, id protocol.DeviceID, uri *url.U
 		return internalConn{}, err
 	}
 
-	return newInternalConn(tc, connTypeRelayClient, relayPriority), nil
+	return newInternalConn(netutil.NewTLSConnStream(tc), connTypeRelayClient, relayPriority), nil
 }
 
 type relayDialerFactory struct{}

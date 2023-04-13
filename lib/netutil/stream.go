@@ -1,6 +1,7 @@
 package netutil
 
 import (
+	"crypto/tls"
 	"errors"
 	"io"
 )
@@ -76,4 +77,23 @@ func NewRWCStream(r io.Reader, w io.Writer, c io.Closer) Stream {
 		Writer: w,
 		Closer: c,
 	}
+}
+
+// TLSConnStream is a trivial Stream implementation for a TLS connection. It
+// supports all the methods of a *tls.Conn, and adds the Stream methods
+// (returning ErrSubstreamsUnsupported).
+type TLSConnStream struct {
+	*tls.Conn
+}
+
+func NewTLSConnStream(c *tls.Conn) *TLSConnStream {
+	return &TLSConnStream{c}
+}
+
+func (TLSConnStream) CreateSubstream() (io.ReadWriteCloser, error) {
+	return nil, ErrSubstreamsUnsupported
+}
+
+func (TLSConnStream) AcceptSubstream() (io.ReadWriter, error) {
+	return nil, ErrSubstreamsUnsupported
 }
