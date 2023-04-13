@@ -135,7 +135,7 @@
         </xattrFilter>
     </folder>
     <device id="I6KAH76-66SLLLB-5PFXSOA-UFJCDZC-YAOMLEK-CP2GB32-BV5RQST-3PSROAU" name="s1" compression="metadata" introducer="false" skipIntroductionRemovals="false" introducedBy="">
-        <address>quic://127.0.0.1:22001</address>
+        <address>quic://unu.kastelo.net:22010</address>
         <paused>false</paused>
         <autoAcceptFolders>false</autoAcceptFolders>
         <maxSendKbps>0</maxSendKbps>
@@ -171,7 +171,7 @@
     </gui>
     <ldap></ldap>
     <options>
-        <listenAddress>quic://127.0.0.1:22002</listenAddress>
+        <listenAddress>quic://:22002</listenAddress>
         <globalAnnounceServer>default</globalAnnounceServer>
         <globalAnnounceEnabled>false</globalAnnounceEnabled>
         <localAnnounceEnabled>true</localAnnounceEnabled>
