@@ -48,7 +48,7 @@ func (c *Counter) BytesRead() int64 {
 }
 
 func (c *Counter) BytesWritten() int64 {
-	return c.readBytes.Load()
+	return c.writeBytes.Load()
 }
 
 func (c *Counter) LastRead() time.Time {
