@@ -43,7 +43,7 @@ type Stream interface {
 	// connection does not support secondary streams, this method should
 	// return ErrSecondaryStreamsUnsupported, in which case the accept call
 	// will not be retried for this connection.
-	AcceptSubstream(context.Context) (io.ReadWriter, error)
+	AcceptSubstream(context.Context) (io.ReadWriteCloser, error)
 }
 
 var ErrSubstreamsUnsupported = errors.New("secondary streams not supported")
@@ -60,7 +60,7 @@ func (rwcStream) CreateSubstream(_ context.Context) (io.ReadWriteCloser, error) 
 	return nil, ErrSubstreamsUnsupported
 }
 
-func (rwcStream) AcceptSubstream(_ context.Context) (io.ReadWriter, error) {
+func (rwcStream) AcceptSubstream(_ context.Context) (io.ReadWriteCloser, error) {
 	return nil, ErrSubstreamsUnsupported
 }
 
@@ -95,6 +95,6 @@ func (TLSConnStream) CreateSubstream(_ context.Context) (io.ReadWriteCloser, err
 	return nil, ErrSubstreamsUnsupported
 }
 
-func (TLSConnStream) AcceptSubstream(_ context.Context) (io.ReadWriter, error) {
+func (TLSConnStream) AcceptSubstream(_ context.Context) (io.ReadWriteCloser, error) {
 	return nil, ErrSubstreamsUnsupported
 }

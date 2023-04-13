@@ -111,7 +111,7 @@ func (c *CountingStream) CreateSubstream(ctx context.Context) (io.ReadWriteClose
 	}, nil
 }
 
-func (c *CountingStream) AcceptSubstream(ctx context.Context) (io.ReadWriter, error) {
+func (c *CountingStream) AcceptSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
 	s, err := c.Stream.AcceptSubstream(ctx)
 	if err != nil {
 		return nil, err
@@ -119,7 +119,7 @@ func (c *CountingStream) AcceptSubstream(ctx context.Context) (io.ReadWriter, er
 	return &readWriteCloser{
 		Reader: NewCountingReader(s, c.Counter),
 		Writer: NewCountingWriter(s, c.Counter),
-		Closer: io.NopCloser(s),
+		Closer: s,
 	}, nil
 }
 

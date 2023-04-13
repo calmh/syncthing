@@ -118,7 +118,7 @@ func (c *limitedStream) CreateSubstream(ctx context.Context) (io.ReadWriteCloser
 	}, nil
 }
 
-func (c *limitedStream) AcceptSubstream(ctx context.Context) (io.ReadWriter, error) {
+func (c *limitedStream) AcceptSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
 	s, err := c.Stream.AcceptSubstream(ctx)
 	if err != nil {
 		return nil, err
@@ -126,6 +126,6 @@ func (c *limitedStream) AcceptSubstream(ctx context.Context) (io.ReadWriter, err
 	return &readWriteCloser{
 		Reader: &limitedReader{reader: s, Limiter: c.rlim},
 		Writer: &limitedWriter{writer: s, Limiter: c.wlim},
-		Closer: nil, // never called
+		Closer: s,
 	}, nil
 }

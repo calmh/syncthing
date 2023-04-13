@@ -208,7 +208,7 @@ func TestClusterConfigFirst(t *testing.T) {
 	defer closeAndWait(c, rw)
 
 	select {
-	case c.outbox <- asyncMessage{&Ping{}, nil}:
+	case c.outbox <- asyncMessage{&Ping{}, nil, nil}:
 		t.Fatal("able to send ping before cluster config")
 	case <-time.After(100 * time.Millisecond):
 		// Allow some time for c.writerLoop to setup after c.Start
@@ -464,10 +464,10 @@ func TestWriteCompressed(t *testing.T) {
 			rand.Read(msg.Data)
 		}
 
-		if err := c.writeMessage(msg); err != nil {
+		if err := c.writeMessage(c.stream, msg); err != nil {
 			t.Fatal(err)
 		}
-		got, err := c.readMessage(make([]byte, 4))
+		got, err := c.readMessage(c.stream, make([]byte, 4))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -941,7 +941,7 @@ func TestDispatcherToCloseDeadlock(t *testing.T) {
 	c.Start()
 	defer closeAndWait(c, rw)
 
-	c.inbox <- &ClusterConfig{}
+	c.inbox <- streamMessage{&ClusterConfig{}, nil}
 
 	select {
 	case <-c.dispatcherLoopStopped:

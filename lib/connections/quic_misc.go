@@ -79,7 +79,7 @@ func (q *quicTlsConn) CreateSubstream(ctx context.Context) (io.ReadWriteCloser, 
 	return q.Connection.OpenStreamSync(ctx)
 }
 
-func (q *quicTlsConn) AcceptSubstream(ctx context.Context) (io.ReadWriter, error) {
+func (q *quicTlsConn) AcceptSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
 	if !q.supportsSubstreams {
 		return nil, netutil.ErrSubstreamsUnsupported
 	}
