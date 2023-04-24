@@ -20,8 +20,6 @@ import (
 	"github.com/syncthing/syncthing/lib/relay/client"
 )
 
-const relayPriority = 200
-
 func init() {
 	dialers["relay"] = relayDialerFactory{}
 }
@@ -65,21 +63,23 @@ func (d *relayDialer) Dial(ctx context.Context, id protocol.DeviceID, uri *url.U
 		return internalConn{}, err
 	}
 
-	return newInternalConn(netutil.NewTLSConnStream(tc), connTypeRelayClient, relayPriority), nil
+	return newInternalConn(netutil.NewTLSConnStream(tc), connTypeRelayClient, false, d.wanPriority), nil
+}
+
+func (d *relayDialer) Priority(host string) int {
+	return d.wanPriority
 }
 
 type relayDialerFactory struct{}
 
-func (relayDialerFactory) New(opts config.OptionsConfiguration, tlsCfg *tls.Config, _ *registry.Registry) genericDialer {
+func (relayDialerFactory) New(opts config.OptionsConfiguration, tlsCfg *tls.Config, _ *registry.Registry, _ *lanChecker) genericDialer {
 	return &relayDialer{commonDialer{
 		trafficClass:      opts.TrafficClass,
 		reconnectInterval: time.Duration(opts.RelayReconnectIntervalM) * time.Minute,
 		tlsCfg:            tlsCfg,
+		wanPriority:       opts.ConnectionPriorityRelay,
+		lanPriority:       opts.ConnectionPriorityRelay,
 	}}
-}
-
-func (relayDialerFactory) Priority() int {
-	return relayPriority
 }
 
 func (relayDialerFactory) AlwaysWAN() bool {
