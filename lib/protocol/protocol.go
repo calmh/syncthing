@@ -178,6 +178,11 @@ type rawConnection struct {
 
 	stream netutil.CountedStream
 
+	desiredSubstreams int
+	substreamsMut     sync.Mutex // Protects substreams.
+	substreams        []io.ReadWriteCloser
+	nextSubstream     int
+
 	awaitingMut sync.Mutex // Protects awaiting and nextID.
 	awaiting    map[int]chan asyncResult
 	nextID      int
@@ -274,6 +279,7 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 		closed:                make(chan struct{}),
 		compression:           compress,
 		loopWG:                sync.WaitGroup{},
+		desiredSubstreams:     32,
 	}
 	return c
 }
@@ -360,18 +366,7 @@ func (c *rawConnection) Request(ctx context.Context, folder string, name string,
 	c.awaiting[id] = rc
 	c.awaitingMut.Unlock()
 
-	strm, err := c.stream.CreateSubstream(ctx)
-	if err == nil {
-		l.Debugf("Created substream for request %d", id)
-		go c.substreamReaderLoop(strm)
-		defer func() {
-			l.Debugf("Closing substream for request %d", id)
-			strm.Close()
-		}()
-	} else {
-		strm = nil
-	}
-
+	strm := c.streamForRequest(ctx)
 	ok := c.sendStream(ctx, &Request{
 		ID:            id,
 		Folder:        folder,
@@ -395,6 +390,36 @@ func (c *rawConnection) Request(ctx context.Context, folder string, name string,
 		return res.val, res.err
 	case <-ctx.Done():
 		return nil, ctx.Err()
+	}
+}
+
+func (c *rawConnection) streamForRequest(ctx context.Context) io.ReadWriteCloser {
+	if c.desiredSubstreams == 0 {
+		return nil
+	}
+
+	c.substreamsMut.Lock()
+	defer c.substreamsMut.Unlock()
+
+	if len(c.substreams) >= c.desiredSubstreams {
+		strm := c.substreams[c.nextSubstream]
+		c.nextSubstream = (c.nextSubstream + 1) % c.desiredSubstreams
+		return strm
+	}
+
+	strm, err := c.stream.CreateSubstream(ctx)
+	if err == nil {
+		l.Infof("Created substream")
+		c.substreams = append(c.substreams, strm)
+		go func() {
+			c.substreamReaderLoop(strm)
+			l.Infof("Closing substream")
+			strm.Close()
+		}()
+		return strm
+	} else {
+		l.Infof("Failed to create substream")
+		return nil
 	}
 }
 
@@ -794,9 +819,9 @@ func (c *rawConnection) writerLoop() {
 			if hm.done != nil {
 				close(hm.done)
 			}
-			if hm.replyStream != nil {
-				hm.replyStream.Close()
-			}
+			// if hm.replyStream != nil {
+			// 	hm.replyStream.Close()
+			// }
 			if err != nil {
 				c.internalClose(err)
 				return

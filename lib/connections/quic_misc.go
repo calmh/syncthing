@@ -72,11 +72,11 @@ func (q *quicTlsConn) ConnectionState() tls.ConnectionState {
 	return q.Connection.ConnectionState().TLS.ConnectionState
 }
 
-func (q *quicTlsConn) CreateSubstream(_ context.Context) (io.ReadWriteCloser, error) {
+func (q *quicTlsConn) CreateSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
 	if !q.supportsSubstreams {
 		return nil, netutil.ErrSubstreamsUnsupported
 	}
-	return q.Connection.OpenStream()
+	return q.Connection.OpenStreamSync(ctx)
 }
 
 func (q *quicTlsConn) AcceptSubstream(ctx context.Context) (io.ReadWriteCloser, error) {
