@@ -208,7 +208,7 @@ func TestClusterConfigFirst(t *testing.T) {
 	defer closeAndWait(c, rw)
 
 	select {
-	case c.outbox <- asyncMessage{&Ping{}, nil, nil}:
+	case c.outbox <- asyncMessage{&Ping{}, nil}:
 		t.Fatal("able to send ping before cluster config")
 	case <-time.After(100 * time.Millisecond):
 		// Allow some time for c.writerLoop to setup after c.Start

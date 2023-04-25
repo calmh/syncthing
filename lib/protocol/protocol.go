@@ -181,6 +181,7 @@ type rawConnection struct {
 	desiredSubstreams int
 	substreamsMut     sync.Mutex // Protects substreams.
 	substreams        []io.ReadWriteCloser
+	substreamOutbox   []chan asyncMessage
 	nextSubstream     int
 
 	awaitingMut sync.Mutex // Protects awaiting and nextID.
@@ -215,16 +216,15 @@ type message interface {
 }
 
 type asyncMessage struct {
-	msg         message
-	done        chan struct{}  // done closes when we're done sending the message
-	replyStream io.WriteCloser // nil for the primary stream
+	msg  message
+	done chan struct{} // done closes when we're done sending the message
 }
 
 // A streamMessage is a message and the stream it came from (for the
 // purposes of sending a reply).
 type streamMessage struct {
 	message
-	stream io.WriteCloser
+	outbox chan asyncMessage
 }
 
 const (
@@ -279,7 +279,7 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 		closed:                make(chan struct{}),
 		compression:           compress,
 		loopWG:                sync.WaitGroup{},
-		desiredSubstreams:     64,
+		desiredSubstreams:     96,
 	}
 	return c
 }
@@ -366,8 +366,8 @@ func (c *rawConnection) Request(ctx context.Context, folder string, name string,
 	c.awaiting[id] = rc
 	c.awaitingMut.Unlock()
 
-	strm := c.streamForRequest(ctx)
-	ok := c.sendStream(ctx, &Request{
+	outbox := c.streamForRequest(ctx)
+	ok := c.sendOutbox(ctx, &Request{
 		ID:            id,
 		Folder:        folder,
 		Name:          name,
@@ -377,7 +377,7 @@ func (c *rawConnection) Request(ctx context.Context, folder string, name string,
 		Hash:          hash,
 		WeakHash:      weakHash,
 		FromTemporary: fromTemporary,
-	}, nil, strm)
+	}, nil, outbox)
 	if !ok {
 		return nil, ErrClosed
 	}
@@ -393,16 +393,16 @@ func (c *rawConnection) Request(ctx context.Context, folder string, name string,
 	}
 }
 
-func (c *rawConnection) streamForRequest(ctx context.Context) io.ReadWriteCloser {
+func (c *rawConnection) streamForRequest(ctx context.Context) chan asyncMessage {
 	if c.desiredSubstreams == 0 {
-		return nil
+		return c.outbox
 	}
 
 	c.substreamsMut.Lock()
 	defer c.substreamsMut.Unlock()
 
-	if len(c.substreams) >= c.desiredSubstreams {
-		strm := c.substreams[c.nextSubstream]
+	if len(c.substreamOutbox) >= c.desiredSubstreams {
+		strm := c.substreamOutbox[c.nextSubstream]
 		l.Infoln("Reusing substream", c.nextSubstream)
 		c.nextSubstream = (c.nextSubstream + 1) % c.desiredSubstreams
 		return strm
@@ -410,18 +410,25 @@ func (c *rawConnection) streamForRequest(ctx context.Context) io.ReadWriteCloser
 
 	strm, err := c.stream.CreateSubstream(ctx)
 	if err == nil {
-		l.Infof("Created substream")
-		c.substreams = append(c.substreams, strm)
-		go func() {
-			c.substreamReaderLoop(strm)
-			l.Infof("Closing substream")
-			strm.Close()
-		}()
-		return strm
+		return c.registerNewSubstream(strm)
 	} else {
 		l.Infof("Failed to create substream")
-		return nil
+		return c.outbox
 	}
+}
+
+func (c *rawConnection) registerNewSubstream(strm io.ReadWriteCloser) chan asyncMessage {
+	l.Infof("Registering new substream")
+	outbox := make(chan asyncMessage, 1)
+	c.substreams = append(c.substreams, strm)
+	c.substreamOutbox = append(c.substreamOutbox, outbox)
+	go func() {
+		c.substreamReaderLoop(strm, outbox)
+		l.Infof("Closing substream")
+		strm.Close()
+	}()
+	go c.substreamWriterLoop(strm, outbox)
+	return outbox
 }
 
 // ClusterConfig sends the cluster configuration message to the peer.
@@ -482,11 +489,11 @@ func (c *rawConnection) streamAcceptLoop() {
 			return
 		}
 		l.Debugf("Accepted substream from %v", c)
-		go c.substreamReaderLoop(strm)
+		c.registerNewSubstream(strm)
 	}
 }
 
-func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser) {
+func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
 	fourByteBuf := make([]byte, 4)
 	for {
 		msg, err := c.readMessage(strm, fourByteBuf)
@@ -500,8 +507,23 @@ func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser) {
 		}
 		l.Debugf("Received substream message from %v", c)
 		select {
-		case c.inbox <- streamMessage{msg, strm}:
+		case c.inbox <- streamMessage{msg, outbox}:
 		case <-c.closed:
+			return
+		}
+	}
+}
+
+func (c *rawConnection) substreamWriterLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
+	for hm := range outbox {
+		t0 := time.Now()
+		err := c.writeMessage(strm, hm.msg)
+		l.Infof("writeMessage took %v", time.Since(t0))
+		if hm.done != nil {
+			close(hm.done)
+		}
+		if err != nil {
+			l.Debugf("Closing substream writer loop for %v: %v", c, err)
 			return
 		}
 	}
@@ -563,7 +585,7 @@ func (c *rawConnection) dispatcherLoop() (err error) {
 			err = c.handleIndexUpdate(*msg)
 
 		case *Request:
-			go c.handleRequest(streamMsg.stream, *msg)
+			go c.handleRequest(*msg, streamMsg.outbox)
 
 		case *Response:
 			c.handleResponse(*msg)
@@ -742,21 +764,21 @@ func checkFilename(name string) error {
 	return nil
 }
 
-func (c *rawConnection) handleRequest(w io.WriteCloser, req Request) {
+func (c *rawConnection) handleRequest(req Request, outbox chan asyncMessage) {
 	res, err := c.receiver.Request(c.id, req.Folder, req.Name, int32(req.BlockNo), int32(req.Size), req.Offset, req.Hash, req.WeakHash, req.FromTemporary)
 	if err != nil {
-		c.sendStream(context.Background(), &Response{
+		c.sendOutbox(context.Background(), &Response{
 			ID:   req.ID,
 			Code: errorToCode(err),
-		}, nil, w)
+		}, nil, outbox)
 		return
 	}
 	done := make(chan struct{})
-	c.sendStream(context.Background(), &Response{
+	c.sendOutbox(context.Background(), &Response{
 		ID:   req.ID,
 		Data: res.Data(),
 		Code: errorToCode(nil),
-	}, done, w)
+	}, done, outbox)
 	<-done
 	res.Close()
 }
@@ -772,12 +794,12 @@ func (c *rawConnection) handleResponse(resp Response) {
 }
 
 func (c *rawConnection) send(ctx context.Context, msg message, done chan struct{}) bool {
-	return c.sendStream(ctx, msg, done, nil)
+	return c.sendOutbox(ctx, msg, done, c.outbox)
 }
 
-func (c *rawConnection) sendStream(ctx context.Context, msg message, done chan struct{}, strm io.WriteCloser) bool {
+func (c *rawConnection) sendOutbox(ctx context.Context, msg message, done chan struct{}, outbox chan asyncMessage) bool {
 	select {
-	case c.outbox <- asyncMessage{msg, done, strm}:
+	case outbox <- asyncMessage{msg, done}:
 		return true
 	case <-c.closed:
 	case <-ctx.Done():
@@ -812,25 +834,14 @@ func (c *rawConnection) writerLoop() {
 				return
 			}
 		case hm := <-c.outbox:
-			w := hm.replyStream
-			if w == nil {
-				w = c.stream
+			err := c.writeMessage(c.stream, hm.msg)
+			if hm.done != nil {
+				close(hm.done)
 			}
-			go func() {
-				t0 := time.Now()
-				err := c.writeMessage(w, hm.msg)
-				l.Infof("writeMessage took %v", time.Since(t0))
-				if hm.done != nil {
-					close(hm.done)
-				}
-				// if hm.replyStream != nil {
-				// 	hm.replyStream.Close()
-				// }
-				if err != nil {
-					c.internalClose(err)
-					return
-				}
-			}()
+			if err != nil {
+				c.internalClose(err)
+				return
+			}
 
 		case hm := <-c.closeBox:
 			_ = c.writeMessage(c.stream, hm.msg)
@@ -1011,7 +1022,7 @@ func (c *rawConnection) Close(err error) {
 		done := make(chan struct{})
 		timeout := time.NewTimer(CloseTimeout)
 		select {
-		case c.closeBox <- asyncMessage{&Close{err.Error()}, done, nil}:
+		case c.closeBox <- asyncMessage{&Close{err.Error()}, done}:
 			select {
 			case <-done:
 			case <-timeout.C:
