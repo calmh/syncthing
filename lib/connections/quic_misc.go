@@ -24,9 +24,11 @@ import (
 )
 
 var quicConfig = &quic.Config{
-	ConnectionIDLength: 4,
-	MaxIdleTimeout:     30 * time.Second,
-	KeepAlivePeriod:    15 * time.Second,
+	ConnectionIDLength:         4,
+	MaxIdleTimeout:             30 * time.Second,
+	KeepAlivePeriod:            15 * time.Second,
+	MaxStreamReceiveWindow:     32 << 20,
+	MaxConnectionReceiveWindow: 256 << 20,
 }
 
 func quicNetwork(uri *url.URL) string {

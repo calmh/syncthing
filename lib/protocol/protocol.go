@@ -279,7 +279,7 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 		closed:                make(chan struct{}),
 		compression:           compress,
 		loopWG:                sync.WaitGroup{},
-		desiredSubstreams:     32,
+		desiredSubstreams:     64,
 	}
 	return c
 }
@@ -403,6 +403,7 @@ func (c *rawConnection) streamForRequest(ctx context.Context) io.ReadWriteCloser
 
 	if len(c.substreams) >= c.desiredSubstreams {
 		strm := c.substreams[c.nextSubstream]
+		l.Infoln("Reusing substream", c.nextSubstream)
 		c.nextSubstream = (c.nextSubstream + 1) % c.desiredSubstreams
 		return strm
 	}
@@ -815,17 +816,19 @@ func (c *rawConnection) writerLoop() {
 			if w == nil {
 				w = c.stream
 			}
-			err := c.writeMessage(w, hm.msg)
-			if hm.done != nil {
-				close(hm.done)
-			}
-			// if hm.replyStream != nil {
-			// 	hm.replyStream.Close()
-			// }
-			if err != nil {
-				c.internalClose(err)
-				return
-			}
+			go func() {
+				err := c.writeMessage(w, hm.msg)
+				if hm.done != nil {
+					close(hm.done)
+				}
+				// if hm.replyStream != nil {
+				// 	hm.replyStream.Close()
+				// }
+				if err != nil {
+					c.internalClose(err)
+					return
+				}
+			}()
 
 		case hm := <-c.closeBox:
 			_ = c.writeMessage(c.stream, hm.msg)

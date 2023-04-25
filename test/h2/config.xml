@@ -17,7 +17,7 @@
             <fsType>basic</fsType>
         </versioning>
         <copiers>1</copiers>
-        <pullerMaxPendingKiB>128000</pullerMaxPendingKiB>
+        <pullerMaxPendingKiB>0</pullerMaxPendingKiB>
         <hashers>0</hashers>
         <order>random</order>
         <ignoreDelete>false</ignoreDelete>
@@ -36,7 +36,7 @@
         <blockPullOrder>standard</blockPullOrder>
         <copyRangeMethod>standard</copyRangeMethod>
         <caseSensitiveFS>false</caseSensitiveFS>
-        <junctionsAsDirs>true</junctionsAsDirs>
+        <junctionsAsDirs>false</junctionsAsDirs>
         <syncOwnership>false</syncOwnership>
         <sendOwnership>false</sendOwnership>
         <syncXattrs>false</syncXattrs>
