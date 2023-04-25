@@ -403,7 +403,6 @@ func (c *rawConnection) streamForRequest(ctx context.Context) chan asyncMessage 
 
 	if len(c.substreamOutbox) >= c.desiredSubstreams {
 		strm := c.substreamOutbox[c.nextSubstream]
-		l.Infoln("Reusing substream", c.nextSubstream)
 		c.nextSubstream = (c.nextSubstream + 1) % c.desiredSubstreams
 		return strm
 	}
@@ -412,7 +411,10 @@ func (c *rawConnection) streamForRequest(ctx context.Context) chan asyncMessage 
 	if err == nil {
 		return c.registerNewSubstream(strm)
 	} else {
-		l.Infof("Failed to create substream")
+		if errors.Is(err, netutil.ErrSubstreamsUnsupported) {
+			// No need to try this again
+			c.desiredSubstreams = 0
+		}
 		return c.outbox
 	}
 }
@@ -516,9 +518,7 @@ func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan
 
 func (c *rawConnection) substreamWriterLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
 	for hm := range outbox {
-		t0 := time.Now()
 		err := c.writeMessage(strm, hm.msg)
-		l.Infof("writeMessage took %v", time.Since(t0))
 		if hm.done != nil {
 			close(hm.done)
 		}
