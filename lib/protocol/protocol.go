@@ -271,8 +271,8 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 		receiver:              receiver,
 		stream:                cs,
 		awaiting:              make(map[int]chan asyncResult),
-		inbox:                 make(chan streamMessage),
-		outbox:                make(chan asyncMessage),
+		inbox:                 make(chan streamMessage, 1),
+		outbox:                make(chan asyncMessage, 1),
 		closeBox:              make(chan asyncMessage),
 		clusterConfigBox:      make(chan *ClusterConfig),
 		dispatcherLoopStopped: make(chan struct{}),
@@ -817,7 +817,9 @@ func (c *rawConnection) writerLoop() {
 				w = c.stream
 			}
 			go func() {
+				t0 := time.Now()
 				err := c.writeMessage(w, hm.msg)
+				l.Infof("writeMessage took %v", time.Since(t0))
 				if hm.done != nil {
 					close(hm.done)
 				}
