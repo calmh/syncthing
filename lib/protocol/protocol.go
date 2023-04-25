@@ -880,7 +880,9 @@ func (c *rawConnection) writeMessage(w io.Writer, msg message) error {
 	// Message length
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(size))
 
+	l.Infoln("Writing message", msgContext)
 	n, err := w.Write(buf)
+	l.Infoln("Wrote message", msgContext)
 
 	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message), err=%v", n, hdrSize, size, err)
 	if err != nil {
