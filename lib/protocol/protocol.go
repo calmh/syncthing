@@ -420,15 +420,10 @@ func (c *rawConnection) streamForRequest(ctx context.Context) chan asyncMessage 
 }
 
 func (c *rawConnection) registerNewSubstream(strm io.ReadWriteCloser) chan asyncMessage {
-	l.Infof("Registering new substream")
 	outbox := make(chan asyncMessage, 1)
 	c.substreams = append(c.substreams, strm)
 	c.substreamOutbox = append(c.substreamOutbox, outbox)
-	go func() {
-		c.substreamReaderLoop(strm, outbox)
-		l.Infof("Closing substream")
-		strm.Close()
-	}()
+	go c.substreamReaderLoop(strm, outbox)
 	go c.substreamWriterLoop(strm, outbox)
 	return outbox
 }
@@ -496,6 +491,7 @@ func (c *rawConnection) streamAcceptLoop() {
 }
 
 func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
+	defer strm.Close()
 	fourByteBuf := make([]byte, 4)
 	for {
 		msg, err := c.readMessage(strm, fourByteBuf)
@@ -517,13 +513,18 @@ func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan
 }
 
 func (c *rawConnection) substreamWriterLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
-	for hm := range outbox {
-		err := c.writeMessage(strm, hm.msg)
-		if hm.done != nil {
-			close(hm.done)
-		}
-		if err != nil {
-			l.Debugf("Closing substream writer loop for %v: %v", c, err)
+	for {
+		select {
+		case hm := <-outbox:
+			err := c.writeMessage(strm, hm.msg)
+			if hm.done != nil {
+				close(hm.done)
+			}
+			if err != nil {
+				l.Debugf("Closing substream writer loop for %v: %v", c, err)
+				return
+			}
+		case <-c.closed:
 			return
 		}
 	}
@@ -893,10 +894,7 @@ func (c *rawConnection) writeMessage(w io.Writer, msg message) error {
 	// Message length
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(size))
 
-	l.Infoln("Writing message", msgContext)
 	n, err := w.Write(buf)
-	l.Infoln("Wrote message", msgContext)
-
 	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message), err=%v", n, hdrSize, size, err)
 	if err != nil {
 		return fmt.Errorf("writing message: %w", err)
