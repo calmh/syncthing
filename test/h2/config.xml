@@ -1,6 +1,6 @@
 <configuration version="37">
     <folder id="default" label="" path="s2" type="sendreceive" rescanIntervalS="15" fsWatcherEnabled="false" fsWatcherDelayS="10" ignorePerms="false" autoNormalize="true">
-        <filesystemType>fake</filesystemType>
+        <filesystemType>basic</filesystemType>
         <device id="I6KAH76-66SLLLB-5PFXSOA-UFJCDZC-YAOMLEK-CP2GB32-BV5RQST-3PSROAU" introducedBy="">
             <encryptionPassword></encryptionPassword>
         </device>
@@ -31,12 +31,12 @@
         <markerName>.stfolder</markerName>
         <copyOwnershipFromParent>false</copyOwnershipFromParent>
         <modTimeWindowS>0</modTimeWindowS>
-        <maxConcurrentWrites>32</maxConcurrentWrites>
+        <maxConcurrentWrites>2</maxConcurrentWrites>
         <disableFsync>false</disableFsync>
         <blockPullOrder>standard</blockPullOrder>
         <copyRangeMethod>standard</copyRangeMethod>
         <caseSensitiveFS>false</caseSensitiveFS>
-        <junctionsAsDirs>false</junctionsAsDirs>
+        <junctionsAsDirs>true</junctionsAsDirs>
         <syncOwnership>false</syncOwnership>
         <sendOwnership>false</sendOwnership>
         <syncXattrs>false</syncXattrs>
@@ -135,7 +135,8 @@
         </xattrFilter>
     </folder>
     <device id="I6KAH76-66SLLLB-5PFXSOA-UFJCDZC-YAOMLEK-CP2GB32-BV5RQST-3PSROAU" name="s1" compression="metadata" introducer="false" skipIntroductionRemovals="false" introducedBy="">
-        <address>quic://unu.kastelo.net:22010</address>
+        <address>tcp://127.0.0.1:22001</address>
+        <address>quic://127.0.0.1:22001</address>
         <paused>false</paused>
         <autoAcceptFolders>false</autoAcceptFolders>
         <maxSendKbps>0</maxSendKbps>
@@ -146,6 +147,7 @@
     </device>
     <device id="MRIW7OK-NETT3M4-N6SBWME-N25O76W-YJKVXPH-FUMQJ3S-P57B74J-GBITBAC" name="s2" compression="metadata" introducer="false" skipIntroductionRemovals="false" introducedBy="">
         <address>tcp://127.0.0.1:22002</address>
+        <address>quic://127.0.0.1:22002</address>
         <paused>false</paused>
         <autoAcceptFolders>false</autoAcceptFolders>
         <maxSendKbps>0</maxSendKbps>
@@ -156,6 +158,7 @@
     </device>
     <device id="373HSRP-QLPNLIE-JYKZVQF-P4PKZ63-R2ZE6K3-YD442U2-JHBGBQG-WWXAHAU" name="s3" compression="metadata" introducer="false" skipIntroductionRemovals="false" introducedBy="">
         <address>tcp://127.0.0.1:22003</address>
+        <address>quic://127.0.0.1:22003</address>
         <paused>false</paused>
         <autoAcceptFolders>false</autoAcceptFolders>
         <maxSendKbps>0</maxSendKbps>
@@ -171,7 +174,8 @@
     </gui>
     <ldap></ldap>
     <options>
-        <listenAddress>quic://:22002</listenAddress>
+        <listenAddress>tcp://127.0.0.1:22002</listenAddress>
+        <listenAddress>quic://127.0.0.1:22002</listenAddress>
         <globalAnnounceServer>default</globalAnnounceServer>
         <globalAnnounceEnabled>false</globalAnnounceEnabled>
         <localAnnounceEnabled>true</localAnnounceEnabled>
