@@ -9,7 +9,6 @@ package connections
 import (
 	"context"
 	"fmt"
-	"io"
 	"math"
 	"sync/atomic"
 
@@ -179,15 +178,15 @@ func (*limiter) String() string {
 	return "connections.limiter"
 }
 
-func (lim *limiter) getLimiters(remoteID protocol.DeviceID, rw io.ReadWriter, isLAN bool) (waiterHolder, waiterHolder) {
+func (lim *limiter) getLimiters(remoteID protocol.DeviceID, isLAN bool) (waiterHolder, waiterHolder) {
 	lim.mu.Lock()
-	wr := lim.newWriteLimiterLocked(remoteID, rw, isLAN)
-	rd := lim.newReadLimiterLocked(remoteID, rw, isLAN)
+	wr := lim.newWriteLimiterLocked(remoteID, isLAN)
+	rd := lim.newReadLimiterLocked(remoteID, isLAN)
 	lim.mu.Unlock()
 	return rd, wr
 }
 
-func (lim *limiter) newReadLimiterLocked(remoteID protocol.DeviceID, r io.Reader, isLAN bool) waiterHolder {
+func (lim *limiter) newReadLimiterLocked(remoteID protocol.DeviceID, isLAN bool) waiterHolder {
 	return waiterHolder{
 		waiter:    totalWaiter{lim.getReadLimiterLocked(remoteID), lim.read},
 		limitsLAN: &lim.limitsLAN,
@@ -195,7 +194,7 @@ func (lim *limiter) newReadLimiterLocked(remoteID protocol.DeviceID, r io.Reader
 	}
 }
 
-func (lim *limiter) newWriteLimiterLocked(remoteID protocol.DeviceID, w io.Writer, isLAN bool) waiterHolder {
+func (lim *limiter) newWriteLimiterLocked(remoteID protocol.DeviceID, isLAN bool) waiterHolder {
 	return waiterHolder{
 		waiter:    totalWaiter{lim.getWriteLimiterLocked(remoteID), lim.write},
 		limitsLAN: &lim.limitsLAN,
