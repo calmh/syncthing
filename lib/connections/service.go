@@ -373,11 +373,11 @@ func (s *service) handleHellos(ctx context.Context) error {
 		}
 		_ = c.SetDeadline(time.Time{})
 
-		// If this is a QUIC connection, enable or disable streams support
-		// based on what the other side supports.
-		if qc, ok := c.tlsConn.(*quicTlsConn); ok {
+		// If this is a QUIC connection, enable streams support if the other
+		// side supports it.
+		if qc, ok := c.tlsConn.(*quicTlsConn); ok && hello.SupportsMultipleQUICStreams {
 			l.Infof("Connection with %s at %s (%s) supports multiple QUIC streams", remoteID, c.RemoteAddr(), c.Type())
-			qc.supportsSubstreams = hello.SupportsMultipleQUICStreams
+			qc.supportsSubstreams = true
 		}
 
 		// The Model will return an error for devices that we don't want to

@@ -47,6 +47,8 @@ const (
 
 	// DesiredPerFileBlocks is the number of blocks we aim for per file
 	DesiredPerFileBlocks = 2000
+
+	desiredQUICSubstreams = 64 // number of QUIC substreams we want open per connection
 )
 
 // BlockSizes is the list of valid block sizes, from min to max
@@ -180,8 +182,7 @@ type rawConnection struct {
 
 	desiredSubstreams int
 	substreamsMut     sync.Mutex // Protects substreams.
-	substreams        []io.ReadWriteCloser
-	substreamOutbox   []chan asyncMessage
+	substreams        []chan asyncMessage
 	nextSubstream     int
 
 	awaitingMut sync.Mutex // Protects awaiting and nextID.
@@ -220,8 +221,8 @@ type asyncMessage struct {
 	done chan struct{} // done closes when we're done sending the message
 }
 
-// A streamMessage is a message and the stream it came from (for the
-// purposes of sending a reply).
+// A streamMessage is a message and the outbox (specific substream) replies
+// should go to
 type streamMessage struct {
 	message
 	outbox chan asyncMessage
@@ -279,7 +280,7 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 		closed:                make(chan struct{}),
 		compression:           compress,
 		loopWG:                sync.WaitGroup{},
-		desiredSubstreams:     96,
+		desiredSubstreams:     desiredQUICSubstreams,
 	}
 	return c
 }
@@ -287,32 +288,43 @@ func newRawConnection(deviceID DeviceID, stream netutil.Stream, receiver Model, 
 // Start creates the goroutines for sending and receiving of messages. It must
 // be called exactly once after creating a connection.
 func (c *rawConnection) Start() {
-	c.loopWG.Add(6)
+	c.loopWG.Add(1)
 	go func() {
 		c.readerLoop()
 		c.loopWG.Done()
 	}()
+
+	c.loopWG.Add(1)
 	go func() {
 		err := c.dispatcherLoop()
 		c.Close(err)
 		c.loopWG.Done()
 	}()
+
+	c.loopWG.Add(1)
 	go func() {
 		c.writerLoop()
 		c.loopWG.Done()
 	}()
+
+	c.loopWG.Add(1)
 	go func() {
 		c.pingSender()
 		c.loopWG.Done()
 	}()
+
+	c.loopWG.Add(1)
 	go func() {
 		c.pingReceiver()
 		c.loopWG.Done()
 	}()
+
+	c.loopWG.Add(1)
 	go func() {
 		c.streamAcceptLoop()
 		c.loopWG.Done()
 	}()
+
 	c.startTime = time.Now().Truncate(time.Second)
 }
 
@@ -393,22 +405,26 @@ func (c *rawConnection) Request(ctx context.Context, folder string, name string,
 	}
 }
 
+// streamForRequest returns the channel to use for sending a request. If
+// substreams aren't supported this is the main channel. Otherwise, if we
+// haven't yet reached the desired number of open substreams we create a new
+// substream and use that. Otherwise we round-robin through the existing
+// substreams.
 func (c *rawConnection) streamForRequest(ctx context.Context) chan asyncMessage {
+	c.substreamsMut.Lock()
+	defer c.substreamsMut.Unlock()
+
 	if c.desiredSubstreams == 0 {
 		return c.outbox
 	}
 
-	c.substreamsMut.Lock()
-	defer c.substreamsMut.Unlock()
-
-	if len(c.substreamOutbox) >= c.desiredSubstreams {
-		strm := c.substreamOutbox[c.nextSubstream]
+	if len(c.substreams) >= c.desiredSubstreams {
+		strm := c.substreams[c.nextSubstream]
 		c.nextSubstream = (c.nextSubstream + 1) % c.desiredSubstreams
 		return strm
 	}
 
-	strm, err := c.stream.CreateSubstream(ctx)
-	if err == nil {
+	if strm, err := c.stream.CreateSubstream(ctx); err == nil {
 		return c.registerNewSubstream(strm)
 	} else {
 		if errors.Is(err, netutil.ErrSubstreamsUnsupported) {
@@ -421,8 +437,7 @@ func (c *rawConnection) streamForRequest(ctx context.Context) chan asyncMessage 
 
 func (c *rawConnection) registerNewSubstream(strm io.ReadWriteCloser) chan asyncMessage {
 	outbox := make(chan asyncMessage, 1)
-	c.substreams = append(c.substreams, strm)
-	c.substreamOutbox = append(c.substreamOutbox, outbox)
+	c.substreams = append(c.substreams, outbox)
 	go c.substreamReaderLoop(strm, outbox)
 	go c.substreamWriterLoop(strm, outbox)
 	return outbox
@@ -465,7 +480,7 @@ func (c *rawConnection) readerLoop() {
 			return
 		}
 		select {
-		case c.inbox <- streamMessage{msg, nil}:
+		case c.inbox <- streamMessage{msg, c.outbox}:
 		case <-c.closed:
 			return
 		}
@@ -473,6 +488,8 @@ func (c *rawConnection) readerLoop() {
 	}
 }
 
+// streamAcceptLoop accepts new substreams and registers them with the connection.
+// It exits when the connection is closed or when substreams are not supported.
 func (c *rawConnection) streamAcceptLoop() {
 	for {
 		strm, err := c.stream.AcceptSubstream(context.TODO())
@@ -490,6 +507,8 @@ func (c *rawConnection) streamAcceptLoop() {
 	}
 }
 
+// substreamReaderLoop reads messages from a substream and forwards them to
+// the main inbox. It exits when the substream or the connection is closed.
 func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
 	defer strm.Close()
 	fourByteBuf := make([]byte, 4)
@@ -503,7 +522,6 @@ func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan
 			l.Debugf("Closing substream reader loop for %v: %v", c, err)
 			return
 		}
-		l.Debugf("Received substream message from %v", c)
 		select {
 		case c.inbox <- streamMessage{msg, outbox}:
 		case <-c.closed:
@@ -512,7 +530,27 @@ func (c *rawConnection) substreamReaderLoop(strm io.ReadWriteCloser, outbox chan
 	}
 }
 
+// substreamWriterLoop writes messages from the outbox to a substream. It
+// exits when the substream or the connection is closed. Closes the
+// substream when exiting.
 func (c *rawConnection) substreamWriterLoop(strm io.ReadWriteCloser, outbox chan asyncMessage) {
+	defer strm.Close()
+
+	// Unregister the substream when we exit. This probably isn't strictly
+	// required as there should be no way for a substream to be closed or
+	// error out withtout the main connection closing/erroring, in which
+	// case everything is being torn down anyway.
+	defer func() {
+		c.substreamsMut.Lock()
+		defer c.substreamsMut.Unlock()
+		for i, s := range c.substreams {
+			if s == outbox {
+				c.substreams = append(c.substreams[:i], c.substreams[i+1:]...)
+				break
+			}
+		}
+	}()
+
 	for {
 		select {
 		case hm := <-outbox:
