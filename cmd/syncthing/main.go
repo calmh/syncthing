@@ -22,11 +22,11 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"runtime/pprof"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -146,7 +146,7 @@ type serveOptions struct {
 	BrowserOnly      bool   `help:"Open GUI in browser"`
 	DataDir          string `name:"data" placeholder:"PATH" help:"Set data directory (database and logs)"`
 	DeviceID         bool   `help:"Show the device ID"`
-	GenerateDir      string `name:"generate" placeholder:"PATH" help:"Generate key and config in specified dir, then exit"` //DEPRECATED: replaced by subcommand!
+	GenerateDir      string `name:"generate" placeholder:"PATH" help:"Generate key and config in specified dir, then exit"` // DEPRECATED: replaced by subcommand!
 	GUIAddress       string `name:"gui-address" placeholder:"URL" help:"Override GUI address (e.g. \"http://192.0.2.42:8443\")"`
 	GUIAPIKey        string `name:"gui-apikey" placeholder:"API-KEY" help:"Override GUI API key"`
 	LogFile          string `name:"logfile" default:"${logFile}" placeholder:"PATH" help:"Log file name (see below)"`
@@ -354,7 +354,7 @@ func (options serveOptions) Run() error {
 	}
 
 	// Ensure that our home directory exists.
-	if err := syncthing.EnsureDir(locations.GetBaseDir(locations.ConfigBaseDir), 0700); err != nil {
+	if err := syncthing.EnsureDir(locations.GetBaseDir(locations.ConfigBaseDir), 0o700); err != nil {
 		l.Warnln("Failure on home directory:", err)
 		os.Exit(svcutil.ExitError.AsInt())
 	}
@@ -520,6 +520,14 @@ func upgradeViaRest() error {
 }
 
 func syncthingMain(options serveOptions) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// When shutting down, after cancelling ctx, wait for shutdownWait
+	// before actually running os.Exit. Gives routines that need cleanup
+	// some time to run.
+	var shutdownWait sync.WaitGroup
+
 	if options.DebugProfileBlock {
 		startBlockProfiler()
 	}
@@ -527,7 +535,11 @@ func syncthingMain(options serveOptions) {
 		startHeapProfiler()
 	}
 	if options.DebugPerfStats {
-		startPerfStats()
+		shutdownWait.Add(1)
+		go func() {
+			defer shutdownWait.Done()
+			recordPerfStats(ctx)
+		}()
 	}
 
 	// Set a log prefix similar to the ID we will have later on, or early log
@@ -547,9 +559,6 @@ func syncthingMain(options serveOptions) {
 		l.Warnln("Failed to load/generate certificate:", err)
 		os.Exit(1)
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// earlyService is a supervisor that runs the services needed for or
 	// before app startup; the event logger, and the config service.
@@ -655,10 +664,6 @@ func syncthingMain(options serveOptions) {
 
 	setupSignalHandling(app)
 
-	if os.Getenv("GOMAXPROCS") == "" {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
 	if options.DebugProfileCPU {
 		f, err := os.Create(fmt.Sprintf("cpu-%d.pprof", os.Getpid()))
 		if err != nil {
@@ -669,6 +674,12 @@ func syncthingMain(options serveOptions) {
 			l.Warnln("Starting profile:", err)
 			os.Exit(svcutil.ExitError.AsInt())
 		}
+		shutdownWait.Add(1)
+		go func() {
+			defer shutdownWait.Done()
+			<-ctx.Done()
+			pprof.StopCPUProfile()
+		}()
 	}
 
 	if err := app.Start(); err != nil {
@@ -684,15 +695,13 @@ func syncthingMain(options serveOptions) {
 	}
 
 	status := app.Wait()
+	cancel()
 
 	if status == svcutil.ExitError {
 		l.Warnln("Syncthing stopped with error:", app.Error())
 	}
 
-	if options.DebugProfileCPU {
-		pprof.StopCPUProfile()
-	}
-
+	shutdownWait.Wait()
 	os.Exit(int(status))
 }
 
@@ -722,7 +731,6 @@ func setupSignalHandling(app *syncthing.App) {
 func loadOrDefaultConfig() (config.Wrapper, error) {
 	cfgFile := locations.Get(locations.ConfigFile)
 	cfg, _, err := config.Load(cfgFile, protocol.EmptyDeviceID, events.NoopLogger)
-
 	if err != nil {
 		newCfg := config.New(protocol.EmptyDeviceID)
 		return config.Wrap(cfgFile, newCfg, protocol.EmptyDeviceID, events.NoopLogger), nil
@@ -750,7 +758,7 @@ func auditWriter(auditFile string) io.Writer {
 		} else {
 			auditFlags = os.O_WRONLY | os.O_CREATE | os.O_APPEND
 		}
-		fd, err = os.OpenFile(auditFile, auditFlags, 0600)
+		fd, err = os.OpenFile(auditFile, auditFlags, 0o600)
 		if err != nil {
 			l.Warnln("Audit:", err)
 			os.Exit(svcutil.ExitError.AsInt())

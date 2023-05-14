@@ -10,6 +10,8 @@
 package main
 
 import (
+	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"runtime"
@@ -19,47 +21,59 @@ import (
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
-func startPerfStats() {
-	go savePerfStats(fmt.Sprintf("perfstats-%d.csv", syscall.Getpid()))
+func recordPerfStats(ctx context.Context) {
+	savePerfStats(ctx, fmt.Sprintf("perfstats-%d.csv", syscall.Getpid()))
 }
 
-func savePerfStats(file string) {
+func savePerfStats(ctx context.Context, file string) {
 	fd, err := os.Create(file)
 	if err != nil {
 		panic(err)
 	}
-
-	var prevUsage int64
-	var prevTime int64
-	var rusage syscall.Rusage
-	var memstats runtime.MemStats
-	var prevIn, prevOut int64
+	defer fd.Close()
+	bw := bufio.NewWriter(fd)
+	defer bw.Flush()
 
 	t0 := time.Now()
-	for t := range time.NewTicker(250 * time.Millisecond).C {
+	prevTime := t0.UnixNano()
+	var rusage, prevRusage syscall.Rusage
+	var memstats runtime.MemStats
+	var prevIn, prevOut int64
+	tc := time.NewTicker(250 * time.Millisecond)
+
+	fmt.Fprintf(bw, "TIME\tREL\tCPU\tALLOC\tINUSE\tNETIN\tNETOUT\tBLOCKSIN\tBLOCKSOUT\n")
+	report := func(t time.Time) {
 		if err := syscall.Getrusage(syscall.RUSAGE_SELF, &rusage); err != nil {
-			continue
+			return
 		}
-
-		curTime := time.Now().UnixNano()
-		timeDiff := curTime - prevTime
-		curUsage := rusage.Utime.Nano() + rusage.Stime.Nano()
-		usageDiff := curUsage - prevUsage
-		cpuUsagePercent := 100 * float64(usageDiff) / float64(timeDiff)
-		prevTime = curTime
-		prevUsage = curUsage
-		in, out := protocol.TotalInOut()
-		var inRate, outRate float64
-		if timeDiff > 0 {
-			inRate = float64(in-prevIn) / (float64(timeDiff) / 1e9)    // bytes per second
-			outRate = float64(out-prevOut) / (float64(timeDiff) / 1e9) // bytes per second
-		}
-		prevIn, prevOut = in, out
-
 		runtime.ReadMemStats(&memstats)
 
-		startms := int(t.Sub(t0).Seconds() * 1000)
+		relTime := t.Sub(t0).Seconds()
+		curTime := t.UnixNano()
+		timeDiff := curTime - prevTime
+		usageNanos := rusage.Utime.Nano() - prevRusage.Utime.Nano() + rusage.Stime.Nano() - prevRusage.Stime.Nano()
+		cpuUsagePercent := 100 * float64(usageNanos) / float64(timeDiff)
+		blocksIn := rusage.Inblock - prevRusage.Inblock
+		blocksOut := rusage.Oublock - prevRusage.Oublock
+		prevTime = curTime
+		prevRusage = rusage
 
-		fmt.Fprintf(fd, "%d\t%f\t%d\t%d\t%.0f\t%.0f\n", startms, cpuUsagePercent, memstats.Alloc, memstats.Sys-memstats.HeapReleased, inRate, outRate)
+		in, out := protocol.TotalInOut()
+		netIn := in - prevIn
+		netOut := out - prevOut
+		prevIn, prevOut = in, out
+
+		fmt.Fprintf(bw, "%.06f\t%.06f\t%f\t%d\t%d\t%d\t%d\t%d\t%d\n", float64(curTime)/float64(time.Second), relTime, cpuUsagePercent, memstats.Alloc, memstats.Sys-memstats.HeapReleased, netIn, netOut, blocksIn, blocksOut)
+	}
+
+	for {
+		select {
+		case t := <-tc.C:
+			report(t)
+		case <-ctx.Done():
+			report(time.Now())
+			bw.Write([]byte("---\n"))
+			return
+		}
 	}
 }
