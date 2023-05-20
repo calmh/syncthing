@@ -2205,10 +2205,9 @@ func (m *model) GetHello(id protocol.DeviceID) protocol.HelloIntf {
 		}
 	}
 	return &protocol.Hello{
-		DeviceName:                  name,
-		ClientName:                  m.clientName,
-		ClientVersion:               m.clientVersion,
-		SupportsMultipleQUICStreams: true, // we support multiple streams over QUIC
+		DeviceName:    name,
+		ClientName:    m.clientName,
+		ClientVersion: m.clientVersion,
 	}
 }
 

@@ -31,6 +31,7 @@ import (
 	"github.com/syncthing/syncthing/lib/netutil"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
+	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/svcutil"
 	"github.com/syncthing/syncthing/lib/sync"
 	"github.com/syncthing/syncthing/lib/util"
@@ -277,11 +278,15 @@ func (s *service) handleConns(ctx context.Context) error {
 			continue
 		}
 
+		connectionID := rand.String(16)
+
 		_ = c.SetDeadline(time.Now().Add(20 * time.Second))
 		go func() {
-			hello, err := protocol.ExchangeHello(c, s.model.GetHello(remoteID))
+			ourHello := s.model.GetHello(remoteID)
+			ourHello.(*protocol.Hello).ConnectionID = connectionID // XXX: HAX
+			theirHello, err := protocol.ExchangeHello(c, ourHello)
 			select {
-			case s.hellos <- &connWithHello{c, hello, err, remoteID, remoteCert}:
+			case s.hellos <- &connWithHello{c, theirHello, err, remoteID, remoteCert}:
 			case <-ctx.Done():
 			}
 		}()
@@ -375,7 +380,7 @@ func (s *service) handleHellos(ctx context.Context) error {
 
 		// If this is a QUIC connection, enable streams support if the other
 		// side supports it.
-		if qc, ok := c.tlsConn.(*quicTlsConn); ok && hello.SupportsMultipleQUICStreams {
+		if qc, ok := c.tlsConn.(*quicTlsConn); ok && hello.ConnectionID != "" {
 			l.Infof("Connection with %s at %s (%s) supports multiple QUIC streams", remoteID, c.RemoteAddr(), c.Type())
 			qc.supportsSubstreams = true
 		}
