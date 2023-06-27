@@ -710,3 +710,61 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.DOCKER_TAGS }}
+
+  #
+  # Package stdiscosrv for all platforms
+  #
+
+  package-stdiscosrv:
+    name: Package stdiscosrv for all platforms
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: false
+          check-latest: true
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-stdiscosrv-${{ hashFiles('**/go.sum') }}
+
+      - name: Create packages
+        run: |
+          platforms=$(go tool dist list \
+            | grep -v aix/ppc64 \
+            | grep -v android/ \
+            | grep -v ios/ \
+            | grep -v js/ \
+            | grep -v nacl/ \
+            | grep -v plan9/ \
+          )
+
+          for plat in $platforms; do
+            goos="${plat%/*}"
+            goarch="${plat#*/}"
+            format="tar"
+            if [[ $goos == windows ]] ; then
+              format="zip"
+            fi
+            if ! go run build.go -goos "$goos" -goarch "$goarch" "$format" stdiscosrv ; then
+              echo "*** $plat failed ***"
+            fi
+          done
+        env:
+          CGO_ENABLED: "0"
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages-other
+          path: |
+            stdiscosrv-*.tar.gz
+            stdiscosrv-*.zip
