@@ -712,11 +712,15 @@ jobs:
           tags: ${{ env.DOCKER_TAGS }}
 
   #
-  # Package stdiscosrv for all platforms
+  # Package other tools for all platforms
   #
 
-  package-stdiscosrv:
-    name: Package stdiscosrv for all platforms
+  package-othertools:
+    name: Package other tools for all platforms
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: ["stdiscosrv", "strelaysrv"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -734,7 +738,7 @@ jobs:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-stdiscosrv-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ env.GO_VERSION }}-tool-${{ matrix.tool }}-${{ hashFiles('**/go.sum') }}
 
       - name: Create packages
         run: |
@@ -754,17 +758,34 @@ jobs:
             if [[ $goos == windows ]] ; then
               format="zip"
             fi
-            if ! go run build.go -goos "$goos" -goarch "$goarch" "$format" stdiscosrv ; then
+            if ! go run build.go -goos "$goos" -goarch "$goarch" "$format" ${{ matrix.tool }} ; then
               echo "*** $plat failed ***"
             fi
           done
         env:
           CGO_ENABLED: "0"
 
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: Install fpm
+        run: |
+          gem install fpm
+
+      - name: Package for Debian
+        run: |
+          for arch in amd64 i386 armhf armel arm64 ; do
+            go run build.go -goarch "$arch" deb ${{ matrix.tool }}
+          done
+        env:
+          BUILD_USER: debian
+
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: packages-other
+          name: packages-${{ matrix.tool }}
           path: |
-            stdiscosrv-*.tar.gz
-            stdiscosrv-*.zip
+            ${{ matrix.tool }}*.tar.gz
+            ${{ matrix.tool }}*.zip
+            ${{ matrix.tool }}*.deb
