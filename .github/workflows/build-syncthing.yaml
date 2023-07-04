@@ -541,7 +541,9 @@ jobs:
       - name: Package for Debian
         run: |
           for arch in amd64 i386 armhf armel arm64 ; do
-            go run build.go -no-upgrade -installsuffix=no-upgrade -goarch "$arch" deb
+            for tool in syncthing stdiscosrv strelaysrv ; do
+              go run build.go -no-upgrade -goarch "$arch" deb "$tool"
+            done
           done
         env:
           BUILD_USER: debian
