@@ -784,5 +784,7 @@ jobs:
       - name: Archive artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: packages-other
-          path: syncthing-*.tar.gz
+          name: packages-tools
+          path: |
+            *.tar.gz
+            *.zip
