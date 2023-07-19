@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+import "config/folderconfiguration.proto";
+import "config/deviceconfiguration.proto";
+import "config/guiconfiguration.proto";
+import "config/ldapconfiguration.proto";
+import "config/optionsconfiguration.proto";
+import "config/observed.proto";
+
+message Configuration {
+    int32                        version         = 1;
+    repeated FolderConfiguration folders         = 2;
+    repeated DeviceConfiguration devices         = 3;
+    GUIConfiguration             gui             = 4;
+    LDAPConfiguration            ldap            = 5;
+    OptionsConfiguration         options         = 6;
+    repeated ObservedDevice      ignored_devices = 7;
+    repeated ObservedDevice      pending_devices = 8 [deprecated=true];
+    Defaults                     defaults        = 9;
+}
+
+message Defaults {
+    FolderConfiguration folder  = 1;
+    DeviceConfiguration device  = 2;
+    Ignores             ignores = 3;
+}
+
+message Ignores {
+    repeated string lines = 1;
+}

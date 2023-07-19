@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+enum AuthMode {
+    AUTH_MODE_STATIC = 0;
+    AUTH_MODE_LDAP   = 1;
+}

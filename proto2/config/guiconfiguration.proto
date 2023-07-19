@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+import "config/authmode.proto";
+
+message GUIConfiguration {
+    bool     enabled                      = 1;
+    string   address                      = 2;
+    string   unix_socket_permissions      = 3;
+    string   user                         = 4;
+    string   password                     = 5;
+    AuthMode auth_mode                    = 6;
+    bool     use_tls                      = 7;
+    string   api_key                      = 8;
+    bool     insecure_admin_access        = 9;
+    string   theme                        = 10;
+    bool     debugging                    = 11;
+    bool     insecure_skip_host_check     = 12;
+    bool     insecure_allow_frame_loading = 13;
+}

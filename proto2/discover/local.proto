@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package discover;
+option go_package = "syncthing.net/proto2/discover";
+
+message Announce {
+    bytes           id          = 1;
+    repeated string addresses   = 2;
+    int64           instance_id = 3;
+}

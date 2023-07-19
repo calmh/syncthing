@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+import "config/foldertype.proto";
+import "config/size.proto";
+import "config/pullorder.proto";
+import "config/versioningconfiguration.proto";
+import "config/blockpullorder.proto";
+
+import "fs/types.proto";
+import "fs/copyrangemethod.proto";
+
+message FolderDeviceConfiguration {
+    bytes  device_id           = 1;
+    bytes  introduced_by       = 2;
+    string encryption_password = 3;
+}
+
+message FolderConfiguration {
+    string                             id                         = 1;
+    string                             label                      = 2;
+    fs.FilesystemType                  filesystem_type            = 3;
+    string                             path                       = 4;
+    FolderType                         type                       = 5;
+    repeated FolderDeviceConfiguration devices                    = 6;
+    int32                              rescan_interval_s          = 7;
+    bool                               fs_watcher_enabled         = 8;
+    double                             fs_watcher_delay_s         = 9;
+    bool                               ignore_perms               = 10;
+    bool                               auto_normalize             = 11;
+    Size                               min_disk_free              = 12;
+    VersioningConfiguration            versioning                 = 13;
+    int32                              copiers                    = 14;
+    int32                              puller_max_pending_kib     = 15;
+    int32                              hashers                    = 16;
+    PullOrder                          order                      = 17;
+    bool                               ignore_delete              = 18;
+    int32                              scan_progress_interval_s   = 19;
+    int32                              puller_pause_s             = 20;
+    int32                              max_conflicts              = 21;
+    bool                               disable_sparse_files       = 22;
+    bool                               disable_temp_indexes       = 23;
+    bool                               paused                     = 24;
+    int32                              weak_hash_threshold_pct    = 25;
+    string                             marker_name                = 26;
+    bool                               copy_ownership_from_parent = 27;
+    int32                              mod_time_window_s          = 28;
+    int32                              max_concurrent_writes      = 29;
+    bool                               disable_fsync              = 30;
+    BlockPullOrder                     block_pull_order           = 31;
+    fs.CopyRangeMethod                 copy_range_method          = 32;
+    bool                               case_sensitive_fs          = 33;
+    bool                               follow_junctions           = 34;
+    bool                               sync_ownership             = 35;
+    bool                               send_ownership             = 36;
+    bool                               sync_xattrs                = 37;
+    bool                               send_xattrs                = 38;
+    XattrFilter                        xattr_filter               = 39;
+
+    // Legacy deprecated
+    bool   read_only         = 9000 [deprecated=true];
+    double min_disk_free_pct = 9001 [deprecated=true];
+    int32  pullers           = 9002 [deprecated=true];
+    bool   scan_ownership    = 9003 [deprecated=true];
+}
+
+// Extended attribute filter. This is a list of patterns to match (glob
+// style), each with an action (permit or deny). First match is used. If the
+// filter is empty, all strings are permitted. If the filter is non-empty,
+// the default action becomes deny. To counter this, you can use the "*"
+// pattern to match all strings at the end of the filter. There are also
+// limits on the size of accepted attributes.
+message XattrFilter {
+    repeated XattrFilterEntry entries               = 1;
+    int32                     max_single_entry_size = 2;
+    int32                     max_total_size        = 3;
+}
+
+message XattrFilterEntry {
+    string match  = 1;
+    bool   permit = 2;
+}

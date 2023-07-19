@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+import "ext.proto";
+
+enum LDAPTransport {
+    LDAP_TRANSPORT_PLAIN     = 0;
+    LDAP_TRANSPORT_TLS       = 2;
+    LDAP_TRANSPORT_START_TLS = 3;
+}

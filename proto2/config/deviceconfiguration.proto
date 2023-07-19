@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+import "protocol/bep.proto";
+import "config/observed.proto";
+
+message DeviceConfiguration {
+    bytes                   device_id                  = 1;
+    string                  name                       = 2;
+    repeated string         addresses                  = 3;
+    protocol.Compression    compression                = 4;
+    string                  cert_name                  = 5;
+    bool                    introducer                 = 6;
+    bool                    skip_introduction_removals = 7;
+    bytes                   introduced_by              = 8;
+    bool                    paused                     = 9;
+    repeated string         allowed_networks           = 10;
+    bool                    auto_accept_folders        = 11;
+    int32                   max_send_kbps              = 12;
+    int32                   max_recv_kbps              = 13;
+    repeated ObservedFolder ignored_folders            = 14;
+    repeated ObservedFolder pending_folders            = 15 [deprecated = true];
+    int32                   max_request_kib            = 16;
+    bool                    untrusted                  = 17;
+    int32                   remote_gui_port            = 18;
+}

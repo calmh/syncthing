@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package config;
+option go_package = "syncthing.net/proto2/config";
+
+import "google/protobuf/timestamp.proto";
+
+message ObservedFolder {
+    google.protobuf.Timestamp time  = 1;
+    string                    id    = 2;
+    string                    label = 3;
+}
+
+message ObservedDevice {
+    google.protobuf.Timestamp time    = 1;
+    bytes                     id      = 2;
+    string                    name    = 3;
+    string                    address = 4;
+}
