@@ -10,10 +10,11 @@ import (
 	"testing"
 
 	"github.com/syncthing/syncthing/lib/dialer"
+	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/testutils"
 )
 
-func BenchmarkRequestsRawTCP(b *testing.B) {
+func BenchmarkRequestsRawTCPLZ4(b *testing.B) {
 	// Benchmarks the rate at which we can serve requests over a single,
 	// unencrypted TCP channel over the loopback interface.
 
@@ -27,7 +28,24 @@ func BenchmarkRequestsRawTCP(b *testing.B) {
 	defer conn1.Close()
 
 	// Bench it
-	benchmarkRequestsConnPair(b, conn0, conn1)
+	benchmarkRequestsConnPair(b, conn0, conn1, MessageCompressionLZ4)
+}
+
+func BenchmarkRequestsRawTCPLZMA2(b *testing.B) {
+	// Benchmarks the rate at which we can serve requests over a single,
+	// unencrypted TCP channel over the loopback interface.
+
+	// Get a connected TCP pair
+	conn0, conn1, err := getTCPConnectionPair()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	defer conn0.Close()
+	defer conn1.Close()
+
+	// Bench it
+	benchmarkRequestsConnPair(b, conn0, conn1, MessageCompressionLZMA2)
 }
 
 func BenchmarkRequestsTLSoTCP(b *testing.B) {
@@ -37,10 +55,10 @@ func BenchmarkRequestsTLSoTCP(b *testing.B) {
 	}
 	defer conn0.Close()
 	defer conn1.Close()
-	benchmarkRequestsTLS(b, conn0, conn1)
+	benchmarkRequestsTLS(b, conn0, conn1, MessageCompressionLZ4)
 }
 
-func benchmarkRequestsTLS(b *testing.B, conn0, conn1 net.Conn) {
+func benchmarkRequestsTLS(b *testing.B, conn0, conn1 net.Conn, comp MessageCompression) {
 	// Benchmarks the rate at which we can serve requests over a single,
 	// TLS encrypted channel over the loopback interface.
 
@@ -55,14 +73,14 @@ func benchmarkRequestsTLS(b *testing.B, conn0, conn1 net.Conn) {
 	conn0, conn1 = negotiateTLS(cert, conn0, conn1)
 
 	// Bench it
-	benchmarkRequestsConnPair(b, conn0, conn1)
+	benchmarkRequestsConnPair(b, conn0, conn1, comp)
 }
 
-func benchmarkRequestsConnPair(b *testing.B, conn0, conn1 net.Conn) {
+func benchmarkRequestsConnPair(b *testing.B, conn0, conn1 net.Conn, comp MessageCompression) {
 	// Start up Connections on them
-	c0 := NewConnection(LocalDeviceID, conn0, conn0, testutils.NoopCloser{}, new(fakeModel), new(mockedConnectionInfo), CompressionMetadata, MessageCompressionLZMA2, nil, testKeyGen)
+	c0 := NewConnection(LocalDeviceID, conn0, conn0, testutils.NoopCloser{}, new(fakeModel), new(mockedConnectionInfo), CompressionAlways, comp, nil, testKeyGen)
 	c0.Start()
-	c1 := NewConnection(LocalDeviceID, conn1, conn1, testutils.NoopCloser{}, new(fakeModel), new(mockedConnectionInfo), CompressionMetadata, MessageCompressionLZMA2, nil, testKeyGen)
+	c1 := NewConnection(LocalDeviceID, conn1, conn1, testutils.NoopCloser{}, new(fakeModel), new(mockedConnectionInfo), CompressionAlways, comp, nil, testKeyGen)
 	c1.Start()
 
 	// Satisfy the assertions in the protocol by sending an initial cluster config
@@ -175,11 +193,19 @@ func (*fakeModel) IndexUpdate(_ DeviceID, _ string, _ []FileInfo) error {
 	return nil
 }
 
+var random = make([]byte, MaxBlockSize)
+
+func init() {
+	rand.Read(random)
+}
+
 func (*fakeModel) Request(_ DeviceID, _, _ string, _, size int32, offset int64, _ []byte, _ uint32, _ bool) (RequestResponse, error) {
 	// We write the offset to the end of the buffer, so the receiver
 	// can verify that it did in fact get some data back over the
 	// connection.
 	buf := make([]byte, size)
+	idx := rand.Intn(MaxBlockSize - int(size))
+	copy(buf, random[idx:])
 	binary.BigEndian.PutUint64(buf[len(buf)-8:], uint64(offset))
 	return &fakeRequestResponse{buf}, nil
 }
