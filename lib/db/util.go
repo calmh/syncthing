@@ -61,6 +61,10 @@ func (b *FileInfoBatch) Flush() error {
 }
 
 func (b *FileInfoBatch) Reset() {
+	// clear(b.infos) in Go 1.21+
+	for i := range b.infos {
+		b.infos[i] = protocol.FileInfo{}
+	}
 	b.infos = b.infos[:0]
 	b.size = 0
 }

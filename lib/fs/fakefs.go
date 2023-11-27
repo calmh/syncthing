@@ -633,14 +633,21 @@ func (*fakeFS) Unhide(_ string) error {
 }
 
 func (*fakeFS) GetXattr(_ string, _ XattrFilter) ([]protocol.Xattr, error) {
-	return nil, nil
+	var res []protocol.Xattr
+	for i := 0; i < 2; i++ {
+		key := fmt.Sprintf("xattr_name_%d", i)
+		val := make([]byte, 24)
+		_, _ = rand.Read(val)
+		res = append(res, protocol.Xattr{Name: key, Value: val})
+	}
+	return res, nil
 }
 
 func (*fakeFS) SetXattr(_ string, _ []protocol.Xattr, _ XattrFilter) error {
 	return nil
 }
 
-// A basic glob-impelementation that should be able to handle
+// A basic glob-implementation that should be able to handle
 // simple test cases.
 func (fs *fakeFS) Glob(pattern string) ([]string, error) {
 	dir := filepath.Dir(pattern)

@@ -1,6 +1,6 @@
 <configuration version="37">
-    <folder id="default" label="" path="s1" type="sendreceive" rescanIntervalS="60" fsWatcherEnabled="false" fsWatcherDelayS="10" ignorePerms="false" autoNormalize="true">
-        <filesystemType>basic</filesystemType>
+    <folder id="default" label="" path="s1?files=1000000&amp;sizeavg=1024" type="sendreceive" rescanIntervalS="60" fsWatcherEnabled="false" fsWatcherDelayS="10" ignorePerms="false" autoNormalize="true">
+        <filesystemType>fake</filesystemType>
         <device id="I6KAH76-66SLLLB-5PFXSOA-UFJCDZC-YAOMLEK-CP2GB32-BV5RQST-3PSROAU" introducedBy="">
             <encryptionPassword></encryptionPassword>
         </device>
@@ -18,7 +18,7 @@
         <hashers>0</hashers>
         <order>random</order>
         <ignoreDelete>false</ignoreDelete>
-        <scanProgressIntervalS>0</scanProgressIntervalS>
+        <scanProgressIntervalS>-1</scanProgressIntervalS>
         <pullerPauseS>0</pullerPauseS>
         <maxConflicts>-1</maxConflicts>
         <disableSparseFiles>false</disableSparseFiles>
@@ -36,8 +36,8 @@
         <junctionsAsDirs>true</junctionsAsDirs>
         <syncOwnership>false</syncOwnership>
         <sendOwnership>false</sendOwnership>
-        <syncXattrs>false</syncXattrs>
-        <sendXattrs>false</sendXattrs>
+        <syncXattrs>true</syncXattrs>
+        <sendXattrs>true</sendXattrs>
         <xattrFilter>
             <maxSingleEntrySize>0</maxSingleEntrySize>
             <maxTotalSize>0</maxTotalSize>
@@ -66,7 +66,7 @@
         <remoteGUIPort>0</remoteGUIPort>
         <numConnections>3</numConnections>
     </device>
-    <gui enabled="true" tls="false" debugging="true">
+    <gui enabled="true" tls="false" debugging="true" sendBasicAuthPrompt="false">
         <address>127.0.0.1:8081</address>
         <user>testuser</user>
         <password>$2a$10$7tKL5uvLDGn5s2VLPM2yWOK/II45az0mTel8hxAUJDRQN1Tk2QYwu</password>
@@ -116,7 +116,7 @@
         <stunKeepaliveStartS>180</stunKeepaliveStartS>
         <stunKeepaliveMinS>20</stunKeepaliveMinS>
         <stunServer>default</stunServer>
-        <databaseTuning>auto</databaseTuning>
+        <databaseTuning>large</databaseTuning>
         <maxConcurrentIncomingRequestKiB>0</maxConcurrentIncomingRequestKiB>
         <announceLANAddresses>true</announceLANAddresses>
         <sendFullIndexOnUpgrade>false</sendFullIndexOnUpgrade>
