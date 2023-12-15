@@ -12,10 +12,7 @@ import (
 	"golang.org/x/sys/windows"
 )
 
-func getOSVersion() (*OSVersion, error) {
-	v, err := windows.RtlGetVersion()
-	if err != nil {
-		return runtime.goOS
-	}
-	return fmt.Sprintf("windows%dp%d", v.MajorVersion, v.MinorVersion),
+func getOSVersion() string {
+	v := windows.RtlGetVersion()
+	return fmt.Sprintf("windows%dp%db%d", v.MajorVersion, v.MinorVersion, v.BuildNumber) // windows10p0b22000
 }
