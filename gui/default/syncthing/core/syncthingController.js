@@ -3229,8 +3229,18 @@ angular.module('syncthing.core')
                 return '';
             }
 
-            var os = {
+            var os = $scope.version.os;
+            var version = undefined;
+            if (/[0-9]/.test(os)) {
+                // New style response with version number in the OS field.
+                // Extract name and version.
+                let m = os.match(/(.+?)([0-9]+)p([0-9]+)/);
+                os = m[1];
+                version = m[2] + '.' + m[3];
+            }
+            os = {
                 'darwin': 'macOS',
+                'macos': 'macOS',
                 'dragonfly': 'DragonFly BSD',
                 'freebsd': 'FreeBSD',
                 'openbsd': 'OpenBSD',
@@ -3238,7 +3248,10 @@ angular.module('syncthing.core')
                 'linux': 'Linux',
                 'windows': 'Windows',
                 'solaris': 'Solaris'
-            }[$scope.version.os] || $scope.version.os;
+            }[os] || os;
+            if (version) {
+                os += ' ' + version;
+            }
 
             var arch = {
                 '386': '32-bit Intel/AMD',
@@ -3591,7 +3604,7 @@ angular.module('syncthing.core')
                 return n.match !== "";
             });
         };
-        
+
         // The showModal and hideModal functions are a bandaid for a Bootstrap
         // bug (see https://github.com/twbs/bootstrap/issues/3902) that causes
         // multiple consecutively shown or hidden modals to overlap which leads

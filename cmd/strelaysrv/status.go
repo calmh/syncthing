@@ -55,7 +55,7 @@ func getStatus(w http.ResponseWriter, _ *http.Request) {
 	status["numProxies"] = numProxies.Load()
 	status["bytesProxied"] = bytesProxied.Load()
 	status["goVersion"] = runtime.Version()
-	status["goOS"] = build.OS
+	status["goOS"] = runtime.GOOS
 	status["goArch"] = runtime.GOARCH
 	status["goMaxProcs"] = runtime.GOMAXPROCS(-1)
 	status["goNumRoutine"] = runtime.NumGoroutine()
