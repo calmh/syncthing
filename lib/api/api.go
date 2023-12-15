@@ -731,7 +731,7 @@ func (*service) getSystemVersion(w http.ResponseWriter, _ *http.Request) {
 		"codename":    build.Codename,
 		"longVersion": build.LongVersion,
 		"extra":       build.Extra,
-		"os":          runtime.GOOS,
+		"os":          build.OS,
 		"arch":        runtime.GOARCH,
 		"isBeta":      build.IsBeta,
 		"isCandidate": build.IsCandidate,
@@ -1212,7 +1212,7 @@ func (s *service) getSupportBundle(w http.ResponseWriter, r *http.Request) {
 		"version":     build.Version,
 		"codename":    build.Codename,
 		"longVersion": build.LongVersion,
-		"os":          runtime.GOOS,
+		"os":          build.OS,
 		"arch":        runtime.GOARCH,
 	}, "", "  "); err == nil {
 		files = append(files, fileEntry{name: "version-platform.json.txt", data: versionPlatform})

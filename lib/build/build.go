@@ -35,6 +35,7 @@ var (
 	IsBeta      bool
 	LongVersion string
 	Extra       string
+	OS          string
 
 	allowedVersionExp = regexp.MustCompile(`^v\d+\.\d+\.\d+(-[a-z0-9]+)*(\.\d+)*(\+\d+-g[0-9a-f]+)?(-[^\s]+)?$`)
 
@@ -81,6 +82,7 @@ func setBuildData() {
 
 	stamp, _ := strconv.Atoi(Stamp)
 	Date = time.Unix(int64(stamp), 0)
+	OS = getOSVersion()
 	LongVersion = LongVersionFor("syncthing")
 }
 
@@ -88,7 +90,7 @@ func setBuildData() {
 func LongVersionFor(program string) string {
 	// This string and date format is essentially part of our external API. Never change it.
 	date := Date.UTC().Format("2006-01-02 15:04:05 MST")
-	v := fmt.Sprintf(`%s %s "%s" (%s %s-%s) %s@%s %s`, program, Version, Codename, runtime.Version(), runtime.GOOS, runtime.GOARCH, User, Host, date)
+	v := fmt.Sprintf(`%s %s "%s" (%s %s-%s) %s@%s %s`, program, Version, Codename, runtime.Version(), OS, runtime.GOARCH, User, Host, date)
 
 	if tags := TagsList(); len(tags) > 0 {
 		v = fmt.Sprintf("%s [%s]", v, strings.Join(tags, ", "))

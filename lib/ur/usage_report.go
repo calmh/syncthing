@@ -106,7 +106,7 @@ func (s *Service) reportData(ctx context.Context, urVersion int, preview bool) (
 	report.UniqueID = opts.URUniqueID
 	report.Version = build.Version
 	report.LongVersion = build.LongVersion
-	report.Platform = runtime.GOOS + "-" + runtime.GOARCH
+	report.Platform = build.OS + "-" + runtime.GOARCH
 	report.NumFolders = len(s.cfg.Folders())
 	report.NumDevices = len(s.cfg.Devices())
 	report.TotFiles = totFiles
