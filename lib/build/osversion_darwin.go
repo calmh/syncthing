@@ -18,7 +18,8 @@ func getOSVersion() string {
 	if err != nil {
 		return runtime.GOOS
 	}
-	var parts []string
+
+	var name, version string
 	for _, line := range strings.Split(string(out), "\n") {
 		k, v, ok := strings.Cut(line, ":")
 		if !ok {
@@ -26,10 +27,10 @@ func getOSVersion() string {
 		}
 		switch k {
 		case "ProductName":
-			parts = append(parts, strings.TrimSpace(v))
+			name = strings.TrimSpace(v)
 		case "ProductVersion":
-			parts = append(parts, strings.ReplaceAll(strings.TrimSpace(v), ".", "p"))
+			version = strings.ReplaceAll(strings.TrimSpace(v), ".", "p")
 		}
 	}
-	return strings.ToLower(strings.Join(parts, "")) // macos14p2
+	return strings.ToLower(name + version) // macos14p2
 }
