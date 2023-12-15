@@ -14,7 +14,7 @@ import (
 
 func getOSVersion() string {
 	// n.b. The returned major and minor version numbers are not enormously
-	// intuitive. There's at table at
+	// intuitive nor especially precise. There's at table at
 	// https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/ns-wdm-_osversioninfoexw.
 	v := windows.RtlGetVersion()
 	return fmt.Sprintf("windows%dp%db%d", v.MajorVersion, v.MinorVersion) // windows10p0
