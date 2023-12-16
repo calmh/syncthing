@@ -37,7 +37,7 @@
     "Are you sure you want to revert all local changes?": "Ви впевнені, що бажаєте відкинути всі локальні зміни?",
     "Are you sure you want to upgrade?": "Впевнені, що хочете оновитися?",
     "Authors": "Автори",
-    "Auto Accept": "Затверджувати автоматично пропоновані віддаленим пристроєм каталоги",
+    "Auto Accept": "Автоприймання",
     "Automatic Crash Reporting": "Автоматичне звітування про збої",
     "Automatic upgrade now offers the choice between stable releases and release candidates.": "Автоматиче оновлення зараз дозволяє обирати між стабільними випусками та реліз-кандидатами.",
     "Automatic upgrades": "Автоматичні оновлення",
@@ -284,7 +284,6 @@
     "QR code": "QR-код",
     "QUIC LAN": "QUIC LAN",
     "QUIC WAN": "QUIC WAN",
-    "QUIC connections are in most cases considered suboptimal": "QUIC-з'єднання вважаються неоптимальними у більшості випадків",
     "Quick guide to supported patterns": "Короткий посібник по шаблонам, що підтримуються",
     "Random": "Випадково",
     "Receive Encrypted": "Отримувати зашифровано",
@@ -397,7 +396,7 @@
     "The configuration has been saved but not activated. Syncthing must restart to activate the new configuration.": "Конфігурацію збережено, але не активовано. Необхідно перезапустити Syncthing для того, щоби активувати нову конфігурацію.",
     "The device ID cannot be blank.": "ID пристрою не може бути порожнім.",
     "The device ID to enter here can be found in the \"Actions > Show ID\" dialog on the other device. Spaces and dashes are optional (ignored).": "ID пристрою, який необхідно додати. Може бути знайдений у вікні \"Дії > Показати ID\" в меню іншого пристрою. Пробіли та тире необов'язкові (будуть проігноровні).",
-    "The encrypted usage report is sent daily. It is used to track common platforms, folder sizes and app versions. If the reported data set is changed you will be prompted with this dialog again.": "Зашифрована статистика використання відсилається щоденно. Вона використовується для того, щоб розробники відслідковували платформи, на яких працює програма, розміри папок та версії програми. Якщо набір даних, що збирається зазнає змін, ви обов’язково будете повідомлені через це діалогове вікно.",
+    "The encrypted usage report is sent daily. It is used to track common platforms, folder sizes, and app versions. If the reported data set is changed you will be prompted with this dialog again.": "Зашифрована статистика використання відсилається щоденно. Вона використовується для того, щоб розробники відслідковували платформи, на яких працює програма, розміри папок та версії програми. Якщо набір даних, що збирається зазнає змін, ви обов’язково будете повідомлені через це діалогове вікно.",
     "The entered device ID does not look valid. It should be a 52 or 56 character string consisting of letters and numbers, with spaces and dashes being optional.": "Введений ID пристрою невалідний. Ідентифікатор має вигляд строки довжиною 52 або 56 символів, що містить цифри та літери, із опціональними пробілами та тире.",
     "The folder ID cannot be blank.": "ID папки не може бути порожнім.",
     "The folder ID must be unique.": "ID папки повинен бути унікальним.",
@@ -507,10 +506,14 @@
     "items": "елементи",
     "modified": "змінено",
     "seconds": "секунд",
-    "theme-name-black": "Чорна",
-    "theme-name-dark": "Темна",
-    "theme-name-default": "Стандартна",
-    "theme-name-light": "Світла",
+    "theme": {
+        "name": {
+            "black": "Чорна",
+            "dark": "Темна",
+            "default": "Стандартна",
+            "light": "Світла"
+        }
+    },
     "{%device%} wants to share folder \"{%folder%}\".": "{{device}} хоче поділитися папкою \"{{folder}}\".",
     "{%device%} wants to share folder \"{%folderlabel%}\" ({%folder%}).": "{{device}} хоче поділитися папкою \"{{folderLabel}}\" ({{folder}}).",
     "{%reintroducer%} might reintroduce this device.": "{{reintroducer}} може повторно порекомендувати цей пристрій."

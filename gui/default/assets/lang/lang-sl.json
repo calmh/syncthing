@@ -261,7 +261,6 @@
     "Preview": "Predogled",
     "Preview Usage Report": "Predogled poročila uporabe",
     "QR code": "QR koda",
-    "QUIC connections are in most cases considered suboptimal": "QUIC povezave običajno niso optimalne",
     "Quick guide to supported patterns": "Hitri vodnik za podprte vzorce",
     "Random": "Naključno",
     "Receive Encrypted": "Prejmi šifrirano",
@@ -357,7 +356,7 @@
     "The configuration has been saved but not activated. Syncthing must restart to activate the new configuration.": "Konfiguracija je bila shranjena, vendar ni aktivirana. Sinhronizacija se mora znova zagnati, da aktivirate novo konfiguracijo.",
     "The device ID cannot be blank.": "ID naprave ne more biti prazno.",
     "The device ID to enter here can be found in the \"Actions > Show ID\" dialog on the other device. Spaces and dashes are optional (ignored).": "ID naprave, ki ga vnesete tukaj, najdete v pozivnem oknu »Dejanja > Pokaži ID« na drugi napravi. Presledki in pomišljaji so neobvezni (prezrti).",
-    "The encrypted usage report is sent daily. It is used to track common platforms, folder sizes and app versions. If the reported data set is changed you will be prompted with this dialog again.": "Poročilo o šifrirani uporabi se pošilja vsak dan. Uporablja se za sledenje običajnih platform, velikosti map in različic aplikacij. Če se sporočeni nabor podatkov spremeni, boste znova pozvani k temu pozivnem oknu.",
+    "The encrypted usage report is sent daily. It is used to track common platforms, folder sizes, and app versions. If the reported data set is changed you will be prompted with this dialog again.": "Poročilo o šifrirani uporabi se pošilja vsak dan. Uporablja se za sledenje običajnih platform, velikosti map in različic aplikacij. Če se sporočeni nabor podatkov spremeni, boste znova pozvani k temu pozivnem oknu.",
     "The entered device ID does not look valid. It should be a 52 or 56 character string consisting of letters and numbers, with spaces and dashes being optional.": "Vneseni ID naprave ni videti veljaven. To mora biti niz z 52 ali 56 znaki, sestavljen iz črk in številk, pri čemer so presledki in pomišljaji neobvezni.",
     "The folder ID cannot be blank.": "ID mape ne more biti prazno.",
     "The folder ID must be unique.": "ID mape more biti edinstveno.",
@@ -456,10 +455,14 @@
     "items": "predmeti",
     "modified": "spremenjeno",
     "seconds": "sekunde",
-    "theme-name-black": "Črna",
-    "theme-name-dark": "Temno",
-    "theme-name-default": "Privzeto",
-    "theme-name-light": "Svetlo",
+    "theme": {
+        "name": {
+            "black": "Črna",
+            "dark": "Temno",
+            "default": "Privzeto",
+            "light": "Svetlo"
+        }
+    },
     "{%device%} wants to share folder \"{%folder%}\".": "{{device}} želi deliti mapo \"{{folder}}\".",
     "{%device%} wants to share folder \"{%folderlabel%}\" ({%folder%}).": "{{device}} želi deliti mapo \"{{folderlabel}}\" ({{folder}}).",
     "{%reintroducer%} might reintroduce this device.": "{{reintroducer}} bo morda znova predstavil to napravo."

@@ -14,12 +14,26 @@ angular.module('syncthing.core')
 
         function initController() {
             LocaleService.autoConfigLocale();
+
+            if (!$scope.authenticated) {
+                // Can't proceed yet - wait for the page reload after successful login.
+                return;
+            }
+
             setInterval($scope.refresh, 10000);
             Events.start();
         }
 
         // public/scope definitions
 
+        // window.metadata is set in /meta.js which requires authentication
+        $scope.authenticated = window.metadata && window.metadata.authenticated;
+
+        $scope.login = {
+            username: '',
+            password: '',
+            errors: {},
+        };
         $scope.completion = {};
         $scope.config = {};
         $scope.configInSync = true;
@@ -81,6 +95,35 @@ angular.module('syncthing.core')
             bytes: 0,
             directories: 0,
             files: 0
+        };
+
+        $scope.authenticatePassword = function () {
+            $scope.login.inProgress = true;
+            $scope.login.errors = {};
+            $http.post(authUrlbase + '/password', {
+              username: $scope.login.username,
+              password: $scope.login.password,
+            }).then(function () {
+                location.reload();
+            }).catch(function (response) {
+                if (response.status === 403) {
+                    $scope.login.errors.badLogin = true;
+                } else {
+                    $scope.login.errors.failed = true;
+                    console.log('Password authentication failed:', response);
+                }
+            }).finally(function () {
+                $scope.login.inProgress = false;
+            });
+        };
+
+        $scope.logout = function() {
+            $http.post(authUrlbase + '/logout', {})
+            .then(function () {
+                location.reload();
+            }).catch(function (response) {
+                console.log('Failed to log out:', response);
+            });
         };
 
         $(window).bind('beforeunload', function () {
@@ -183,6 +226,9 @@ angular.module('syncthing.core')
                 if (arg.status === 0) {
                     // A network error, not an HTTP error
                     $scope.$emit(Events.OFFLINE);
+                } else if (arg.status === 403) {
+                    // Auth error - reload login page
+                    location.reload();
                 } else if (arg.status >= 400 && arg.status <= 599 && arg.status != 501) {
                     // A genuine HTTP error. 501/NotImplemented is considered intentional
                     // and not an error which we need to act upon.
@@ -519,6 +565,15 @@ angular.module('syncthing.core')
             }).error($scope.emitHTTPError);
         }
 
+        $scope.isAuthEnabled = function () {
+            // This function should match IsAuthEnabled() in guiconfiguration.go
+            var guiCfg = $scope.config && $scope.config.gui;
+            if (guiCfg) {
+                return guiCfg.authMode === 'ldap' || (guiCfg.user && guiCfg.password);
+            }
+            return false;
+        };
+
         function refreshNoAuthWarning() {
             if (!$scope.system || !$scope.config || !$scope.config.gui) {
                 // We need all to be able to determine the state.
@@ -533,8 +588,7 @@ angular.module('syncthing.core')
             $scope.openNoAuth = addr.substr(0, 4) !== "127."
                 && addr.substr(0, 6) !== "[::1]:"
                 && addr.substr(0, 1) !== "/"
-                && (!guiCfg.user || !guiCfg.password)
-                && guiCfg.authMode !== 'ldap'
+                && !$scope.isAuthEnabled()
                 && !guiCfg.insecureAdminAccess;
 
             if ((guiCfg.user && guiCfg.password) || guiCfg.authMode === 'ldap') {
@@ -1097,6 +1151,113 @@ angular.module('syncthing.core')
             }
         };
 
+        $scope.deviceStatusIcon = function(cfg) {
+            switch ($scope.deviceStatus(cfg)) {
+                case 'disconnected':
+                case 'disconnected-inactive':
+                    return 'fa-power-off';
+                case 'insync':
+                    return 'fa-check';
+                case 'paused':
+                    return 'fa-pause';
+                case 'syncing':
+                    return 'fa-sync';
+                case 'unused-disconnected':
+                case 'unused-insync':
+                case 'unused-paused':
+                    return 'fa-unlink';
+            }
+        };
+
+        $scope.deviceStatusText = function(device) {
+            switch ($scope.deviceStatus(device)) {
+                case 'disconnected':
+                    return $translate.instant('Disconnected');
+                case 'disconnected-inactive':
+                    return $translate.instant('Disconnected (Inactive)');
+                case 'insync':
+                    return $translate.instant('Up to Date');
+                case 'paused':
+                    return $translate.instant('Paused');
+                case 'syncing':
+                    return $translate.instant('Syncing');
+                case 'unused-disconnected':
+                    return $translate.instant('Disconnected (Unused)');
+                case 'unused-insync':
+                    return $translate.instant('Connected (Unused)');
+                case 'unused-paused':
+                    return $translate.instant('Paused (Unused)');
+            }
+        };
+
+        $scope.folderStatusIcon = function(cfg) {
+            switch ($scope.folderStatus(cfg)) {
+                case 'clean-waiting':
+                case 'scan-waiting':
+                case 'sync-preparing':
+                case 'sync-waiting':
+                    return 'fa-hourglass-half';
+                case 'cleaning':
+                    return 'fa-recycle';
+                case 'faileditems':
+                case 'localunencrypted':
+                case 'outofsync':
+                    return 'fa-exclamation-circle';
+                case 'idle':
+                case 'localadditions':
+                    return 'fa-check';
+                case 'paused':
+                    return 'fa-pause';
+                case 'scanning':
+                    return 'fa-search';
+                case 'stopped':
+                    return 'fa-stop';
+                case 'syncing':
+                    return 'fa-sync';
+                case 'unknown':
+                    return 'fa-question-circle';
+                case 'unshared':
+                    return 'fa-unlink';
+            }
+        };
+
+        $scope.folderStatusText = function(folder) {
+            switch ($scope.folderStatus(folder)) {
+                case 'clean-waiting':
+                    return $translate.instant('Waiting to Clean');
+                case 'cleaning':
+                    return $translate.instant('Cleaning Versions');
+                case 'faileditems':
+                    return $translate.instant('Failed Items');
+                case 'idle':
+                    return $translate.instant('Up to Date');
+                case 'localadditions':
+                    return $translate.instant('Local Additions');
+                case 'localunencrypted':
+                    return $translate.instant('Unexpected Items');
+                case 'outofsync':
+                    return $translate.instant('Out of Sync');
+                case 'paused':
+                    return $translate.instant('Paused');
+                case 'scan-waiting':
+                    return $translate.instant('Waiting to Scan');
+                case 'scanning':
+                    return $translate.instant('Scanning');
+                case 'stopped':
+                    return $translate.instant('Stopped');
+                case 'sync-preparing':
+                    return $translate.instant('Preparing to Sync');
+                case 'sync-waiting':
+                    return $translate.instant('Waiting to Sync');
+                case 'syncing':
+                    return $translate.instant('Syncing');
+                case 'unknown':
+                    return $translate.instant('Unknown');
+                case 'unshared':
+                    return $translate.instant('Unshared');
+            }
+        };
+
         $scope.deviceClass = function (deviceCfg) {
             if (typeof $scope.connections[deviceCfg.deviceID] === 'undefined') {
                 return 'info';
@@ -1144,6 +1305,9 @@ angular.module('syncthing.core')
             // loop through all devices
             var deviceCount = 0;
             for (var id in $scope.devices) {
+                if (id === $scope.myID) {
+                    continue
+                }
                 var status = $scope.deviceStatus({
                     deviceID: id
                 });
@@ -1176,8 +1340,8 @@ angular.module('syncthing.core')
                 return 'notify';
             }
 
-            // all used devices are paused except (this) one
-            if (pauseCount === deviceCount - 1) {
+            // all used devices are paused
+            if (pauseCount === deviceCount && deviceCount > 0) {
                 return 'pause';
             }
 
@@ -1321,7 +1485,7 @@ angular.module('syncthing.core')
         $scope.thisDeviceName = function () {
             var device = $scope.thisDevice();
             if (typeof device === 'undefined') {
-                return "(unknown device)";
+                return '(' + $translate.instant("unknown device") + ')';
             }
             if (device.name) {
                 return device.name;
@@ -3116,6 +3280,9 @@ angular.module('syncthing.core')
 
         $scope.docsURL = function (path) {
             var url = 'https://docs.syncthing.net';
+            if (!$scope.versionBase()) {
+                return url;
+            }
             if (!path) {
                 // Undefined or null should become a valid string.
                 path = '';
@@ -3155,8 +3322,8 @@ angular.module('syncthing.core')
         };
 
         $scope.themeName = function (theme) {
-            var translation = $translate.instant("theme-name-" + theme);
-            if (translation.indexOf("theme-name-") == 0) {
+            var translation = $translate.instant("theme.name." + theme);
+            if (translation.indexOf("theme.name.") == 0) {
                 // Fall back to simple Title Casing on missing translation
                 translation = theme.toLowerCase().replace(/(?:^|\s)\S/g, function (a) {
                     return a.toUpperCase();
