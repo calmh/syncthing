@@ -15,7 +15,6 @@ env:
 jobs:
   docker-syncthing:
     name: Build and push Docker images
-    if: github.repository == 'syncthing/syncthing'
     runs-on: ubuntu-latest
     environment: docker
     strategy:
@@ -68,7 +67,7 @@ jobs:
           context: .
           file: ./Dockerfile.${{ matrix.pkg }}
           platforms: linux/amd64,linux/arm64
-          push: true
+          push: ${{ github.repository == 'syncthing/syncthing' }}
           tags: ${{ env.TAGS }}
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}
