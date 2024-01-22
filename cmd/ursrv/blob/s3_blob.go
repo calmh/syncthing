@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -18,8 +17,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
-
-const timeOut = time.Minute
 
 type S3Config struct {
 	Bucket    string
@@ -95,9 +92,6 @@ func (s *S3) Delete(key string) error {
 }
 
 func (s *S3) Iterate(ctx context.Context, prefix string, fn func([]byte) bool) error {
-	ctx, cancel := context.WithTimeout(ctx, timeOut)
-	defer cancel()
-
 	downloadManager := s3manager.NewDownloaderWithClient(s.client)
 
 	// ListObjectsV2 only supports up to 1000 keys per response. A response
@@ -116,33 +110,43 @@ func (s *S3) Iterate(ctx context.Context, prefix string, fn func([]byte) bool) e
 			return nil
 		}
 
-		// Convert the objects to a BatchDownloadObject.
-		batch := make([]s3manager.BatchDownloadObject, *resp.KeyCount)
-		for i, item := range resp.Contents {
-			batch[i] = s3manager.BatchDownloadObject{
-				Object: &s3.GetObjectInput{
-					Bucket: aws.String(s.bucket),
-					Key:    aws.String(*item.Key),
-				},
-				Writer: aws.NewWriteAtBuffer([]byte{}),
+		// Process the results in batches of 50
+		const batchSize = 50
+		for i := 0; i < len(resp.Contents); i += batchSize {
+			end := i + batchSize
+			if end > len(resp.Contents) {
+				end = len(resp.Contents)
 			}
-		}
+			objs := resp.Contents[i:end]
 
-		// Download the requested items in a batch.
-		err = downloadManager.DownloadWithIterator(ctx, &s3manager.DownloadObjectsIterator{Objects: batch})
-		if err != nil {
-			return err
-		}
-
-		for _, item := range batch {
-			// Read the item's buffer.
-			b, ok := item.Writer.(*aws.WriteAtBuffer)
-			if !ok {
-				continue
+			// Convert the objects to a BatchDownloadObject.
+			batch := make([]s3manager.BatchDownloadObject, len(objs))
+			for i, item := range objs {
+				batch[i] = s3manager.BatchDownloadObject{
+					Object: &s3.GetObjectInput{
+						Bucket: &s.bucket,
+						Key:    item.Key,
+					},
+					Writer: aws.NewWriteAtBuffer(nil),
+				}
 			}
 
-			if !fn(b.Bytes()) {
-				break
+			// Download the requested items in a batch.
+			err = downloadManager.DownloadWithIterator(ctx, &s3manager.DownloadObjectsIterator{Objects: batch})
+			if err != nil {
+				return err
+			}
+
+			for _, item := range batch {
+				// Read the item's buffer.
+				b, ok := item.Writer.(*aws.WriteAtBuffer)
+				if !ok {
+					continue
+				}
+
+				if !fn(b.Bytes()) {
+					break
+				}
 			}
 		}
 
@@ -159,7 +163,7 @@ func (s *S3) Iterate(ctx context.Context, prefix string, fn func([]byte) bool) e
 }
 
 func (s *S3) Count(prefix string) (int, error) {
-	var total = 0
+	total := 0
 
 	// ListObjectsV2 only supports up to 1000 keys per response. A response
 	// indicates whether the result was truncated and if so returns a

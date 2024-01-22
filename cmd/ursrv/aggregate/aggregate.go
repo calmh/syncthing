@@ -15,6 +15,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -66,11 +67,12 @@ type distributionMatch struct {
 }
 
 type CLI struct {
-	DBConn    string `env:"UR_DB_URL" default:"postgres://user:password@localhost/ur?sslmode=disable"`
-	GeoIPPath string `env:"UR_GEOIP" default:"GeoLite2-City.mmdb"`
-	Migrate   bool   `env:"UR_MIGRATE"` // Migration support (to be removed post-migration).
-	From      string `env:"UR_MIGRATE_FROM" default:"2014-06-11"`
-	To        string `env:"UR_MIGRATE_TO"`
+	DBConn      string `env:"UR_DB_URL" default:"postgres://user:password@localhost/ur?sslmode=disable"`
+	GeoIPPath   string `env:"UR_GEOIP" default:"GeoLite2-City.mmdb"`
+	Migrate     bool   `env:"UR_MIGRATE"` // Migration support (to be removed post-migration).
+	From        string `env:"UR_MIGRATE_FROM" default:"2014-06-11"`
+	To          string `env:"UR_MIGRATE_TO"`
+	Concurrency int    `env:"UR_MIGRATE_CONCURRENCY" default:"4"`
 }
 
 func (cli *CLI) Run(s3Config blob.S3Config) error {
@@ -90,7 +92,7 @@ func (cli *CLI) Run(s3Config blob.S3Config) error {
 	// Migration support (to be removed post-migration).
 	if cli.Migrate {
 		log.Println("Starting migration")
-		if err := runMigration(db, store, cli.GeoIPPath, cli.From, cli.To); err != nil {
+		if err := runMigration(db, store, cli.GeoIPPath, cli.From, cli.To, cli.Concurrency); err != nil {
 			log.Println("Migration failed:", err)
 			return err
 		}
@@ -569,7 +571,7 @@ func aggregateUserReports(geoip *geoip2.Reader, date time.Time, reps []contract.
 }
 
 // Migration support (to be removed post-migration).
-func runMigration(db *sql.DB, store *blob.UrsrvStore, geoIPPath, from, to string) error {
+func runMigration(db *sql.DB, store *blob.UrsrvStore, geoIPPath, from, to string, concurrency int) error {
 	geoip, err := geoip2.Open(geoIPPath)
 	if err != nil {
 		log.Println("opening geoip db", err)
@@ -595,35 +597,48 @@ func runMigration(db *sql.DB, store *blob.UrsrvStore, geoIPPath, from, to string
 		return err
 	}
 
+	var wg sync.WaitGroup
+	sema := make(chan struct{}, concurrency)
+
 	// Aggregate the reports of all the days prior to today, as all the usage
 	// reports for those days should be put in the db already.
 	for fromDate.Before(toDate) {
-		log.Println("migrating", fromDate.Format(time.DateOnly))
+		sema <- struct{}{}
+		wg.Add(1)
 
-		// Obtain the reports for the given date from the db.
-		reports, err := reportsFromDB(db, fromDate)
-		if err != nil {
-			return fmt.Errorf("error while retrieving reports for date %v: %w", fromDate, err)
-		}
-		if len(reports) == 0 {
-			// No valid reports were obtained for this date.
-			log.Println("no reports for", fromDate.Format(time.DateOnly))
-			fromDate = fromDate.AddDate(0, 0, 1)
-			continue
-		}
-		log.Println("got", len(reports), "reports for", fromDate.Format(time.DateOnly))
+		go func(date time.Time) {
+			defer func() {
+				<-sema
+				wg.Done()
+			}()
 
-		// Aggregate the reports.
-		aggregated, err := aggregateUserReports(geoip, fromDate, reports)
-		if err != nil {
-			log.Println("migrate aggregation failed", fromDate, err)
-		}
+			log.Println("migrating", date.Format(time.DateOnly))
 
-		// Store the aggregated report in the new storage location.
-		err = store.PutAggregatedReport(aggregated)
-		if err != nil {
-			log.Println("migrate aggregated report failed", fromDate, err)
-		}
+			// Obtain the reports for the given date from the db.
+			reports, err := reportsFromDB(db, date)
+			if err != nil {
+				log.Printf("error while retrieving reports for date %v: %s", date, err)
+				return
+			}
+			if len(reports) == 0 {
+				// No valid reports were obtained for this date.
+				log.Println("no reports for", date.Format(time.DateOnly))
+				return
+			}
+			log.Println("got", len(reports), "reports for", date.Format(time.DateOnly))
+
+			// Aggregate the reports.
+			aggregated, err := aggregateUserReports(geoip, date, reports)
+			if err != nil {
+				log.Println("migrate aggregation failed", date, err)
+			}
+
+			// Store the aggregated report in the new storage location.
+			err = store.PutAggregatedReport(aggregated)
+			if err != nil {
+				log.Println("migrate aggregated report failed", date, err)
+			}
+		}(fromDate)
 
 		// Continue to the next day.
 		fromDate = fromDate.AddDate(0, 0, 1)

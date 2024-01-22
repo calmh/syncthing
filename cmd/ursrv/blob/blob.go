@@ -116,15 +116,16 @@ func (s *UrsrvStore) ListUsageReportsForDate(when time.Time) ([]contract.Report,
 
 func (s *UrsrvStore) ListAggregatedReports() ([]report.AggregatedReport, error) {
 	ctx := context.Background()
-	prefix := AGGREGATED_PREFIX + "/"
+	prefix := AGGREGATED_PREFIX + "/2020"
 
 	var res []report.AggregatedReport
-	var rep report.AggregatedReport
 	err := s.Store.Iterate(ctx, prefix, func(b []byte) bool {
+		var rep report.AggregatedReport
 		err := json.Unmarshal(b, &rep)
 		if err != nil {
 			return true
 		}
+		log.Println("Iterate", rep.Date)
 		res = append(res, rep)
 		return true
 	})

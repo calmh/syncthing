@@ -174,8 +174,8 @@ func (s *server) rootHandler(w http.ResponseWriter, r *http.Request) {
 
 		if time.Since(s.cacheTime) > maxCacheTime {
 			if err := s.refreshCacheLocked(); err != nil {
-				log.Println(err)
-				http.Error(w, "Template Error", http.StatusInternalServerError)
+				log.Println("cache refresh", err)
+				http.Error(w, "Cache Refresh Error", http.StatusInternalServerError)
 				return
 			}
 		}
@@ -184,6 +184,8 @@ func (s *server) rootHandler(w http.ResponseWriter, r *http.Request) {
 		buf := new(bytes.Buffer)
 		err := tpl.Execute(buf, s.cachedLatestReport)
 		if err != nil {
+			log.Println("template:", err)
+			http.Error(w, "Template Error", http.StatusInternalServerError)
 			return
 		}
 		w.Write(buf.Bytes())
