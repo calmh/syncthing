@@ -26,6 +26,7 @@ type indexHandler struct {
 	folderIsReceiveEncrypted bool
 	prevSequence             int64
 	evLogger                 events.Logger
+	didWarnInconsistency     bool
 
 	cond   *sync.Cond
 	paused bool
@@ -304,13 +305,14 @@ func (s *indexHandler) sendIndexTo(ctx context.Context, fset *db.FileSet) error 
 	return err
 }
 
-func (s *indexHandler) receive(fs []protocol.FileInfo, update bool, op string) error {
+func (s *indexHandler) receive(fs []protocol.FileInfo, update bool, op string, prevSeq, maxSeq int64) error {
 	deviceID := s.conn.DeviceID()
 
 	s.cond.L.Lock()
 	paused := s.paused
 	fset := s.fset
 	runner := s.runner
+	alreadyWarned := s.didWarnInconsistency
 	s.cond.L.Unlock()
 
 	if paused {
@@ -331,9 +333,40 @@ func (s *indexHandler) receive(fs []protocol.FileInfo, update bool, op string) e
 		fs[i].LocalFlags = 0
 		fs[i].VersionHash = nil
 	}
+
+	shouldWarn := false
+
+	if prevSeq != 0 {
+		// The index update has a "prev_sequence" field that sets their
+		// expectation of what we have. Verify that it matches or fire a
+		// failure event.
+		curSeq := fset.Sequence(deviceID)
+		if curSeq < prevSeq {
+			s.evLogger.Log(events.Failure, "sequence mismatch on index update; curSeq < prevSeq")
+			l.Infof("Sequence mismatch on index update; curSeq %d < prevSeq %d", curSeq, prevSeq)
+			shouldWarn = true
+		} else if curSeq > prevSeq {
+			s.evLogger.Log(events.Failure, "sequence mismatch on index update; curSeq > prevSeq")
+			l.Infof("Sequence mismatch on index update; curSeq %d > prevSeq %d", curSeq, prevSeq)
+			shouldWarn = true
+		}
+	}
 	fset.Update(deviceID, fs)
 
 	seq := fset.Sequence(deviceID)
+	if maxSeq != 0 {
+		// The index update has a "max_sequence" field that should match the
+		// highest sequence in the update. Verify that's what we got.
+		if maxSeq < seq {
+			s.evLogger.Log(events.Failure, "sequence mismatch on index update; maxSeq < seq")
+			l.Infof("Sequence mismatch on index update; maxSeq %d < seq %d", maxSeq, seq)
+			shouldWarn = true
+		} else if maxSeq > seq {
+			s.evLogger.Log(events.Failure, "sequence mismatch on index update; maxSeq > seq")
+			l.Infof("Sequence mismatch on index update; maxSeq %d > seq %d", maxSeq, seq)
+			shouldWarn = true
+		}
+	}
 	s.evLogger.Log(events.RemoteIndexUpdated, map[string]interface{}{
 		"device":   deviceID.String(),
 		"folder":   s.folder,
@@ -341,6 +374,13 @@ func (s *indexHandler) receive(fs []protocol.FileInfo, update bool, op string) e
 		"sequence": seq,
 		"version":  seq, // legacy for sequence
 	})
+
+	if shouldWarn && !alreadyWarned {
+		l.Warnln("Sequence mismatch detected during index transfer; please report this together with the Syncthing log in the issue https://github.com/syncthing/syncthing/issues/xxx")
+		s.cond.L.Lock()
+		s.didWarnInconsistency = true
+		s.cond.L.Unlock()
+	}
 
 	return nil
 }
@@ -531,7 +571,7 @@ func (r *indexHandlerRegistry) folderRunningLocked(folder config.FolderConfigura
 	}
 }
 
-func (r *indexHandlerRegistry) ReceiveIndex(folder string, fs []protocol.FileInfo, update bool, op string) error {
+func (r *indexHandlerRegistry) ReceiveIndex(folder string, fs []protocol.FileInfo, update bool, op string, prevSeq, maxSeq int64) error {
 	r.mut.Lock()
 	defer r.mut.Unlock()
 	is, isOk := r.indexHandlers.Get(folder)
@@ -539,7 +579,7 @@ func (r *indexHandlerRegistry) ReceiveIndex(folder string, fs []protocol.FileInf
 		l.Infof("%v for nonexistent or paused folder %q", op, folder)
 		return fmt.Errorf("%s: %w", folder, ErrFolderMissing)
 	}
-	return is.receive(fs, update, op)
+	return is.receive(fs, update, op, prevSeq, maxSeq)
 }
 
 // makeForgetUpdate takes an index update and constructs a download progress update

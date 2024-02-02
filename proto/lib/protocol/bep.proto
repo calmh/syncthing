@@ -81,13 +81,17 @@ enum Compression {
 // Index and Index Update
 
 message Index {
-    string            folder = 1;
-    repeated FileInfo files  = 2;
+    string            folder        = 1;
+    repeated FileInfo files         = 2;
+    int64             prev_sequence = 3;
+    int64             max_sequence  = 4;
 }
 
 message IndexUpdate {
-    string            folder = 1;
-    repeated FileInfo files  = 2;
+    string            folder        = 1;
+    repeated FileInfo files         = 2;
+    int64             prev_sequence = 3;
+    int64             max_sequence  = 4;
 }
 
 message FileInfo {
