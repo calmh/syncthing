@@ -531,5 +531,5 @@ func (t *retryAfterTracker) retryAfterS() int {
 	}
 	t.curCount++
 	t.mut.Unlock()
-	return t.currentDelay
+	return t.currentDelay + rand.Intn(t.currentDelay/4)
 }
