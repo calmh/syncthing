@@ -49,9 +49,11 @@ func newMetricsSet(db *sql.DB) *metricsSet {
 					ConstLabels: labels,
 				})
 			case "summary":
-				s.summaries[name] = newMetricSummary(namePrefix+sname, labels)
+				s.summaries[name] = newMetricSummary(namePrefix+sname, nil, labels)
 			case "gaugeVec":
 				s.gaugeVecLabels[name] = append(s.gaugeVecLabels[name], label)
+			case "summaryVec":
+				s.summaries[name] = newMetricSummary(namePrefix+sname, []string{label}, labels)
 			}
 		}
 	}
@@ -149,15 +151,19 @@ func (s *metricsSet) addReportStruct(v reflect.Value, gaugeVecs map[string][]str
 					break
 				}
 			}
-		case "summary":
+		case "summary", "summaryVec":
 			switch v := field.Interface().(type) {
 			case int:
-				s.summaries[name].Observe(float64(v))
+				s.summaries[name].Observe("", float64(v))
 			case float64:
-				s.summaries[name].Observe(v)
+				s.summaries[name].Observe("", v)
 			case []int:
 				for _, v := range v {
-					s.summaries[name].Observe(float64(v))
+					s.summaries[name].Observe("", float64(v))
+				}
+			case map[string]int:
+				for k, v := range v {
+					s.summaries[name].Observe(k, float64(v))
 				}
 			}
 		}
@@ -188,6 +194,8 @@ func (s *metricsSet) Collect(c chan<- prometheus.Metric) {
 	}
 
 	allReports(s.db)(func(r *contract.Report) bool {
+		r.Version = transformVersion(r.Version)
+		r.OS, r.Arch, _ = strings.Cut(r.Platform, "-")
 		s.addReport(r)
 		return true
 	})
@@ -205,8 +213,8 @@ func (s *metricsSet) Collect(c chan<- prometheus.Metric) {
 
 type metricSummary struct {
 	name   string
-	values []float64
-	zeroes int
+	values map[string][]float64
+	zeroes map[string]int
 
 	qDesc     *prometheus.Desc
 	countDesc *prometheus.Desc
@@ -214,22 +222,24 @@ type metricSummary struct {
 	zDesc     *prometheus.Desc
 }
 
-func newMetricSummary(name string, constLabels prometheus.Labels) *metricSummary {
+func newMetricSummary(name string, labels []string, constLabels prometheus.Labels) *metricSummary {
 	return &metricSummary{
 		name:      name,
-		qDesc:     prometheus.NewDesc(name, "", []string{"quantile"}, constLabels),
-		countDesc: prometheus.NewDesc(name+"_nonzero_count", "", nil, constLabels),
-		sumDesc:   prometheus.NewDesc(name+"_sum", "", nil, constLabels),
-		zDesc:     prometheus.NewDesc(name+"_zero_count", "", nil, constLabels),
+		values:    make(map[string][]float64),
+		zeroes:    make(map[string]int),
+		qDesc:     prometheus.NewDesc(name, "", append(labels, "quantile"), constLabels),
+		countDesc: prometheus.NewDesc(name+"_nonzero_count", "", labels, constLabels),
+		sumDesc:   prometheus.NewDesc(name+"_sum", "", labels, constLabels),
+		zDesc:     prometheus.NewDesc(name+"_zero_count", "", labels, constLabels),
 	}
 }
 
-func (q *metricSummary) Observe(v float64) {
+func (q *metricSummary) Observe(labelValue string, v float64) {
 	if v == 0 {
-		q.zeroes++
+		q.zeroes[labelValue]++
 		return
 	}
-	q.values = append(q.values, v)
+	q.values[labelValue] = append(q.values[labelValue], v)
 }
 
 func (q *metricSummary) Describe(c chan<- *prometheus.Desc) {
@@ -240,30 +250,38 @@ func (q *metricSummary) Describe(c chan<- *prometheus.Desc) {
 }
 
 func (q *metricSummary) Collect(c chan<- prometheus.Metric) {
-	c <- prometheus.MustNewConstMetric(q.countDesc, prometheus.GaugeValue, float64(len(q.values)))
-	c <- prometheus.MustNewConstMetric(q.zDesc, prometheus.GaugeValue, float64(q.zeroes))
+	for lv, vs := range q.values {
+		var labelVals []string
+		if lv != "" {
+			labelVals = []string{lv}
+		}
 
-	var sum float64
-	for _, v := range q.values {
-		sum += v
+		c <- prometheus.MustNewConstMetric(q.countDesc, prometheus.GaugeValue, float64(len(vs)), labelVals...)
+		c <- prometheus.MustNewConstMetric(q.zDesc, prometheus.GaugeValue, float64(q.zeroes[lv]), labelVals...)
+
+		var sum float64
+		for _, v := range vs {
+			sum += v
+		}
+		c <- prometheus.MustNewConstMetric(q.sumDesc, prometheus.GaugeValue, sum, labelVals...)
+
+		if len(vs) == 0 {
+			return
+		}
+
+		slices.Sort(vs)
+		c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, vs[0], append(labelVals, "0")...)
+		c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, vs[len(vs)*5/100], append(labelVals, "0.05")...)
+		c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, vs[len(vs)/2], append(labelVals, "0.5")...)
+		c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, vs[len(vs)*9/10], append(labelVals, "0.9")...)
+		c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, vs[len(vs)*95/100], append(labelVals, "0.95")...)
+		c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, vs[len(vs)-1], append(labelVals, "1")...)
 	}
-	c <- prometheus.MustNewConstMetric(q.sumDesc, prometheus.GaugeValue, sum)
-
-	if len(q.values) == 0 {
-		return
-	}
-
-	slices.Sort(q.values)
-	c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, q.values[0], "0")
-	c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, q.values[len(q.values)*5/100], "0.05")
-	c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, q.values[len(q.values)/2], "0.5")
-	c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, q.values[len(q.values)*9/10], "0.9")
-	c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, q.values[len(q.values)*95/100], "0.95")
-	c <- prometheus.MustNewConstMetric(q.qDesc, prometheus.GaugeValue, q.values[len(q.values)-1], "1")
 }
 
 func (q *metricSummary) Reset() {
-	q.values = q.values[:0]
+	clear(q.values)
+	clear(q.zeroes)
 }
 
 func allReports(db *sql.DB) func(func(*contract.Report) bool) {
@@ -282,8 +300,6 @@ func allReports(db *sql.DB) func(func(*contract.Report) bool) {
 				log.Println("sql:", err)
 				return
 			}
-			rep.Version = transformVersion(rep.Version)
-			rep.OS, rep.Arch, _ = strings.Cut(rep.Platform, "-")
 			if !fn(&rep) {
 				return
 			}

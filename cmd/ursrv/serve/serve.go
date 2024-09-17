@@ -898,7 +898,7 @@ func getReport(db *sql.DB, geoip *geoip.Provider) map[string]interface{} {
 }
 
 var (
-	plusRe  = regexp.MustCompile(`(\+.*|[\.-]dev\..*)$`)
+	plusRe  = regexp.MustCompile(`(\+.*|[.-]dev\..*)$`)
 	plusStr = "(+dev)"
 )
 
