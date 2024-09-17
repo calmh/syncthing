@@ -13,12 +13,14 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/syncthing/syncthing/cmd/ursrv/aggregate"
 	"github.com/syncthing/syncthing/cmd/ursrv/serve"
+	"github.com/syncthing/syncthing/cmd/ursrv/servemetrics"
 	_ "github.com/syncthing/syncthing/lib/automaxprocs"
 )
 
 type CLI struct {
-	Serve     serve.CLI     `cmd:"" default:""`
-	Aggregate aggregate.CLI `cmd:""`
+	Serve        serve.CLI        `cmd:"" default:""`
+	ServeMetrics servemetrics.CLI `cmd:""`
+	Aggregate    aggregate.CLI    `cmd:""`
 }
 
 func main() {

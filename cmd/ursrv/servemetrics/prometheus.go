@@ -1,12 +1,11 @@
-package serve
+package servemetrics
 
 import (
-	"database/sql"
-	"log"
 	"reflect"
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/syncthing/syncthing/lib/ur/contract"
@@ -15,7 +14,7 @@ import (
 const namePrefix = "syncthing_usage_"
 
 type metricsSet struct {
-	db *sql.DB
+	srv *server
 
 	gauges         map[string]prometheus.Gauge
 	gaugeVecs      map[string]*prometheus.GaugeVec
@@ -23,9 +22,9 @@ type metricsSet struct {
 	summaries      map[string]*metricSummary
 }
 
-func newMetricsSet(db *sql.DB) *metricsSet {
+func newMetricsSet(srv *server) *metricsSet {
 	s := &metricsSet{
-		db:             db,
+		srv:            srv,
 		gauges:         make(map[string]prometheus.Gauge),
 		gaugeVecs:      make(map[string]*prometheus.GaugeVec),
 		gaugeVecLabels: make(map[string][]string),
@@ -193,9 +192,12 @@ func (s *metricsSet) Collect(c chan<- prometheus.Metric) {
 		g.Reset()
 	}
 
-	allReports(s.db)(func(r *contract.Report) bool {
-		r.Version = transformVersion(r.Version)
-		r.OS, r.Arch, _ = strings.Cut(r.Platform, "-")
+	cutoff := time.Now().Add(-24 * time.Hour)
+	s.srv.reports.Range(func(key string, r *contract.Report) bool {
+		if r.Received.Before(cutoff) {
+			s.srv.reports.Delete(key)
+			return true
+		}
 		s.addReport(r)
 		return true
 	})
@@ -282,27 +284,4 @@ func (q *metricSummary) Collect(c chan<- prometheus.Metric) {
 func (q *metricSummary) Reset() {
 	clear(q.values)
 	clear(q.zeroes)
-}
-
-func allReports(db *sql.DB) func(func(*contract.Report) bool) {
-	rows, err := db.Query(`SELECT Received, Report FROM ReportsJson WHERE Received > now() - '1 day'::INTERVAL LIMIT 1000`)
-	if err != nil {
-		log.Println("sql:", err)
-		return nil
-	}
-
-	return func(fn func(*contract.Report) bool) {
-		defer rows.Close()
-		for rows.Next() {
-			var rep contract.Report
-			err := rows.Scan(&rep.Received, &rep)
-			if err != nil {
-				log.Println("sql:", err)
-				return
-			}
-			if !fn(&rep) {
-				return
-			}
-		}
-	}
 }

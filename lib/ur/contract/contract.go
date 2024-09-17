@@ -29,8 +29,6 @@ type Report struct {
 	Version        string  `json:"version,omitempty" metric:"reports_total,gaugeVec:version" since:"1"`
 	LongVersion    string  `json:"longVersion,omitempty" metric:"-" since:"1"`
 	Platform       string  `json:"platform,omitempty" metric:"-" since:"1"`
-	OS             string  `json:"-" metric:"reports_total,gaugeVec:os"`
-	Arch           string  `json:"-" metric:"reports_total,gaugeVec:arch"`
 	NumFolders     int     `json:"numFolders,omitempty" metric:"num_folders,summary" since:"1"`
 	NumDevices     int     `json:"numDevices,omitempty" metric:"num_devices,summary" since:"1"`
 	TotFiles       int     `json:"totFiles,omitempty" metric:"total_files,summary" since:"1"`
@@ -177,6 +175,15 @@ type Report struct {
 
 	// V3 fields added late in the RC
 	WeakHashEnabled bool `json:"weakHashEnabled,omitempty" metric:"-" since:"3"` // Deprecated and not provided client-side anymore
+
+	// Added in post processing
+	OS           string `json:"-" metric:"reports_total,gaugeVec:os"`
+	Arch         string `json:"-" metric:"reports_total,gaugeVec:arch"`
+	Compiler     string `json:"-" metric:"compiler,gaugeVec:compiler"`
+	Builder      string `json:"-" metric:"compiler,gaugeVec:builder"`
+	Distribution string `json:"-" metric:"reports_total,gaugeVec:distribution"`
+	City         string `json:"-" metric:"location,gaugeVec:city"`
+	Country      string `json:"-" metric:"location,gaugeVec:country"`
 }
 
 func New() *Report {

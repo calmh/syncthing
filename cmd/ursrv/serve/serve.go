@@ -28,7 +28,6 @@ import (
 	"unicode"
 
 	_ "github.com/lib/pq" // PostgreSQL driver
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -186,13 +185,6 @@ func (cli *CLI) Run() error {
 		log.Fatalln("database:", err)
 	}
 
-	// New metrics endpoint
-
-	ms := newMetricsSet(db)
-	if err := prometheus.Register(ms); err != nil {
-		log.Fatalln("prometheus:", err)
-	}
-
 	// Listening
 
 	listener, err := net.Listen("tcp", cli.Listen)
@@ -202,9 +194,9 @@ func (cli *CLI) Run() error {
 
 	geoip, err := geoip.NewGeoLite2CityProvider(context.Background(), cli.GeoIPAccountID, cli.GeoIPLicenseKey, os.TempDir())
 	if err != nil {
-		// log.Fatalln("geoip:", err)
+		log.Fatalln("geoip:", err)
 	}
-	// go geoip.Serve(context.TODO())
+	go geoip.Serve(context.TODO())
 
 	srv := &server{
 		db:    db,
@@ -898,7 +890,7 @@ func getReport(db *sql.DB, geoip *geoip.Provider) map[string]interface{} {
 }
 
 var (
-	plusRe  = regexp.MustCompile(`(\+.*|[.-]dev\..*)$`)
+	plusRe  = regexp.MustCompile(`(\+.*|\.dev\..*)$`)
 	plusStr = "(+dev)"
 )
 
