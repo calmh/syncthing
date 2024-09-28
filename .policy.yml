@@ -55,6 +55,8 @@ approval_rules:
       count: 1
       teams:
         - syncthing/contributors
+    options:
+      ignore_update_merges: true
 
   # Changes to some files (translations, dependencies, compatibility) do not
   # require approval if they were proposed by a contributor and have a
