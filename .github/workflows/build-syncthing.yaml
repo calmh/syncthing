@@ -322,7 +322,9 @@ jobs:
             go "\$@"
           EOT
           chmod 755 xgo.sh
-          go run build.go -gocmd ./xgo.sh -goarch arm64 zip
+          for tgt in syncthing stdiscosrv strelaysrv ; do
+            go run build.go -gocmd ./xgo.sh -goarch arm64 zip $tgt
+          done
         env:
           CGO_ENABLED: "1"
 
