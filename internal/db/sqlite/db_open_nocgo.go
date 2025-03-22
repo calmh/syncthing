@@ -9,8 +9,14 @@
 package sqlite
 
 import (
+	"context"
+	"database/sql/driver"
+	"net/url"
+	"path/filepath"
+	"strings"
+
 	"github.com/syncthing/syncthing/lib/build"
-	_ "modernc.org/sqlite" // register sqlite database driver
+	"modernc.org/sqlite"
 )
 
 const (
@@ -20,4 +26,16 @@ const (
 
 func init() {
 	build.AddTag("modernc-sqlite")
+	sqlite.RegisterConnectionHook(func(conn sqlite.ExecQuerierContext, dsn string) error {
+		uri, err := url.Parse(filepath.ToSlash(dsn))
+		if err != nil {
+			return err
+		}
+		mainFile := uri.Path
+		mainExt := filepath.Ext(mainFile)
+		withoutExt := strings.TrimSuffix(mainFile, mainExt)
+		blocksFile := filepath.FromSlash(withoutExt + "-blocks" + mainExt)
+		_, err = conn.ExecContext(context.Background(), `ATTACH ? AS blocks`, []driver.NamedValue{{Ordinal: 1, Value: blocksFile}})
+		return err
+	})
 }
