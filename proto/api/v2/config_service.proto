@@ -1,0 +1,18 @@
+edition = "2023";
+
+package api.v2;
+
+import "api/v2/config_resources.proto";
+import "google/protobuf/go_features.proto";
+
+option features.(pb.go).api_level = API_OPAQUE;
+
+service ConfigurationService {
+  rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse) {}
+}
+
+message GetConfigurationRequest {}
+
+message GetConfigurationResponse {
+  Configuration config = 1;
+}

@@ -5,7 +5,6 @@ package dbproto;
 import "bep/bep.proto";
 import "google/protobuf/timestamp.proto";
 
-
 // Same as bep.FileInfo, but without blocks
 message FileInfoTruncated {
   string name = 1;
@@ -46,7 +45,6 @@ message FileInfoTruncated {
   bool invalid = 7;
   bool no_permissions = 8;
 }
-
 
 message FileVersion {
   bep.Vector version = 1;
