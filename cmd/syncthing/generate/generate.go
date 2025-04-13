@@ -11,42 +11,26 @@ import (
 	"bufio"
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"os"
 
-	"github.com/syncthing/syncthing/cmd/syncthing/cmdutil"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/locations"
 	"github.com/syncthing/syncthing/lib/logger"
-	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/syncthing"
 )
 
 type CLI struct {
-	cmdutil.CommonOptions
-	GUIUser     string `placeholder:"STRING" help:"Specify new GUI authentication user name"`
-	GUIPassword string `placeholder:"STRING" help:"Specify new GUI authentication password (use - to read from standard input)"`
+	GUIUser         string `placeholder:"STRING" help:"Specify new GUI authentication user name"`
+	GUIPassword     string `placeholder:"STRING" help:"Specify new GUI authentication password (use - to read from standard input)"`
+	NoDefaultFolder bool   `help:"Don't create the \"default\" folder on first startup" env:"STNODEFAULTFOLDER"`
+	NoPortProbing   bool   `help:"Don't try to find free ports for GUI and listen addresses on first startup" env:"STNOPORTPROBING"`
 }
 
 func (c *CLI) Run(l logger.Logger) error {
-	if c.HideConsole {
-		osutil.HideConsole()
-	}
-
-	if c.HomeDir != "" {
-		if c.ConfDir != "" {
-			return errors.New("--home must not be used together with --config")
-		}
-		c.ConfDir = c.HomeDir
-	}
-	if c.ConfDir == "" {
-		c.ConfDir = locations.GetBaseDir(locations.ConfigBaseDir)
-	}
-
 	// Support reading the password from a pipe or similar
 	if c.GUIPassword == "-" {
 		reader := bufio.NewReader(os.Stdin)
@@ -57,7 +41,7 @@ func (c *CLI) Run(l logger.Logger) error {
 		c.GUIPassword = string(password)
 	}
 
-	if err := Generate(l, c.ConfDir, c.GUIUser, c.GUIPassword, c.NoDefaultFolder, c.SkipPortProbing); err != nil {
+	if err := Generate(l, locations.GetBaseDir(locations.ConfigBaseDir), c.GUIUser, c.GUIPassword, c.NoDefaultFolder, c.NoPortProbing); err != nil {
 		return fmt.Errorf("failed to generate config and keys: %w", err)
 	}
 	return nil
