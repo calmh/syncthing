@@ -289,6 +289,113 @@ func (b0 Configuration_builder) Build() *Configuration {
 	return m0
 }
 
+type OptionsConfiguration struct {
+	state                      protoimpl.MessageState           `protogen:"opaque.v1"`
+	xxx_hidden_ListenAddresses []string                         `protobuf:"bytes,1,rep,name=listen_addresses,json=listenAddresses"`
+	xxx_hidden_RateLimits      *OptionsConfiguration_RateLimits `protobuf:"bytes,2,opt,name=rate_limits,json=rateLimits"`
+	xxx_hidden_Nat             *OptionsConfiguration_NAT        `protobuf:"bytes,3,opt,name=nat"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
+}
+
+func (x *OptionsConfiguration) Reset() {
+	*x = OptionsConfiguration{}
+	mi := &file_api_v2_config_resources_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OptionsConfiguration) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OptionsConfiguration) ProtoMessage() {}
+
+func (x *OptionsConfiguration) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_resources_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *OptionsConfiguration) GetListenAddresses() []string {
+	if x != nil {
+		return x.xxx_hidden_ListenAddresses
+	}
+	return nil
+}
+
+func (x *OptionsConfiguration) GetRateLimits() *OptionsConfiguration_RateLimits {
+	if x != nil {
+		return x.xxx_hidden_RateLimits
+	}
+	return nil
+}
+
+func (x *OptionsConfiguration) GetNat() *OptionsConfiguration_NAT {
+	if x != nil {
+		return x.xxx_hidden_Nat
+	}
+	return nil
+}
+
+func (x *OptionsConfiguration) SetListenAddresses(v []string) {
+	x.xxx_hidden_ListenAddresses = v
+}
+
+func (x *OptionsConfiguration) SetRateLimits(v *OptionsConfiguration_RateLimits) {
+	x.xxx_hidden_RateLimits = v
+}
+
+func (x *OptionsConfiguration) SetNat(v *OptionsConfiguration_NAT) {
+	x.xxx_hidden_Nat = v
+}
+
+func (x *OptionsConfiguration) HasRateLimits() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_RateLimits != nil
+}
+
+func (x *OptionsConfiguration) HasNat() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Nat != nil
+}
+
+func (x *OptionsConfiguration) ClearRateLimits() {
+	x.xxx_hidden_RateLimits = nil
+}
+
+func (x *OptionsConfiguration) ClearNat() {
+	x.xxx_hidden_Nat = nil
+}
+
+type OptionsConfiguration_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	ListenAddresses []string
+	RateLimits      *OptionsConfiguration_RateLimits
+	Nat             *OptionsConfiguration_NAT
+}
+
+func (b0 OptionsConfiguration_builder) Build() *OptionsConfiguration {
+	m0 := &OptionsConfiguration{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_ListenAddresses = b.ListenAddresses
+	x.xxx_hidden_RateLimits = b.RateLimits
+	x.xxx_hidden_Nat = b.Nat
+	return m0
+}
+
 type FolderConfiguration struct {
 	state                  protoimpl.MessageState          `protogen:"opaque.v1"`
 	xxx_hidden_Type        FolderType                      `protobuf:"varint,1,opt,name=type,enum=api.v2.FolderType,def=1"`
@@ -313,7 +420,7 @@ const (
 
 func (x *FolderConfiguration) Reset() {
 	*x = FolderConfiguration{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[1]
+	mi := &file_api_v2_config_resources_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -325,7 +432,7 @@ func (x *FolderConfiguration) String() string {
 func (*FolderConfiguration) ProtoMessage() {}
 
 func (x *FolderConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[1]
+	mi := &file_api_v2_config_resources_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -590,7 +697,7 @@ type Size struct {
 
 func (x *Size) Reset() {
 	*x = Size{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[2]
+	mi := &file_api_v2_config_resources_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -602,7 +709,7 @@ func (x *Size) String() string {
 func (*Size) ProtoMessage() {}
 
 func (x *Size) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[2]
+	mi := &file_api_v2_config_resources_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -633,7 +740,7 @@ type XattrFilter struct {
 
 func (x *XattrFilter) Reset() {
 	*x = XattrFilter{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[3]
+	mi := &file_api_v2_config_resources_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -645,7 +752,7 @@ func (x *XattrFilter) String() string {
 func (*XattrFilter) ProtoMessage() {}
 
 func (x *XattrFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[3]
+	mi := &file_api_v2_config_resources_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -676,7 +783,7 @@ type DeviceConfiguration struct {
 
 func (x *DeviceConfiguration) Reset() {
 	*x = DeviceConfiguration{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[4]
+	mi := &file_api_v2_config_resources_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -688,7 +795,7 @@ func (x *DeviceConfiguration) String() string {
 func (*DeviceConfiguration) ProtoMessage() {}
 
 func (x *DeviceConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[4]
+	mi := &file_api_v2_config_resources_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -711,6 +818,312 @@ func (b0 DeviceConfiguration_builder) Build() *DeviceConfiguration {
 	return m0
 }
 
+type OptionsConfiguration_RateLimits struct {
+	state                          protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_MaxSendKbps         int32                  `protobuf:"varint,1,opt,name=max_send_kbps,json=maxSendKbps"`
+	xxx_hidden_MaxRecvKbps         int32                  `protobuf:"varint,2,opt,name=max_recv_kbps,json=maxRecvKbps"`
+	xxx_hidden_LimitLanConnections bool                   `protobuf:"varint,3,opt,name=limit_lan_connections,json=limitLanConnections"`
+	XXX_raceDetectHookData         protoimpl.RaceDetectHookData
+	XXX_presence                   [1]uint32
+	unknownFields                  protoimpl.UnknownFields
+	sizeCache                      protoimpl.SizeCache
+}
+
+func (x *OptionsConfiguration_RateLimits) Reset() {
+	*x = OptionsConfiguration_RateLimits{}
+	mi := &file_api_v2_config_resources_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OptionsConfiguration_RateLimits) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OptionsConfiguration_RateLimits) ProtoMessage() {}
+
+func (x *OptionsConfiguration_RateLimits) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_resources_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *OptionsConfiguration_RateLimits) GetMaxSendKbps() int32 {
+	if x != nil {
+		return x.xxx_hidden_MaxSendKbps
+	}
+	return 0
+}
+
+func (x *OptionsConfiguration_RateLimits) GetMaxRecvKbps() int32 {
+	if x != nil {
+		return x.xxx_hidden_MaxRecvKbps
+	}
+	return 0
+}
+
+func (x *OptionsConfiguration_RateLimits) GetLimitLanConnections() bool {
+	if x != nil {
+		return x.xxx_hidden_LimitLanConnections
+	}
+	return false
+}
+
+func (x *OptionsConfiguration_RateLimits) SetMaxSendKbps(v int32) {
+	x.xxx_hidden_MaxSendKbps = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 3)
+}
+
+func (x *OptionsConfiguration_RateLimits) SetMaxRecvKbps(v int32) {
+	x.xxx_hidden_MaxRecvKbps = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 3)
+}
+
+func (x *OptionsConfiguration_RateLimits) SetLimitLanConnections(v bool) {
+	x.xxx_hidden_LimitLanConnections = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 3)
+}
+
+func (x *OptionsConfiguration_RateLimits) HasMaxSendKbps() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *OptionsConfiguration_RateLimits) HasMaxRecvKbps() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *OptionsConfiguration_RateLimits) HasLimitLanConnections() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
+}
+
+func (x *OptionsConfiguration_RateLimits) ClearMaxSendKbps() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_MaxSendKbps = 0
+}
+
+func (x *OptionsConfiguration_RateLimits) ClearMaxRecvKbps() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	x.xxx_hidden_MaxRecvKbps = 0
+}
+
+func (x *OptionsConfiguration_RateLimits) ClearLimitLanConnections() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+	x.xxx_hidden_LimitLanConnections = false
+}
+
+type OptionsConfiguration_RateLimits_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	MaxSendKbps         *int32
+	MaxRecvKbps         *int32
+	LimitLanConnections *bool
+}
+
+func (b0 OptionsConfiguration_RateLimits_builder) Build() *OptionsConfiguration_RateLimits {
+	m0 := &OptionsConfiguration_RateLimits{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.MaxSendKbps != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 3)
+		x.xxx_hidden_MaxSendKbps = *b.MaxSendKbps
+	}
+	if b.MaxRecvKbps != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 3)
+		x.xxx_hidden_MaxRecvKbps = *b.MaxRecvKbps
+	}
+	if b.LimitLanConnections != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 3)
+		x.xxx_hidden_LimitLanConnections = *b.LimitLanConnections
+	}
+	return m0
+}
+
+type OptionsConfiguration_NAT struct {
+	state                       protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Enabled          bool                   `protobuf:"varint,1,opt,name=enabled,def=1"`
+	xxx_hidden_LeaseIntervalS   int32                  `protobuf:"varint,2,opt,name=lease_interval_s,json=leaseIntervalS"`
+	xxx_hidden_RenewalIntervalS int32                  `protobuf:"varint,3,opt,name=renewal_interval_s,json=renewalIntervalS"`
+	xxx_hidden_TimeoutIntervalS int32                  `protobuf:"varint,4,opt,name=timeout_interval_s,json=timeoutIntervalS"`
+	XXX_raceDetectHookData      protoimpl.RaceDetectHookData
+	XXX_presence                [1]uint32
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
+}
+
+// Default values for OptionsConfiguration_NAT fields.
+const (
+	Default_OptionsConfiguration_NAT_Enabled = bool(true)
+)
+
+func (x *OptionsConfiguration_NAT) Reset() {
+	*x = OptionsConfiguration_NAT{}
+	mi := &file_api_v2_config_resources_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OptionsConfiguration_NAT) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OptionsConfiguration_NAT) ProtoMessage() {}
+
+func (x *OptionsConfiguration_NAT) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_resources_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *OptionsConfiguration_NAT) GetEnabled() bool {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
+			return x.xxx_hidden_Enabled
+		}
+	}
+	return Default_OptionsConfiguration_NAT_Enabled
+}
+
+func (x *OptionsConfiguration_NAT) GetLeaseIntervalS() int32 {
+	if x != nil {
+		return x.xxx_hidden_LeaseIntervalS
+	}
+	return 0
+}
+
+func (x *OptionsConfiguration_NAT) GetRenewalIntervalS() int32 {
+	if x != nil {
+		return x.xxx_hidden_RenewalIntervalS
+	}
+	return 0
+}
+
+func (x *OptionsConfiguration_NAT) GetTimeoutIntervalS() int32 {
+	if x != nil {
+		return x.xxx_hidden_TimeoutIntervalS
+	}
+	return 0
+}
+
+func (x *OptionsConfiguration_NAT) SetEnabled(v bool) {
+	x.xxx_hidden_Enabled = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 4)
+}
+
+func (x *OptionsConfiguration_NAT) SetLeaseIntervalS(v int32) {
+	x.xxx_hidden_LeaseIntervalS = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 4)
+}
+
+func (x *OptionsConfiguration_NAT) SetRenewalIntervalS(v int32) {
+	x.xxx_hidden_RenewalIntervalS = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 4)
+}
+
+func (x *OptionsConfiguration_NAT) SetTimeoutIntervalS(v int32) {
+	x.xxx_hidden_TimeoutIntervalS = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 4)
+}
+
+func (x *OptionsConfiguration_NAT) HasEnabled() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *OptionsConfiguration_NAT) HasLeaseIntervalS() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *OptionsConfiguration_NAT) HasRenewalIntervalS() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
+}
+
+func (x *OptionsConfiguration_NAT) HasTimeoutIntervalS() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
+}
+
+func (x *OptionsConfiguration_NAT) ClearEnabled() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+}
+
+func (x *OptionsConfiguration_NAT) ClearLeaseIntervalS() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	x.xxx_hidden_LeaseIntervalS = 0
+}
+
+func (x *OptionsConfiguration_NAT) ClearRenewalIntervalS() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+	x.xxx_hidden_RenewalIntervalS = 0
+}
+
+func (x *OptionsConfiguration_NAT) ClearTimeoutIntervalS() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
+	x.xxx_hidden_TimeoutIntervalS = 0
+}
+
+type OptionsConfiguration_NAT_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Enabled          *bool
+	LeaseIntervalS   *int32
+	RenewalIntervalS *int32
+	TimeoutIntervalS *int32
+}
+
+func (b0 OptionsConfiguration_NAT_builder) Build() *OptionsConfiguration_NAT {
+	m0 := &OptionsConfiguration_NAT{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.Enabled != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 4)
+		x.xxx_hidden_Enabled = *b.Enabled
+	}
+	if b.LeaseIntervalS != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 4)
+		x.xxx_hidden_LeaseIntervalS = *b.LeaseIntervalS
+	}
+	if b.RenewalIntervalS != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 4)
+		x.xxx_hidden_RenewalIntervalS = *b.RenewalIntervalS
+	}
+	if b.TimeoutIntervalS != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 4)
+		x.xxx_hidden_TimeoutIntervalS = *b.TimeoutIntervalS
+	}
+	return m0
+}
+
 type FolderConfiguration_Filesystem struct {
 	state                      protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Path            *string                `protobuf:"bytes,1,opt,name=path"`
@@ -725,7 +1138,7 @@ type FolderConfiguration_Filesystem struct {
 
 func (x *FolderConfiguration_Filesystem) Reset() {
 	*x = FolderConfiguration_Filesystem{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[5]
+	mi := &file_api_v2_config_resources_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -737,7 +1150,7 @@ func (x *FolderConfiguration_Filesystem) String() string {
 func (*FolderConfiguration_Filesystem) ProtoMessage() {}
 
 func (x *FolderConfiguration_Filesystem) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[5]
+	mi := &file_api_v2_config_resources_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -889,7 +1302,7 @@ type FolderConfiguration_Device struct {
 
 func (x *FolderConfiguration_Device) Reset() {
 	*x = FolderConfiguration_Device{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[6]
+	mi := &file_api_v2_config_resources_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -901,7 +1314,7 @@ func (x *FolderConfiguration_Device) String() string {
 func (*FolderConfiguration_Device) ProtoMessage() {}
 
 func (x *FolderConfiguration_Device) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[6]
+	mi := &file_api_v2_config_resources_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -951,7 +1364,7 @@ const (
 
 func (x *FolderConfiguration_Scanning) Reset() {
 	*x = FolderConfiguration_Scanning{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[7]
+	mi := &file_api_v2_config_resources_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -963,7 +1376,7 @@ func (x *FolderConfiguration_Scanning) String() string {
 func (*FolderConfiguration_Scanning) ProtoMessage() {}
 
 func (x *FolderConfiguration_Scanning) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[7]
+	mi := &file_api_v2_config_resources_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1308,7 +1721,7 @@ const (
 
 func (x *FolderConfiguration_Syncing) Reset() {
 	*x = FolderConfiguration_Syncing{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[8]
+	mi := &file_api_v2_config_resources_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1320,7 +1733,7 @@ func (x *FolderConfiguration_Syncing) String() string {
 func (*FolderConfiguration_Syncing) ProtoMessage() {}
 
 func (x *FolderConfiguration_Syncing) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[8]
+	mi := &file_api_v2_config_resources_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1794,7 +2207,7 @@ type FolderConfiguration_Versioning struct {
 
 func (x *FolderConfiguration_Versioning) Reset() {
 	*x = FolderConfiguration_Versioning{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[9]
+	mi := &file_api_v2_config_resources_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1806,7 +2219,7 @@ func (x *FolderConfiguration_Versioning) String() string {
 func (*FolderConfiguration_Versioning) ProtoMessage() {}
 
 func (x *FolderConfiguration_Versioning) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[9]
+	mi := &file_api_v2_config_resources_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1849,7 +2262,7 @@ const (
 
 func (x *FolderConfiguration_Scanning_Watcher) Reset() {
 	*x = FolderConfiguration_Scanning_Watcher{}
-	mi := &file_api_v2_config_resources_proto_msgTypes[10]
+	mi := &file_api_v2_config_resources_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1861,7 +2274,7 @@ func (x *FolderConfiguration_Scanning_Watcher) String() string {
 func (*FolderConfiguration_Scanning_Watcher) ProtoMessage() {}
 
 func (x *FolderConfiguration_Scanning_Watcher) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_resources_proto_msgTypes[10]
+	mi := &file_api_v2_config_resources_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1981,7 +2394,22 @@ const file_api_v2_config_resources_proto_rawDesc = "" +
 	"\x1dapi/v2/config_resources.proto\x12\x06api.v2\x1a!google/protobuf/go_features.proto\"}\n" +
 	"\rConfiguration\x125\n" +
 	"\afolders\x18\x01 \x03(\v2\x1b.api.v2.FolderConfigurationR\afolders\x125\n" +
-	"\adevices\x18\x02 \x03(\v2\x1b.api.v2.DeviceConfigurationR\adevices\"\x97\x0f\n" +
+	"\adevices\x18\x02 \x03(\v2\x1b.api.v2.DeviceConfigurationR\adevices\"\xf8\x03\n" +
+	"\x14OptionsConfiguration\x12)\n" +
+	"\x10listen_addresses\x18\x01 \x03(\tR\x0flistenAddresses\x12H\n" +
+	"\vrate_limits\x18\x02 \x01(\v2'.api.v2.OptionsConfiguration.RateLimitsR\n" +
+	"rateLimits\x122\n" +
+	"\x03nat\x18\x03 \x01(\v2 .api.v2.OptionsConfiguration.NATR\x03nat\x1a\x88\x01\n" +
+	"\n" +
+	"RateLimits\x12\"\n" +
+	"\rmax_send_kbps\x18\x01 \x01(\x05R\vmaxSendKbps\x12\"\n" +
+	"\rmax_recv_kbps\x18\x02 \x01(\x05R\vmaxRecvKbps\x122\n" +
+	"\x15limit_lan_connections\x18\x03 \x01(\bR\x13limitLanConnections\x1a\xab\x01\n" +
+	"\x03NAT\x12\x1e\n" +
+	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12(\n" +
+	"\x10lease_interval_s\x18\x02 \x01(\x05R\x0eleaseIntervalS\x12,\n" +
+	"\x12renewal_interval_s\x18\x03 \x01(\x05R\x10renewalIntervalS\x12,\n" +
+	"\x12timeout_interval_s\x18\x04 \x01(\x05R\x10timeoutIntervalS\"\x97\x0f\n" +
 	"\x13FolderConfiguration\x12@\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x12.api.v2.FolderType:\x18FOLDER_TYPE_SEND_RECEIVER\x04type\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\tR\x02id\x12\x14\n" +
@@ -2060,7 +2488,7 @@ const file_api_v2_config_resources_proto_rawDesc = "" +
 	"com.api.v2B\x14ConfigResourcesProtoP\x01Z8github.com/syncthing/syncthing/internal/gen/api/v2;apiv2\xa2\x02\x03AXX\xaa\x02\x06Api.V2\xca\x02\x06Api\\V2\xe2\x02\x12Api\\V2\\GPBMetadata\xea\x02\aApi::V2\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
 var file_api_v2_config_resources_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
-var file_api_v2_config_resources_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_api_v2_config_resources_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_api_v2_config_resources_proto_goTypes = []any{
 	(FolderType)(0),                              // 0: api.v2.FolderType
 	(FilesystemType)(0),                          // 1: api.v2.FilesystemType
@@ -2068,38 +2496,43 @@ var file_api_v2_config_resources_proto_goTypes = []any{
 	(BlockPullOrder)(0),                          // 3: api.v2.BlockPullOrder
 	(CopyRangeMethod)(0),                         // 4: api.v2.CopyRangeMethod
 	(*Configuration)(nil),                        // 5: api.v2.Configuration
-	(*FolderConfiguration)(nil),                  // 6: api.v2.FolderConfiguration
-	(*Size)(nil),                                 // 7: api.v2.Size
-	(*XattrFilter)(nil),                          // 8: api.v2.XattrFilter
-	(*DeviceConfiguration)(nil),                  // 9: api.v2.DeviceConfiguration
-	(*FolderConfiguration_Filesystem)(nil),       // 10: api.v2.FolderConfiguration.Filesystem
-	(*FolderConfiguration_Device)(nil),           // 11: api.v2.FolderConfiguration.Device
-	(*FolderConfiguration_Scanning)(nil),         // 12: api.v2.FolderConfiguration.Scanning
-	(*FolderConfiguration_Syncing)(nil),          // 13: api.v2.FolderConfiguration.Syncing
-	(*FolderConfiguration_Versioning)(nil),       // 14: api.v2.FolderConfiguration.Versioning
-	(*FolderConfiguration_Scanning_Watcher)(nil), // 15: api.v2.FolderConfiguration.Scanning.Watcher
+	(*OptionsConfiguration)(nil),                 // 6: api.v2.OptionsConfiguration
+	(*FolderConfiguration)(nil),                  // 7: api.v2.FolderConfiguration
+	(*Size)(nil),                                 // 8: api.v2.Size
+	(*XattrFilter)(nil),                          // 9: api.v2.XattrFilter
+	(*DeviceConfiguration)(nil),                  // 10: api.v2.DeviceConfiguration
+	(*OptionsConfiguration_RateLimits)(nil),      // 11: api.v2.OptionsConfiguration.RateLimits
+	(*OptionsConfiguration_NAT)(nil),             // 12: api.v2.OptionsConfiguration.NAT
+	(*FolderConfiguration_Filesystem)(nil),       // 13: api.v2.FolderConfiguration.Filesystem
+	(*FolderConfiguration_Device)(nil),           // 14: api.v2.FolderConfiguration.Device
+	(*FolderConfiguration_Scanning)(nil),         // 15: api.v2.FolderConfiguration.Scanning
+	(*FolderConfiguration_Syncing)(nil),          // 16: api.v2.FolderConfiguration.Syncing
+	(*FolderConfiguration_Versioning)(nil),       // 17: api.v2.FolderConfiguration.Versioning
+	(*FolderConfiguration_Scanning_Watcher)(nil), // 18: api.v2.FolderConfiguration.Scanning.Watcher
 }
 var file_api_v2_config_resources_proto_depIdxs = []int32{
-	6,  // 0: api.v2.Configuration.folders:type_name -> api.v2.FolderConfiguration
-	9,  // 1: api.v2.Configuration.devices:type_name -> api.v2.DeviceConfiguration
-	0,  // 2: api.v2.FolderConfiguration.type:type_name -> api.v2.FolderType
-	10, // 3: api.v2.FolderConfiguration.filesystem:type_name -> api.v2.FolderConfiguration.Filesystem
-	11, // 4: api.v2.FolderConfiguration.devices:type_name -> api.v2.FolderConfiguration.Device
-	12, // 5: api.v2.FolderConfiguration.scanning:type_name -> api.v2.FolderConfiguration.Scanning
-	13, // 6: api.v2.FolderConfiguration.syncing:type_name -> api.v2.FolderConfiguration.Syncing
-	14, // 7: api.v2.FolderConfiguration.versioning:type_name -> api.v2.FolderConfiguration.Versioning
-	1,  // 8: api.v2.FolderConfiguration.Filesystem.fs_type:type_name -> api.v2.FilesystemType
-	15, // 9: api.v2.FolderConfiguration.Scanning.watcher:type_name -> api.v2.FolderConfiguration.Scanning.Watcher
-	8,  // 10: api.v2.FolderConfiguration.Scanning.xattr_filter:type_name -> api.v2.XattrFilter
-	7,  // 11: api.v2.FolderConfiguration.Syncing.min_disk_free:type_name -> api.v2.Size
-	2,  // 12: api.v2.FolderConfiguration.Syncing.order:type_name -> api.v2.PullOrder
-	3,  // 13: api.v2.FolderConfiguration.Syncing.block_pull_order:type_name -> api.v2.BlockPullOrder
-	4,  // 14: api.v2.FolderConfiguration.Syncing.copy_range_method:type_name -> api.v2.CopyRangeMethod
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	7,  // 0: api.v2.Configuration.folders:type_name -> api.v2.FolderConfiguration
+	10, // 1: api.v2.Configuration.devices:type_name -> api.v2.DeviceConfiguration
+	11, // 2: api.v2.OptionsConfiguration.rate_limits:type_name -> api.v2.OptionsConfiguration.RateLimits
+	12, // 3: api.v2.OptionsConfiguration.nat:type_name -> api.v2.OptionsConfiguration.NAT
+	0,  // 4: api.v2.FolderConfiguration.type:type_name -> api.v2.FolderType
+	13, // 5: api.v2.FolderConfiguration.filesystem:type_name -> api.v2.FolderConfiguration.Filesystem
+	14, // 6: api.v2.FolderConfiguration.devices:type_name -> api.v2.FolderConfiguration.Device
+	15, // 7: api.v2.FolderConfiguration.scanning:type_name -> api.v2.FolderConfiguration.Scanning
+	16, // 8: api.v2.FolderConfiguration.syncing:type_name -> api.v2.FolderConfiguration.Syncing
+	17, // 9: api.v2.FolderConfiguration.versioning:type_name -> api.v2.FolderConfiguration.Versioning
+	1,  // 10: api.v2.FolderConfiguration.Filesystem.fs_type:type_name -> api.v2.FilesystemType
+	18, // 11: api.v2.FolderConfiguration.Scanning.watcher:type_name -> api.v2.FolderConfiguration.Scanning.Watcher
+	9,  // 12: api.v2.FolderConfiguration.Scanning.xattr_filter:type_name -> api.v2.XattrFilter
+	8,  // 13: api.v2.FolderConfiguration.Syncing.min_disk_free:type_name -> api.v2.Size
+	2,  // 14: api.v2.FolderConfiguration.Syncing.order:type_name -> api.v2.PullOrder
+	3,  // 15: api.v2.FolderConfiguration.Syncing.block_pull_order:type_name -> api.v2.BlockPullOrder
+	4,  // 16: api.v2.FolderConfiguration.Syncing.copy_range_method:type_name -> api.v2.CopyRangeMethod
+	17, // [17:17] is the sub-list for method output_type
+	17, // [17:17] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_api_v2_config_resources_proto_init() }
@@ -2113,7 +2546,7 @@ func file_api_v2_config_resources_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v2_config_resources_proto_rawDesc), len(file_api_v2_config_resources_proto_rawDesc)),
 			NumEnums:      5,
-			NumMessages:   11,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

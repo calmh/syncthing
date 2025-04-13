@@ -11,6 +11,25 @@ message Configuration {
   repeated DeviceConfiguration devices = 2;
 }
 
+message OptionsConfiguration {
+  repeated string listen_addresses = 1;
+
+  message RateLimits {
+    int32 max_send_kbps = 1;
+    int32 max_recv_kbps = 2;
+    bool limit_lan_connections = 3;
+  }
+  RateLimits rate_limits = 2;
+
+  message NAT {
+    bool enabled = 1 [default = true];
+    int32 lease_interval_s = 2;
+    int32 renewal_interval_s = 3;
+    int32 timeout_interval_s = 4;
+  }
+  NAT nat = 3;
+}
+
 message FolderConfiguration {
   FolderType type = 1 [default = FOLDER_TYPE_SEND_RECEIVE];
   string id = 2;

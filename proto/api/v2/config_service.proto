@@ -9,6 +9,14 @@ option features.(pb.go).api_level = API_OPAQUE;
 
 service ConfigurationService {
   rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse) {}
+
+  rpc AddDevice(AddDeviceRequest) returns (AddDeviceResponse) {}
+  rpc RemoveDevice(RemoveDeviceRequest) returns (RemoveDeviceResponse) {}
+  rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse) {}
+
+  rpc AddFolder(AddFolderRequest) returns (AddFolderResponse) {}
+  rpc RemoveFolder(RemoveFolderRequest) returns (RemoveFolderResponse) {}
+  rpc UpdateFolder(UpdateFolderRequest) returns (UpdateFolderResponse) {}
 }
 
 message GetConfigurationRequest {}
@@ -16,3 +24,21 @@ message GetConfigurationRequest {}
 message GetConfigurationResponse {
   Configuration config = 1;
 }
+
+message AddDeviceRequest {}
+message AddDeviceResponse {}
+
+message RemoveDeviceRequest {}
+message RemoveDeviceResponse {}
+
+message UpdateDeviceRequest {}
+message UpdateDeviceResponse {}
+
+message AddFolderRequest {}
+message AddFolderResponse {}
+
+message RemoveFolderRequest {}
+message RemoveFolderResponse {}
+
+message UpdateFolderRequest {}
+message UpdateFolderResponse {}

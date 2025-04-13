@@ -132,6 +132,522 @@ func (b0 GetConfigurationResponse_builder) Build() *GetConfigurationResponse {
 	return m0
 }
 
+type AddDeviceRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddDeviceRequest) Reset() {
+	*x = AddDeviceRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddDeviceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddDeviceRequest) ProtoMessage() {}
+
+func (x *AddDeviceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type AddDeviceRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 AddDeviceRequest_builder) Build() *AddDeviceRequest {
+	m0 := &AddDeviceRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type AddDeviceResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddDeviceResponse) Reset() {
+	*x = AddDeviceResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddDeviceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddDeviceResponse) ProtoMessage() {}
+
+func (x *AddDeviceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type AddDeviceResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 AddDeviceResponse_builder) Build() *AddDeviceResponse {
+	m0 := &AddDeviceResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type RemoveDeviceRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveDeviceRequest) Reset() {
+	*x = RemoveDeviceRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveDeviceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveDeviceRequest) ProtoMessage() {}
+
+func (x *RemoveDeviceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type RemoveDeviceRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 RemoveDeviceRequest_builder) Build() *RemoveDeviceRequest {
+	m0 := &RemoveDeviceRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type RemoveDeviceResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveDeviceResponse) Reset() {
+	*x = RemoveDeviceResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveDeviceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveDeviceResponse) ProtoMessage() {}
+
+func (x *RemoveDeviceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type RemoveDeviceResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 RemoveDeviceResponse_builder) Build() *RemoveDeviceResponse {
+	m0 := &RemoveDeviceResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type UpdateDeviceRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateDeviceRequest) Reset() {
+	*x = UpdateDeviceRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateDeviceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDeviceRequest) ProtoMessage() {}
+
+func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type UpdateDeviceRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 UpdateDeviceRequest_builder) Build() *UpdateDeviceRequest {
+	m0 := &UpdateDeviceRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type UpdateDeviceResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateDeviceResponse) Reset() {
+	*x = UpdateDeviceResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateDeviceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDeviceResponse) ProtoMessage() {}
+
+func (x *UpdateDeviceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type UpdateDeviceResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 UpdateDeviceResponse_builder) Build() *UpdateDeviceResponse {
+	m0 := &UpdateDeviceResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type AddFolderRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddFolderRequest) Reset() {
+	*x = AddFolderRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddFolderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddFolderRequest) ProtoMessage() {}
+
+func (x *AddFolderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type AddFolderRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 AddFolderRequest_builder) Build() *AddFolderRequest {
+	m0 := &AddFolderRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type AddFolderResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddFolderResponse) Reset() {
+	*x = AddFolderResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddFolderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddFolderResponse) ProtoMessage() {}
+
+func (x *AddFolderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type AddFolderResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 AddFolderResponse_builder) Build() *AddFolderResponse {
+	m0 := &AddFolderResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type RemoveFolderRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveFolderRequest) Reset() {
+	*x = RemoveFolderRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveFolderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveFolderRequest) ProtoMessage() {}
+
+func (x *RemoveFolderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type RemoveFolderRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 RemoveFolderRequest_builder) Build() *RemoveFolderRequest {
+	m0 := &RemoveFolderRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type RemoveFolderResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveFolderResponse) Reset() {
+	*x = RemoveFolderResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveFolderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveFolderResponse) ProtoMessage() {}
+
+func (x *RemoveFolderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type RemoveFolderResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 RemoveFolderResponse_builder) Build() *RemoveFolderResponse {
+	m0 := &RemoveFolderResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type UpdateFolderRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFolderRequest) Reset() {
+	*x = UpdateFolderRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFolderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFolderRequest) ProtoMessage() {}
+
+func (x *UpdateFolderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type UpdateFolderRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 UpdateFolderRequest_builder) Build() *UpdateFolderRequest {
+	m0 := &UpdateFolderRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type UpdateFolderResponse struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFolderResponse) Reset() {
+	*x = UpdateFolderResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFolderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFolderResponse) ProtoMessage() {}
+
+func (x *UpdateFolderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type UpdateFolderResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 UpdateFolderResponse_builder) Build() *UpdateFolderResponse {
+	m0 := &UpdateFolderResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
 var File_api_v2_config_service_proto protoreflect.FileDescriptor
 
 const file_api_v2_config_service_proto_rawDesc = "" +
@@ -139,27 +655,69 @@ const file_api_v2_config_service_proto_rawDesc = "" +
 	"\x1bapi/v2/config_service.proto\x12\x06api.v2\x1a\x1dapi/v2/config_resources.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
 	"\x17GetConfigurationRequest\"I\n" +
 	"\x18GetConfigurationResponse\x12-\n" +
-	"\x06config\x18\x01 \x01(\v2\x15.api.v2.ConfigurationR\x06config2o\n" +
+	"\x06config\x18\x01 \x01(\v2\x15.api.v2.ConfigurationR\x06config\"\x12\n" +
+	"\x10AddDeviceRequest\"\x13\n" +
+	"\x11AddDeviceResponse\"\x15\n" +
+	"\x13RemoveDeviceRequest\"\x16\n" +
+	"\x14RemoveDeviceResponse\"\x15\n" +
+	"\x13UpdateDeviceRequest\"\x16\n" +
+	"\x14UpdateDeviceResponse\"\x12\n" +
+	"\x10AddFolderRequest\"\x13\n" +
+	"\x11AddFolderResponse\"\x15\n" +
+	"\x13RemoveFolderRequest\"\x16\n" +
+	"\x14RemoveFolderResponse\"\x15\n" +
+	"\x13UpdateFolderRequest\"\x16\n" +
+	"\x14UpdateFolderResponse2\xab\x04\n" +
 	"\x14ConfigurationService\x12W\n" +
-	"\x10GetConfiguration\x12\x1f.api.v2.GetConfigurationRequest\x1a .api.v2.GetConfigurationResponse\"\x00B\x9b\x01\n" +
+	"\x10GetConfiguration\x12\x1f.api.v2.GetConfigurationRequest\x1a .api.v2.GetConfigurationResponse\"\x00\x12B\n" +
+	"\tAddDevice\x12\x18.api.v2.AddDeviceRequest\x1a\x19.api.v2.AddDeviceResponse\"\x00\x12K\n" +
+	"\fRemoveDevice\x12\x1b.api.v2.RemoveDeviceRequest\x1a\x1c.api.v2.RemoveDeviceResponse\"\x00\x12K\n" +
+	"\fUpdateDevice\x12\x1b.api.v2.UpdateDeviceRequest\x1a\x1c.api.v2.UpdateDeviceResponse\"\x00\x12B\n" +
+	"\tAddFolder\x12\x18.api.v2.AddFolderRequest\x1a\x19.api.v2.AddFolderResponse\"\x00\x12K\n" +
+	"\fRemoveFolder\x12\x1b.api.v2.RemoveFolderRequest\x1a\x1c.api.v2.RemoveFolderResponse\"\x00\x12K\n" +
+	"\fUpdateFolder\x12\x1b.api.v2.UpdateFolderRequest\x1a\x1c.api.v2.UpdateFolderResponse\"\x00B\x9b\x01\n" +
 	"\n" +
 	"com.api.v2B\x12ConfigServiceProtoP\x01Z8github.com/syncthing/syncthing/internal/gen/api/v2;apiv2\xa2\x02\x03AXX\xaa\x02\x06Api.V2\xca\x02\x06Api\\V2\xe2\x02\x12Api\\V2\\GPBMetadata\xea\x02\aApi::V2\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
-var file_api_v2_config_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_api_v2_config_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_api_v2_config_service_proto_goTypes = []any{
 	(*GetConfigurationRequest)(nil),  // 0: api.v2.GetConfigurationRequest
 	(*GetConfigurationResponse)(nil), // 1: api.v2.GetConfigurationResponse
-	(*Configuration)(nil),            // 2: api.v2.Configuration
+	(*AddDeviceRequest)(nil),         // 2: api.v2.AddDeviceRequest
+	(*AddDeviceResponse)(nil),        // 3: api.v2.AddDeviceResponse
+	(*RemoveDeviceRequest)(nil),      // 4: api.v2.RemoveDeviceRequest
+	(*RemoveDeviceResponse)(nil),     // 5: api.v2.RemoveDeviceResponse
+	(*UpdateDeviceRequest)(nil),      // 6: api.v2.UpdateDeviceRequest
+	(*UpdateDeviceResponse)(nil),     // 7: api.v2.UpdateDeviceResponse
+	(*AddFolderRequest)(nil),         // 8: api.v2.AddFolderRequest
+	(*AddFolderResponse)(nil),        // 9: api.v2.AddFolderResponse
+	(*RemoveFolderRequest)(nil),      // 10: api.v2.RemoveFolderRequest
+	(*RemoveFolderResponse)(nil),     // 11: api.v2.RemoveFolderResponse
+	(*UpdateFolderRequest)(nil),      // 12: api.v2.UpdateFolderRequest
+	(*UpdateFolderResponse)(nil),     // 13: api.v2.UpdateFolderResponse
+	(*Configuration)(nil),            // 14: api.v2.Configuration
 }
 var file_api_v2_config_service_proto_depIdxs = []int32{
-	2, // 0: api.v2.GetConfigurationResponse.config:type_name -> api.v2.Configuration
-	0, // 1: api.v2.ConfigurationService.GetConfiguration:input_type -> api.v2.GetConfigurationRequest
-	1, // 2: api.v2.ConfigurationService.GetConfiguration:output_type -> api.v2.GetConfigurationResponse
-	2, // [2:3] is the sub-list for method output_type
-	1, // [1:2] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	14, // 0: api.v2.GetConfigurationResponse.config:type_name -> api.v2.Configuration
+	0,  // 1: api.v2.ConfigurationService.GetConfiguration:input_type -> api.v2.GetConfigurationRequest
+	2,  // 2: api.v2.ConfigurationService.AddDevice:input_type -> api.v2.AddDeviceRequest
+	4,  // 3: api.v2.ConfigurationService.RemoveDevice:input_type -> api.v2.RemoveDeviceRequest
+	6,  // 4: api.v2.ConfigurationService.UpdateDevice:input_type -> api.v2.UpdateDeviceRequest
+	8,  // 5: api.v2.ConfigurationService.AddFolder:input_type -> api.v2.AddFolderRequest
+	10, // 6: api.v2.ConfigurationService.RemoveFolder:input_type -> api.v2.RemoveFolderRequest
+	12, // 7: api.v2.ConfigurationService.UpdateFolder:input_type -> api.v2.UpdateFolderRequest
+	1,  // 8: api.v2.ConfigurationService.GetConfiguration:output_type -> api.v2.GetConfigurationResponse
+	3,  // 9: api.v2.ConfigurationService.AddDevice:output_type -> api.v2.AddDeviceResponse
+	5,  // 10: api.v2.ConfigurationService.RemoveDevice:output_type -> api.v2.RemoveDeviceResponse
+	7,  // 11: api.v2.ConfigurationService.UpdateDevice:output_type -> api.v2.UpdateDeviceResponse
+	9,  // 12: api.v2.ConfigurationService.AddFolder:output_type -> api.v2.AddFolderResponse
+	11, // 13: api.v2.ConfigurationService.RemoveFolder:output_type -> api.v2.RemoveFolderResponse
+	13, // 14: api.v2.ConfigurationService.UpdateFolder:output_type -> api.v2.UpdateFolderResponse
+	8,  // [8:15] is the sub-list for method output_type
+	1,  // [1:8] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_api_v2_config_service_proto_init() }
@@ -174,7 +732,7 @@ func file_api_v2_config_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v2_config_service_proto_rawDesc), len(file_api_v2_config_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
