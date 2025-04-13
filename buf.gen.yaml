@@ -10,5 +10,7 @@ plugins:
   - remote: buf.build/protocolbuffers/go:v1.36.6
     out: .
     opt: module=github.com/syncthing/syncthing
+  - remote: buf.build/bufbuild/es:v2.2.5
+    out: gui/default/proto
 inputs:
   - directory: proto
