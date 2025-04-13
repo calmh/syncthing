@@ -4,6 +4,7 @@ go 1.23.0
 
 require (
 	buf.build/go/protoyaml v0.3.1
+	connectrpc.com/connect v1.18.1
 	github.com/AudriusButkevicius/recli v0.0.7-0.20220911121932-d000ce8fbf0f
 	github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.6.0
 	github.com/alecthomas/kong v1.10.0
