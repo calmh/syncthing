@@ -4,7 +4,8 @@
 
 import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv1";
 import type { Message } from "@bufbuild/protobuf";
-import type { Configuration } from "./config_resources_pb";
+import type { Configuration, DeviceConfiguration, FolderConfiguration, OptionsConfiguration } from "./config_resources_pb";
+import type { FieldMask } from "@bufbuild/protobuf/wkt";
 
 /**
  * Describes the file api/v2/config_service.proto.
@@ -24,6 +25,18 @@ export declare type GetConfigurationRequest = Message<"api.v2.GetConfigurationRe
 export declare const GetConfigurationRequestSchema: GenMessage<GetConfigurationRequest>;
 
 /**
+ * @generated from message api.v2.WatchConfigurationRequest
+ */
+export declare type WatchConfigurationRequest = Message<"api.v2.WatchConfigurationRequest"> & {
+};
+
+/**
+ * Describes the message api.v2.WatchConfigurationRequest.
+ * Use `create(WatchConfigurationRequestSchema)` to create a new message.
+ */
+export declare const WatchConfigurationRequestSchema: GenMessage<WatchConfigurationRequest>;
+
+/**
  * @generated from message api.v2.GetConfigurationResponse
  */
 export declare type GetConfigurationResponse = Message<"api.v2.GetConfigurationResponse"> & {
@@ -40,9 +53,46 @@ export declare type GetConfigurationResponse = Message<"api.v2.GetConfigurationR
 export declare const GetConfigurationResponseSchema: GenMessage<GetConfigurationResponse>;
 
 /**
+ * @generated from message api.v2.UpdateOptionsRequest
+ */
+export declare type UpdateOptionsRequest = Message<"api.v2.UpdateOptionsRequest"> & {
+  /**
+   * @generated from field: api.v2.OptionsConfiguration options = 1;
+   */
+  options?: OptionsConfiguration;
+
+  /**
+   * @generated from field: google.protobuf.FieldMask update_mask = 2;
+   */
+  updateMask?: FieldMask;
+};
+
+/**
+ * Describes the message api.v2.UpdateOptionsRequest.
+ * Use `create(UpdateOptionsRequestSchema)` to create a new message.
+ */
+export declare const UpdateOptionsRequestSchema: GenMessage<UpdateOptionsRequest>;
+
+/**
+ * @generated from message api.v2.UpdateOptionsResponse
+ */
+export declare type UpdateOptionsResponse = Message<"api.v2.UpdateOptionsResponse"> & {
+};
+
+/**
+ * Describes the message api.v2.UpdateOptionsResponse.
+ * Use `create(UpdateOptionsResponseSchema)` to create a new message.
+ */
+export declare const UpdateOptionsResponseSchema: GenMessage<UpdateOptionsResponse>;
+
+/**
  * @generated from message api.v2.AddDeviceRequest
  */
 export declare type AddDeviceRequest = Message<"api.v2.AddDeviceRequest"> & {
+  /**
+   * @generated from field: api.v2.DeviceConfiguration device = 1;
+   */
+  device?: DeviceConfiguration;
 };
 
 /**
@@ -67,6 +117,10 @@ export declare const AddDeviceResponseSchema: GenMessage<AddDeviceResponse>;
  * @generated from message api.v2.RemoveDeviceRequest
  */
 export declare type RemoveDeviceRequest = Message<"api.v2.RemoveDeviceRequest"> & {
+  /**
+   * @generated from field: string device_id = 2;
+   */
+  deviceId: string;
 };
 
 /**
@@ -91,6 +145,15 @@ export declare const RemoveDeviceResponseSchema: GenMessage<RemoveDeviceResponse
  * @generated from message api.v2.UpdateDeviceRequest
  */
 export declare type UpdateDeviceRequest = Message<"api.v2.UpdateDeviceRequest"> & {
+  /**
+   * @generated from field: api.v2.DeviceConfiguration device = 1;
+   */
+  device?: DeviceConfiguration;
+
+  /**
+   * @generated from field: google.protobuf.FieldMask update_mask = 2;
+   */
+  updateMask?: FieldMask;
 };
 
 /**
@@ -115,6 +178,10 @@ export declare const UpdateDeviceResponseSchema: GenMessage<UpdateDeviceResponse
  * @generated from message api.v2.AddFolderRequest
  */
 export declare type AddFolderRequest = Message<"api.v2.AddFolderRequest"> & {
+  /**
+   * @generated from field: api.v2.FolderConfiguration folder = 1;
+   */
+  folder?: FolderConfiguration;
 };
 
 /**
@@ -139,6 +206,10 @@ export declare const AddFolderResponseSchema: GenMessage<AddFolderResponse>;
  * @generated from message api.v2.RemoveFolderRequest
  */
 export declare type RemoveFolderRequest = Message<"api.v2.RemoveFolderRequest"> & {
+  /**
+   * @generated from field: string folder_id = 1;
+   */
+  folderId: string;
 };
 
 /**
@@ -163,6 +234,15 @@ export declare const RemoveFolderResponseSchema: GenMessage<RemoveFolderResponse
  * @generated from message api.v2.UpdateFolderRequest
  */
 export declare type UpdateFolderRequest = Message<"api.v2.UpdateFolderRequest"> & {
+  /**
+   * @generated from field: api.v2.FolderConfiguration folder = 1;
+   */
+  folder?: FolderConfiguration;
+
+  /**
+   * @generated from field: google.protobuf.FieldMask update_mask = 2;
+   */
+  updateMask?: FieldMask;
 };
 
 /**
@@ -194,6 +274,22 @@ export declare const ConfigurationService: GenService<{
     methodKind: "unary";
     input: typeof GetConfigurationRequestSchema;
     output: typeof GetConfigurationResponseSchema;
+  },
+  /**
+   * @generated from rpc api.v2.ConfigurationService.WatchConfiguration
+   */
+  watchConfiguration: {
+    methodKind: "server_streaming";
+    input: typeof WatchConfigurationRequestSchema;
+    output: typeof GetConfigurationResponseSchema;
+  },
+  /**
+   * @generated from rpc api.v2.ConfigurationService.UpdateOptions
+   */
+  updateOptions: {
+    methodKind: "unary";
+    input: typeof UpdateOptionsRequestSchema;
+    output: typeof UpdateOptionsResponseSchema;
   },
   /**
    * @generated from rpc api.v2.ConfigurationService.AddDevice

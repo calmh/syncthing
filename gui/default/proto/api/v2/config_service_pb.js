@@ -4,13 +4,14 @@
 
 import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv1";
 import { file_api_v2_config_resources } from "./config_resources_pb";
+import { file_google_protobuf_field_mask } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_go_features } from "../../google/protobuf/go_features_pb";
 
 /**
  * Describes the file api/v2/config_service.proto.
  */
 export const file_api_v2_config_service = /*@__PURE__*/
-  fileDesc("ChthcGkvdjIvY29uZmlnX3NlcnZpY2UucHJvdG8SBmFwaS52MiIZChdHZXRDb25maWd1cmF0aW9uUmVxdWVzdCJBChhHZXRDb25maWd1cmF0aW9uUmVzcG9uc2USJQoGY29uZmlnGAEgASgLMhUuYXBpLnYyLkNvbmZpZ3VyYXRpb24iEgoQQWRkRGV2aWNlUmVxdWVzdCITChFBZGREZXZpY2VSZXNwb25zZSIVChNSZW1vdmVEZXZpY2VSZXF1ZXN0IhYKFFJlbW92ZURldmljZVJlc3BvbnNlIhUKE1VwZGF0ZURldmljZVJlcXVlc3QiFgoUVXBkYXRlRGV2aWNlUmVzcG9uc2UiEgoQQWRkRm9sZGVyUmVxdWVzdCITChFBZGRGb2xkZXJSZXNwb25zZSIVChNSZW1vdmVGb2xkZXJSZXF1ZXN0IhYKFFJlbW92ZUZvbGRlclJlc3BvbnNlIhUKE1VwZGF0ZUZvbGRlclJlcXVlc3QiFgoUVXBkYXRlRm9sZGVyUmVzcG9uc2UyqwQKFENvbmZpZ3VyYXRpb25TZXJ2aWNlElcKEEdldENvbmZpZ3VyYXRpb24SHy5hcGkudjIuR2V0Q29uZmlndXJhdGlvblJlcXVlc3QaIC5hcGkudjIuR2V0Q29uZmlndXJhdGlvblJlc3BvbnNlIgASQgoJQWRkRGV2aWNlEhguYXBpLnYyLkFkZERldmljZVJlcXVlc3QaGS5hcGkudjIuQWRkRGV2aWNlUmVzcG9uc2UiABJLCgxSZW1vdmVEZXZpY2USGy5hcGkudjIuUmVtb3ZlRGV2aWNlUmVxdWVzdBocLmFwaS52Mi5SZW1vdmVEZXZpY2VSZXNwb25zZSIAEksKDFVwZGF0ZURldmljZRIbLmFwaS52Mi5VcGRhdGVEZXZpY2VSZXF1ZXN0GhwuYXBpLnYyLlVwZGF0ZURldmljZVJlc3BvbnNlIgASQgoJQWRkRm9sZGVyEhguYXBpLnYyLkFkZEZvbGRlclJlcXVlc3QaGS5hcGkudjIuQWRkRm9sZGVyUmVzcG9uc2UiABJLCgxSZW1vdmVGb2xkZXISGy5hcGkudjIuUmVtb3ZlRm9sZGVyUmVxdWVzdBocLmFwaS52Mi5SZW1vdmVGb2xkZXJSZXNwb25zZSIAEksKDFVwZGF0ZUZvbGRlchIbLmFwaS52Mi5VcGRhdGVGb2xkZXJSZXF1ZXN0GhwuYXBpLnYyLlVwZGF0ZUZvbGRlclJlc3BvbnNlIgBCmwEKCmNvbS5hcGkudjJCEkNvbmZpZ1NlcnZpY2VQcm90b1ABWjhnaXRodWIuY29tL3N5bmN0aGluZy9zeW5jdGhpbmcvaW50ZXJuYWwvZ2VuL2FwaS92MjthcGl2MqICA0FYWKoCBkFwaS5WMsoCBkFwaVxWMuICEkFwaVxWMlxHUEJNZXRhZGF0YeoCB0FwaTo6VjKSAwXSPgIQA2IIZWRpdGlvbnNw6Ac", [file_api_v2_config_resources, file_google_protobuf_go_features]);
+  fileDesc("ChthcGkvdjIvY29uZmlnX3NlcnZpY2UucHJvdG8SBmFwaS52MiIZChdHZXRDb25maWd1cmF0aW9uUmVxdWVzdCIbChlXYXRjaENvbmZpZ3VyYXRpb25SZXF1ZXN0IkEKGEdldENvbmZpZ3VyYXRpb25SZXNwb25zZRIlCgZjb25maWcYASABKAsyFS5hcGkudjIuQ29uZmlndXJhdGlvbiJ2ChRVcGRhdGVPcHRpb25zUmVxdWVzdBItCgdvcHRpb25zGAEgASgLMhwuYXBpLnYyLk9wdGlvbnNDb25maWd1cmF0aW9uEi8KC3VwZGF0ZV9tYXNrGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLkZpZWxkTWFzayIXChVVcGRhdGVPcHRpb25zUmVzcG9uc2UiPwoQQWRkRGV2aWNlUmVxdWVzdBIrCgZkZXZpY2UYASABKAsyGy5hcGkudjIuRGV2aWNlQ29uZmlndXJhdGlvbiITChFBZGREZXZpY2VSZXNwb25zZSIoChNSZW1vdmVEZXZpY2VSZXF1ZXN0EhEKCWRldmljZV9pZBgCIAEoCSIWChRSZW1vdmVEZXZpY2VSZXNwb25zZSJzChNVcGRhdGVEZXZpY2VSZXF1ZXN0EisKBmRldmljZRgBIAEoCzIbLmFwaS52Mi5EZXZpY2VDb25maWd1cmF0aW9uEi8KC3VwZGF0ZV9tYXNrGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLkZpZWxkTWFzayIWChRVcGRhdGVEZXZpY2VSZXNwb25zZSI/ChBBZGRGb2xkZXJSZXF1ZXN0EisKBmZvbGRlchgBIAEoCzIbLmFwaS52Mi5Gb2xkZXJDb25maWd1cmF0aW9uIhMKEUFkZEZvbGRlclJlc3BvbnNlIigKE1JlbW92ZUZvbGRlclJlcXVlc3QSEQoJZm9sZGVyX2lkGAEgASgJIhYKFFJlbW92ZUZvbGRlclJlc3BvbnNlInMKE1VwZGF0ZUZvbGRlclJlcXVlc3QSKwoGZm9sZGVyGAEgASgLMhsuYXBpLnYyLkZvbGRlckNvbmZpZ3VyYXRpb24SLwoLdXBkYXRlX21hc2sYAiABKAsyGi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNrIhYKFFVwZGF0ZUZvbGRlclJlc3BvbnNlMtoFChRDb25maWd1cmF0aW9uU2VydmljZRJXChBHZXRDb25maWd1cmF0aW9uEh8uYXBpLnYyLkdldENvbmZpZ3VyYXRpb25SZXF1ZXN0GiAuYXBpLnYyLkdldENvbmZpZ3VyYXRpb25SZXNwb25zZSIAEl0KEldhdGNoQ29uZmlndXJhdGlvbhIhLmFwaS52Mi5XYXRjaENvbmZpZ3VyYXRpb25SZXF1ZXN0GiAuYXBpLnYyLkdldENvbmZpZ3VyYXRpb25SZXNwb25zZSIAMAESTgoNVXBkYXRlT3B0aW9ucxIcLmFwaS52Mi5VcGRhdGVPcHRpb25zUmVxdWVzdBodLmFwaS52Mi5VcGRhdGVPcHRpb25zUmVzcG9uc2UiABJCCglBZGREZXZpY2USGC5hcGkudjIuQWRkRGV2aWNlUmVxdWVzdBoZLmFwaS52Mi5BZGREZXZpY2VSZXNwb25zZSIAEksKDFJlbW92ZURldmljZRIbLmFwaS52Mi5SZW1vdmVEZXZpY2VSZXF1ZXN0GhwuYXBpLnYyLlJlbW92ZURldmljZVJlc3BvbnNlIgASSwoMVXBkYXRlRGV2aWNlEhsuYXBpLnYyLlVwZGF0ZURldmljZVJlcXVlc3QaHC5hcGkudjIuVXBkYXRlRGV2aWNlUmVzcG9uc2UiABJCCglBZGRGb2xkZXISGC5hcGkudjIuQWRkRm9sZGVyUmVxdWVzdBoZLmFwaS52Mi5BZGRGb2xkZXJSZXNwb25zZSIAEksKDFJlbW92ZUZvbGRlchIbLmFwaS52Mi5SZW1vdmVGb2xkZXJSZXF1ZXN0GhwuYXBpLnYyLlJlbW92ZUZvbGRlclJlc3BvbnNlIgASSwoMVXBkYXRlRm9sZGVyEhsuYXBpLnYyLlVwZGF0ZUZvbGRlclJlcXVlc3QaHC5hcGkudjIuVXBkYXRlRm9sZGVyUmVzcG9uc2UiAEKbAQoKY29tLmFwaS52MkISQ29uZmlnU2VydmljZVByb3RvUAFaOGdpdGh1Yi5jb20vc3luY3RoaW5nL3N5bmN0aGluZy9pbnRlcm5hbC9nZW4vYXBpL3YyO2FwaXYyogIDQVhYqgIGQXBpLlYyygIGQXBpXFYy4gISQXBpXFYyXEdQQk1ldGFkYXRh6gIHQXBpOjpWMpIDBdI+AhADYghlZGl0aW9uc3DoBw", [file_api_v2_config_resources, file_google_protobuf_field_mask, file_google_protobuf_go_features]);
 
 /**
  * Describes the message api.v2.GetConfigurationRequest.
@@ -20,95 +21,116 @@ export const GetConfigurationRequestSchema = /*@__PURE__*/
   messageDesc(file_api_v2_config_service, 0);
 
 /**
+ * Describes the message api.v2.WatchConfigurationRequest.
+ * Use `create(WatchConfigurationRequestSchema)` to create a new message.
+ */
+export const WatchConfigurationRequestSchema = /*@__PURE__*/
+  messageDesc(file_api_v2_config_service, 1);
+
+/**
  * Describes the message api.v2.GetConfigurationResponse.
  * Use `create(GetConfigurationResponseSchema)` to create a new message.
  */
 export const GetConfigurationResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 1);
+  messageDesc(file_api_v2_config_service, 2);
+
+/**
+ * Describes the message api.v2.UpdateOptionsRequest.
+ * Use `create(UpdateOptionsRequestSchema)` to create a new message.
+ */
+export const UpdateOptionsRequestSchema = /*@__PURE__*/
+  messageDesc(file_api_v2_config_service, 3);
+
+/**
+ * Describes the message api.v2.UpdateOptionsResponse.
+ * Use `create(UpdateOptionsResponseSchema)` to create a new message.
+ */
+export const UpdateOptionsResponseSchema = /*@__PURE__*/
+  messageDesc(file_api_v2_config_service, 4);
 
 /**
  * Describes the message api.v2.AddDeviceRequest.
  * Use `create(AddDeviceRequestSchema)` to create a new message.
  */
 export const AddDeviceRequestSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 2);
+  messageDesc(file_api_v2_config_service, 5);
 
 /**
  * Describes the message api.v2.AddDeviceResponse.
  * Use `create(AddDeviceResponseSchema)` to create a new message.
  */
 export const AddDeviceResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 3);
+  messageDesc(file_api_v2_config_service, 6);
 
 /**
  * Describes the message api.v2.RemoveDeviceRequest.
  * Use `create(RemoveDeviceRequestSchema)` to create a new message.
  */
 export const RemoveDeviceRequestSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 4);
+  messageDesc(file_api_v2_config_service, 7);
 
 /**
  * Describes the message api.v2.RemoveDeviceResponse.
  * Use `create(RemoveDeviceResponseSchema)` to create a new message.
  */
 export const RemoveDeviceResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 5);
+  messageDesc(file_api_v2_config_service, 8);
 
 /**
  * Describes the message api.v2.UpdateDeviceRequest.
  * Use `create(UpdateDeviceRequestSchema)` to create a new message.
  */
 export const UpdateDeviceRequestSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 6);
+  messageDesc(file_api_v2_config_service, 9);
 
 /**
  * Describes the message api.v2.UpdateDeviceResponse.
  * Use `create(UpdateDeviceResponseSchema)` to create a new message.
  */
 export const UpdateDeviceResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 7);
+  messageDesc(file_api_v2_config_service, 10);
 
 /**
  * Describes the message api.v2.AddFolderRequest.
  * Use `create(AddFolderRequestSchema)` to create a new message.
  */
 export const AddFolderRequestSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 8);
+  messageDesc(file_api_v2_config_service, 11);
 
 /**
  * Describes the message api.v2.AddFolderResponse.
  * Use `create(AddFolderResponseSchema)` to create a new message.
  */
 export const AddFolderResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 9);
+  messageDesc(file_api_v2_config_service, 12);
 
 /**
  * Describes the message api.v2.RemoveFolderRequest.
  * Use `create(RemoveFolderRequestSchema)` to create a new message.
  */
 export const RemoveFolderRequestSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 10);
+  messageDesc(file_api_v2_config_service, 13);
 
 /**
  * Describes the message api.v2.RemoveFolderResponse.
  * Use `create(RemoveFolderResponseSchema)` to create a new message.
  */
 export const RemoveFolderResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 11);
+  messageDesc(file_api_v2_config_service, 14);
 
 /**
  * Describes the message api.v2.UpdateFolderRequest.
  * Use `create(UpdateFolderRequestSchema)` to create a new message.
  */
 export const UpdateFolderRequestSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 12);
+  messageDesc(file_api_v2_config_service, 15);
 
 /**
  * Describes the message api.v2.UpdateFolderResponse.
  * Use `create(UpdateFolderResponseSchema)` to create a new message.
  */
 export const UpdateFolderResponseSchema = /*@__PURE__*/
-  messageDesc(file_api_v2_config_service, 13);
+  messageDesc(file_api_v2_config_service, 16);
 
 /**
  * @generated from service api.v2.ConfigurationService

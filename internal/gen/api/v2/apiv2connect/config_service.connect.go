@@ -36,6 +36,12 @@ const (
 	// ConfigurationServiceGetConfigurationProcedure is the fully-qualified name of the
 	// ConfigurationService's GetConfiguration RPC.
 	ConfigurationServiceGetConfigurationProcedure = "/api.v2.ConfigurationService/GetConfiguration"
+	// ConfigurationServiceWatchConfigurationProcedure is the fully-qualified name of the
+	// ConfigurationService's WatchConfiguration RPC.
+	ConfigurationServiceWatchConfigurationProcedure = "/api.v2.ConfigurationService/WatchConfiguration"
+	// ConfigurationServiceUpdateOptionsProcedure is the fully-qualified name of the
+	// ConfigurationService's UpdateOptions RPC.
+	ConfigurationServiceUpdateOptionsProcedure = "/api.v2.ConfigurationService/UpdateOptions"
 	// ConfigurationServiceAddDeviceProcedure is the fully-qualified name of the ConfigurationService's
 	// AddDevice RPC.
 	ConfigurationServiceAddDeviceProcedure = "/api.v2.ConfigurationService/AddDevice"
@@ -59,6 +65,8 @@ const (
 // ConfigurationServiceClient is a client for the api.v2.ConfigurationService service.
 type ConfigurationServiceClient interface {
 	GetConfiguration(context.Context, *connect.Request[v2.GetConfigurationRequest]) (*connect.Response[v2.GetConfigurationResponse], error)
+	WatchConfiguration(context.Context, *connect.Request[v2.WatchConfigurationRequest]) (*connect.ServerStreamForClient[v2.GetConfigurationResponse], error)
+	UpdateOptions(context.Context, *connect.Request[v2.UpdateOptionsRequest]) (*connect.Response[v2.UpdateOptionsResponse], error)
 	AddDevice(context.Context, *connect.Request[v2.AddDeviceRequest]) (*connect.Response[v2.AddDeviceResponse], error)
 	RemoveDevice(context.Context, *connect.Request[v2.RemoveDeviceRequest]) (*connect.Response[v2.RemoveDeviceResponse], error)
 	UpdateDevice(context.Context, *connect.Request[v2.UpdateDeviceRequest]) (*connect.Response[v2.UpdateDeviceResponse], error)
@@ -82,6 +90,18 @@ func NewConfigurationServiceClient(httpClient connect.HTTPClient, baseURL string
 			httpClient,
 			baseURL+ConfigurationServiceGetConfigurationProcedure,
 			connect.WithSchema(configurationServiceMethods.ByName("GetConfiguration")),
+			connect.WithClientOptions(opts...),
+		),
+		watchConfiguration: connect.NewClient[v2.WatchConfigurationRequest, v2.GetConfigurationResponse](
+			httpClient,
+			baseURL+ConfigurationServiceWatchConfigurationProcedure,
+			connect.WithSchema(configurationServiceMethods.ByName("WatchConfiguration")),
+			connect.WithClientOptions(opts...),
+		),
+		updateOptions: connect.NewClient[v2.UpdateOptionsRequest, v2.UpdateOptionsResponse](
+			httpClient,
+			baseURL+ConfigurationServiceUpdateOptionsProcedure,
+			connect.WithSchema(configurationServiceMethods.ByName("UpdateOptions")),
 			connect.WithClientOptions(opts...),
 		),
 		addDevice: connect.NewClient[v2.AddDeviceRequest, v2.AddDeviceResponse](
@@ -125,18 +145,30 @@ func NewConfigurationServiceClient(httpClient connect.HTTPClient, baseURL string
 
 // configurationServiceClient implements ConfigurationServiceClient.
 type configurationServiceClient struct {
-	getConfiguration *connect.Client[v2.GetConfigurationRequest, v2.GetConfigurationResponse]
-	addDevice        *connect.Client[v2.AddDeviceRequest, v2.AddDeviceResponse]
-	removeDevice     *connect.Client[v2.RemoveDeviceRequest, v2.RemoveDeviceResponse]
-	updateDevice     *connect.Client[v2.UpdateDeviceRequest, v2.UpdateDeviceResponse]
-	addFolder        *connect.Client[v2.AddFolderRequest, v2.AddFolderResponse]
-	removeFolder     *connect.Client[v2.RemoveFolderRequest, v2.RemoveFolderResponse]
-	updateFolder     *connect.Client[v2.UpdateFolderRequest, v2.UpdateFolderResponse]
+	getConfiguration   *connect.Client[v2.GetConfigurationRequest, v2.GetConfigurationResponse]
+	watchConfiguration *connect.Client[v2.WatchConfigurationRequest, v2.GetConfigurationResponse]
+	updateOptions      *connect.Client[v2.UpdateOptionsRequest, v2.UpdateOptionsResponse]
+	addDevice          *connect.Client[v2.AddDeviceRequest, v2.AddDeviceResponse]
+	removeDevice       *connect.Client[v2.RemoveDeviceRequest, v2.RemoveDeviceResponse]
+	updateDevice       *connect.Client[v2.UpdateDeviceRequest, v2.UpdateDeviceResponse]
+	addFolder          *connect.Client[v2.AddFolderRequest, v2.AddFolderResponse]
+	removeFolder       *connect.Client[v2.RemoveFolderRequest, v2.RemoveFolderResponse]
+	updateFolder       *connect.Client[v2.UpdateFolderRequest, v2.UpdateFolderResponse]
 }
 
 // GetConfiguration calls api.v2.ConfigurationService.GetConfiguration.
 func (c *configurationServiceClient) GetConfiguration(ctx context.Context, req *connect.Request[v2.GetConfigurationRequest]) (*connect.Response[v2.GetConfigurationResponse], error) {
 	return c.getConfiguration.CallUnary(ctx, req)
+}
+
+// WatchConfiguration calls api.v2.ConfigurationService.WatchConfiguration.
+func (c *configurationServiceClient) WatchConfiguration(ctx context.Context, req *connect.Request[v2.WatchConfigurationRequest]) (*connect.ServerStreamForClient[v2.GetConfigurationResponse], error) {
+	return c.watchConfiguration.CallServerStream(ctx, req)
+}
+
+// UpdateOptions calls api.v2.ConfigurationService.UpdateOptions.
+func (c *configurationServiceClient) UpdateOptions(ctx context.Context, req *connect.Request[v2.UpdateOptionsRequest]) (*connect.Response[v2.UpdateOptionsResponse], error) {
+	return c.updateOptions.CallUnary(ctx, req)
 }
 
 // AddDevice calls api.v2.ConfigurationService.AddDevice.
@@ -172,6 +204,8 @@ func (c *configurationServiceClient) UpdateFolder(ctx context.Context, req *conn
 // ConfigurationServiceHandler is an implementation of the api.v2.ConfigurationService service.
 type ConfigurationServiceHandler interface {
 	GetConfiguration(context.Context, *connect.Request[v2.GetConfigurationRequest]) (*connect.Response[v2.GetConfigurationResponse], error)
+	WatchConfiguration(context.Context, *connect.Request[v2.WatchConfigurationRequest], *connect.ServerStream[v2.GetConfigurationResponse]) error
+	UpdateOptions(context.Context, *connect.Request[v2.UpdateOptionsRequest]) (*connect.Response[v2.UpdateOptionsResponse], error)
 	AddDevice(context.Context, *connect.Request[v2.AddDeviceRequest]) (*connect.Response[v2.AddDeviceResponse], error)
 	RemoveDevice(context.Context, *connect.Request[v2.RemoveDeviceRequest]) (*connect.Response[v2.RemoveDeviceResponse], error)
 	UpdateDevice(context.Context, *connect.Request[v2.UpdateDeviceRequest]) (*connect.Response[v2.UpdateDeviceResponse], error)
@@ -191,6 +225,18 @@ func NewConfigurationServiceHandler(svc ConfigurationServiceHandler, opts ...con
 		ConfigurationServiceGetConfigurationProcedure,
 		svc.GetConfiguration,
 		connect.WithSchema(configurationServiceMethods.ByName("GetConfiguration")),
+		connect.WithHandlerOptions(opts...),
+	)
+	configurationServiceWatchConfigurationHandler := connect.NewServerStreamHandler(
+		ConfigurationServiceWatchConfigurationProcedure,
+		svc.WatchConfiguration,
+		connect.WithSchema(configurationServiceMethods.ByName("WatchConfiguration")),
+		connect.WithHandlerOptions(opts...),
+	)
+	configurationServiceUpdateOptionsHandler := connect.NewUnaryHandler(
+		ConfigurationServiceUpdateOptionsProcedure,
+		svc.UpdateOptions,
+		connect.WithSchema(configurationServiceMethods.ByName("UpdateOptions")),
 		connect.WithHandlerOptions(opts...),
 	)
 	configurationServiceAddDeviceHandler := connect.NewUnaryHandler(
@@ -233,6 +279,10 @@ func NewConfigurationServiceHandler(svc ConfigurationServiceHandler, opts ...con
 		switch r.URL.Path {
 		case ConfigurationServiceGetConfigurationProcedure:
 			configurationServiceGetConfigurationHandler.ServeHTTP(w, r)
+		case ConfigurationServiceWatchConfigurationProcedure:
+			configurationServiceWatchConfigurationHandler.ServeHTTP(w, r)
+		case ConfigurationServiceUpdateOptionsProcedure:
+			configurationServiceUpdateOptionsHandler.ServeHTTP(w, r)
 		case ConfigurationServiceAddDeviceProcedure:
 			configurationServiceAddDeviceHandler.ServeHTTP(w, r)
 		case ConfigurationServiceRemoveDeviceProcedure:
@@ -256,6 +306,14 @@ type UnimplementedConfigurationServiceHandler struct{}
 
 func (UnimplementedConfigurationServiceHandler) GetConfiguration(context.Context, *connect.Request[v2.GetConfigurationRequest]) (*connect.Response[v2.GetConfigurationResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v2.ConfigurationService.GetConfiguration is not implemented"))
+}
+
+func (UnimplementedConfigurationServiceHandler) WatchConfiguration(context.Context, *connect.Request[v2.WatchConfigurationRequest], *connect.ServerStream[v2.GetConfigurationResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("api.v2.ConfigurationService.WatchConfiguration is not implemented"))
+}
+
+func (UnimplementedConfigurationServiceHandler) UpdateOptions(context.Context, *connect.Request[v2.UpdateOptionsRequest]) (*connect.Response[v2.UpdateOptionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v2.ConfigurationService.UpdateOptions is not implemented"))
 }
 
 func (UnimplementedConfigurationServiceHandler) AddDevice(context.Context, *connect.Request[v2.AddDeviceRequest]) (*connect.Response[v2.AddDeviceResponse], error) {

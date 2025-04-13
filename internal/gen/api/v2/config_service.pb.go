@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/gofeaturespb"
+	fieldmaskpb "google.golang.org/protobuf/types/known/fieldmaskpb"
 	reflect "reflect"
 	unsafe "unsafe"
 )
@@ -64,6 +65,49 @@ func (b0 GetConfigurationRequest_builder) Build() *GetConfigurationRequest {
 	return m0
 }
 
+type WatchConfigurationRequest struct {
+	state         protoimpl.MessageState `protogen:"opaque.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WatchConfigurationRequest) Reset() {
+	*x = WatchConfigurationRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WatchConfigurationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WatchConfigurationRequest) ProtoMessage() {}
+
+func (x *WatchConfigurationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type WatchConfigurationRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 WatchConfigurationRequest_builder) Build() *WatchConfigurationRequest {
+	m0 := &WatchConfigurationRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
 type GetConfigurationResponse struct {
 	state             protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Config *Configuration         `protobuf:"bytes,1,opt,name=config"`
@@ -73,7 +117,7 @@ type GetConfigurationResponse struct {
 
 func (x *GetConfigurationResponse) Reset() {
 	*x = GetConfigurationResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[1]
+	mi := &file_api_v2_config_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -85,7 +129,7 @@ func (x *GetConfigurationResponse) String() string {
 func (*GetConfigurationResponse) ProtoMessage() {}
 
 func (x *GetConfigurationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[1]
+	mi := &file_api_v2_config_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -132,15 +176,152 @@ func (b0 GetConfigurationResponse_builder) Build() *GetConfigurationResponse {
 	return m0
 }
 
-type AddDeviceRequest struct {
+type UpdateOptionsRequest struct {
+	state                 protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Options    *OptionsConfiguration  `protobuf:"bytes,1,opt,name=options"`
+	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *UpdateOptionsRequest) Reset() {
+	*x = UpdateOptionsRequest{}
+	mi := &file_api_v2_config_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateOptionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateOptionsRequest) ProtoMessage() {}
+
+func (x *UpdateOptionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *UpdateOptionsRequest) GetOptions() *OptionsConfiguration {
+	if x != nil {
+		return x.xxx_hidden_Options
+	}
+	return nil
+}
+
+func (x *UpdateOptionsRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.xxx_hidden_UpdateMask
+	}
+	return nil
+}
+
+func (x *UpdateOptionsRequest) SetOptions(v *OptionsConfiguration) {
+	x.xxx_hidden_Options = v
+}
+
+func (x *UpdateOptionsRequest) SetUpdateMask(v *fieldmaskpb.FieldMask) {
+	x.xxx_hidden_UpdateMask = v
+}
+
+func (x *UpdateOptionsRequest) HasOptions() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Options != nil
+}
+
+func (x *UpdateOptionsRequest) HasUpdateMask() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_UpdateMask != nil
+}
+
+func (x *UpdateOptionsRequest) ClearOptions() {
+	x.xxx_hidden_Options = nil
+}
+
+func (x *UpdateOptionsRequest) ClearUpdateMask() {
+	x.xxx_hidden_UpdateMask = nil
+}
+
+type UpdateOptionsRequest_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Options    *OptionsConfiguration
+	UpdateMask *fieldmaskpb.FieldMask
+}
+
+func (b0 UpdateOptionsRequest_builder) Build() *UpdateOptionsRequest {
+	m0 := &UpdateOptionsRequest{}
+	b, x := &b0, m0
+	_, _ = b, x
+	x.xxx_hidden_Options = b.Options
+	x.xxx_hidden_UpdateMask = b.UpdateMask
+	return m0
+}
+
+type UpdateOptionsResponse struct {
 	state         protoimpl.MessageState `protogen:"opaque.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
+func (x *UpdateOptionsResponse) Reset() {
+	*x = UpdateOptionsResponse{}
+	mi := &file_api_v2_config_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateOptionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateOptionsResponse) ProtoMessage() {}
+
+func (x *UpdateOptionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_api_v2_config_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+type UpdateOptionsResponse_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+}
+
+func (b0 UpdateOptionsResponse_builder) Build() *UpdateOptionsResponse {
+	m0 := &UpdateOptionsResponse{}
+	b, x := &b0, m0
+	_, _ = b, x
+	return m0
+}
+
+type AddDeviceRequest struct {
+	state             protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Device *DeviceConfiguration   `protobuf:"bytes,1,opt,name=device"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
 func (x *AddDeviceRequest) Reset() {
 	*x = AddDeviceRequest{}
-	mi := &file_api_v2_config_service_proto_msgTypes[2]
+	mi := &file_api_v2_config_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -152,7 +333,7 @@ func (x *AddDeviceRequest) String() string {
 func (*AddDeviceRequest) ProtoMessage() {}
 
 func (x *AddDeviceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[2]
+	mi := &file_api_v2_config_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -163,15 +344,39 @@ func (x *AddDeviceRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *AddDeviceRequest) GetDevice() *DeviceConfiguration {
+	if x != nil {
+		return x.xxx_hidden_Device
+	}
+	return nil
+}
+
+func (x *AddDeviceRequest) SetDevice(v *DeviceConfiguration) {
+	x.xxx_hidden_Device = v
+}
+
+func (x *AddDeviceRequest) HasDevice() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Device != nil
+}
+
+func (x *AddDeviceRequest) ClearDevice() {
+	x.xxx_hidden_Device = nil
+}
+
 type AddDeviceRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Device *DeviceConfiguration
 }
 
 func (b0 AddDeviceRequest_builder) Build() *AddDeviceRequest {
 	m0 := &AddDeviceRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_Device = b.Device
 	return m0
 }
 
@@ -183,7 +388,7 @@ type AddDeviceResponse struct {
 
 func (x *AddDeviceResponse) Reset() {
 	*x = AddDeviceResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[3]
+	mi := &file_api_v2_config_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -195,7 +400,7 @@ func (x *AddDeviceResponse) String() string {
 func (*AddDeviceResponse) ProtoMessage() {}
 
 func (x *AddDeviceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[3]
+	mi := &file_api_v2_config_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -219,14 +424,17 @@ func (b0 AddDeviceResponse_builder) Build() *AddDeviceResponse {
 }
 
 type RemoveDeviceRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_DeviceId    *string                `protobuf:"bytes,2,opt,name=device_id,json=deviceId"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *RemoveDeviceRequest) Reset() {
 	*x = RemoveDeviceRequest{}
-	mi := &file_api_v2_config_service_proto_msgTypes[4]
+	mi := &file_api_v2_config_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -238,7 +446,7 @@ func (x *RemoveDeviceRequest) String() string {
 func (*RemoveDeviceRequest) ProtoMessage() {}
 
 func (x *RemoveDeviceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[4]
+	mi := &file_api_v2_config_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -249,15 +457,47 @@ func (x *RemoveDeviceRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *RemoveDeviceRequest) GetDeviceId() string {
+	if x != nil {
+		if x.xxx_hidden_DeviceId != nil {
+			return *x.xxx_hidden_DeviceId
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *RemoveDeviceRequest) SetDeviceId(v string) {
+	x.xxx_hidden_DeviceId = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *RemoveDeviceRequest) HasDeviceId() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *RemoveDeviceRequest) ClearDeviceId() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_DeviceId = nil
+}
+
 type RemoveDeviceRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	DeviceId *string
 }
 
 func (b0 RemoveDeviceRequest_builder) Build() *RemoveDeviceRequest {
 	m0 := &RemoveDeviceRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.DeviceId != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_DeviceId = b.DeviceId
+	}
 	return m0
 }
 
@@ -269,7 +509,7 @@ type RemoveDeviceResponse struct {
 
 func (x *RemoveDeviceResponse) Reset() {
 	*x = RemoveDeviceResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[5]
+	mi := &file_api_v2_config_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -281,7 +521,7 @@ func (x *RemoveDeviceResponse) String() string {
 func (*RemoveDeviceResponse) ProtoMessage() {}
 
 func (x *RemoveDeviceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[5]
+	mi := &file_api_v2_config_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -305,14 +545,16 @@ func (b0 RemoveDeviceResponse_builder) Build() *RemoveDeviceResponse {
 }
 
 type UpdateDeviceRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                 protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Device     *DeviceConfiguration   `protobuf:"bytes,1,opt,name=device"`
+	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *UpdateDeviceRequest) Reset() {
 	*x = UpdateDeviceRequest{}
-	mi := &file_api_v2_config_service_proto_msgTypes[6]
+	mi := &file_api_v2_config_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -324,7 +566,7 @@ func (x *UpdateDeviceRequest) String() string {
 func (*UpdateDeviceRequest) ProtoMessage() {}
 
 func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[6]
+	mi := &file_api_v2_config_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -335,15 +577,63 @@ func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *UpdateDeviceRequest) GetDevice() *DeviceConfiguration {
+	if x != nil {
+		return x.xxx_hidden_Device
+	}
+	return nil
+}
+
+func (x *UpdateDeviceRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.xxx_hidden_UpdateMask
+	}
+	return nil
+}
+
+func (x *UpdateDeviceRequest) SetDevice(v *DeviceConfiguration) {
+	x.xxx_hidden_Device = v
+}
+
+func (x *UpdateDeviceRequest) SetUpdateMask(v *fieldmaskpb.FieldMask) {
+	x.xxx_hidden_UpdateMask = v
+}
+
+func (x *UpdateDeviceRequest) HasDevice() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Device != nil
+}
+
+func (x *UpdateDeviceRequest) HasUpdateMask() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_UpdateMask != nil
+}
+
+func (x *UpdateDeviceRequest) ClearDevice() {
+	x.xxx_hidden_Device = nil
+}
+
+func (x *UpdateDeviceRequest) ClearUpdateMask() {
+	x.xxx_hidden_UpdateMask = nil
+}
+
 type UpdateDeviceRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Device     *DeviceConfiguration
+	UpdateMask *fieldmaskpb.FieldMask
 }
 
 func (b0 UpdateDeviceRequest_builder) Build() *UpdateDeviceRequest {
 	m0 := &UpdateDeviceRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_Device = b.Device
+	x.xxx_hidden_UpdateMask = b.UpdateMask
 	return m0
 }
 
@@ -355,7 +645,7 @@ type UpdateDeviceResponse struct {
 
 func (x *UpdateDeviceResponse) Reset() {
 	*x = UpdateDeviceResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[7]
+	mi := &file_api_v2_config_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -367,7 +657,7 @@ func (x *UpdateDeviceResponse) String() string {
 func (*UpdateDeviceResponse) ProtoMessage() {}
 
 func (x *UpdateDeviceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[7]
+	mi := &file_api_v2_config_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -391,14 +681,15 @@ func (b0 UpdateDeviceResponse_builder) Build() *UpdateDeviceResponse {
 }
 
 type AddFolderRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Folder *FolderConfiguration   `protobuf:"bytes,1,opt,name=folder"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *AddFolderRequest) Reset() {
 	*x = AddFolderRequest{}
-	mi := &file_api_v2_config_service_proto_msgTypes[8]
+	mi := &file_api_v2_config_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -410,7 +701,7 @@ func (x *AddFolderRequest) String() string {
 func (*AddFolderRequest) ProtoMessage() {}
 
 func (x *AddFolderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[8]
+	mi := &file_api_v2_config_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -421,15 +712,39 @@ func (x *AddFolderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *AddFolderRequest) GetFolder() *FolderConfiguration {
+	if x != nil {
+		return x.xxx_hidden_Folder
+	}
+	return nil
+}
+
+func (x *AddFolderRequest) SetFolder(v *FolderConfiguration) {
+	x.xxx_hidden_Folder = v
+}
+
+func (x *AddFolderRequest) HasFolder() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Folder != nil
+}
+
+func (x *AddFolderRequest) ClearFolder() {
+	x.xxx_hidden_Folder = nil
+}
+
 type AddFolderRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Folder *FolderConfiguration
 }
 
 func (b0 AddFolderRequest_builder) Build() *AddFolderRequest {
 	m0 := &AddFolderRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_Folder = b.Folder
 	return m0
 }
 
@@ -441,7 +756,7 @@ type AddFolderResponse struct {
 
 func (x *AddFolderResponse) Reset() {
 	*x = AddFolderResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[9]
+	mi := &file_api_v2_config_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -453,7 +768,7 @@ func (x *AddFolderResponse) String() string {
 func (*AddFolderResponse) ProtoMessage() {}
 
 func (x *AddFolderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[9]
+	mi := &file_api_v2_config_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -477,14 +792,17 @@ func (b0 AddFolderResponse_builder) Build() *AddFolderResponse {
 }
 
 type RemoveFolderRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                  protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_FolderId    *string                `protobuf:"bytes,1,opt,name=folder_id,json=folderId"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *RemoveFolderRequest) Reset() {
 	*x = RemoveFolderRequest{}
-	mi := &file_api_v2_config_service_proto_msgTypes[10]
+	mi := &file_api_v2_config_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -496,7 +814,7 @@ func (x *RemoveFolderRequest) String() string {
 func (*RemoveFolderRequest) ProtoMessage() {}
 
 func (x *RemoveFolderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[10]
+	mi := &file_api_v2_config_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -507,15 +825,47 @@ func (x *RemoveFolderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *RemoveFolderRequest) GetFolderId() string {
+	if x != nil {
+		if x.xxx_hidden_FolderId != nil {
+			return *x.xxx_hidden_FolderId
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *RemoveFolderRequest) SetFolderId(v string) {
+	x.xxx_hidden_FolderId = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *RemoveFolderRequest) HasFolderId() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *RemoveFolderRequest) ClearFolderId() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_FolderId = nil
+}
+
 type RemoveFolderRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	FolderId *string
 }
 
 func (b0 RemoveFolderRequest_builder) Build() *RemoveFolderRequest {
 	m0 := &RemoveFolderRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.FolderId != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_FolderId = b.FolderId
+	}
 	return m0
 }
 
@@ -527,7 +877,7 @@ type RemoveFolderResponse struct {
 
 func (x *RemoveFolderResponse) Reset() {
 	*x = RemoveFolderResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[11]
+	mi := &file_api_v2_config_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -539,7 +889,7 @@ func (x *RemoveFolderResponse) String() string {
 func (*RemoveFolderResponse) ProtoMessage() {}
 
 func (x *RemoveFolderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[11]
+	mi := &file_api_v2_config_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -563,14 +913,16 @@ func (b0 RemoveFolderResponse_builder) Build() *RemoveFolderResponse {
 }
 
 type UpdateFolderRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                 protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Folder     *FolderConfiguration   `protobuf:"bytes,1,opt,name=folder"`
+	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *UpdateFolderRequest) Reset() {
 	*x = UpdateFolderRequest{}
-	mi := &file_api_v2_config_service_proto_msgTypes[12]
+	mi := &file_api_v2_config_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -582,7 +934,7 @@ func (x *UpdateFolderRequest) String() string {
 func (*UpdateFolderRequest) ProtoMessage() {}
 
 func (x *UpdateFolderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[12]
+	mi := &file_api_v2_config_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -593,15 +945,63 @@ func (x *UpdateFolderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *UpdateFolderRequest) GetFolder() *FolderConfiguration {
+	if x != nil {
+		return x.xxx_hidden_Folder
+	}
+	return nil
+}
+
+func (x *UpdateFolderRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
+	if x != nil {
+		return x.xxx_hidden_UpdateMask
+	}
+	return nil
+}
+
+func (x *UpdateFolderRequest) SetFolder(v *FolderConfiguration) {
+	x.xxx_hidden_Folder = v
+}
+
+func (x *UpdateFolderRequest) SetUpdateMask(v *fieldmaskpb.FieldMask) {
+	x.xxx_hidden_UpdateMask = v
+}
+
+func (x *UpdateFolderRequest) HasFolder() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Folder != nil
+}
+
+func (x *UpdateFolderRequest) HasUpdateMask() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_UpdateMask != nil
+}
+
+func (x *UpdateFolderRequest) ClearFolder() {
+	x.xxx_hidden_Folder = nil
+}
+
+func (x *UpdateFolderRequest) ClearUpdateMask() {
+	x.xxx_hidden_UpdateMask = nil
+}
+
 type UpdateFolderRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Folder     *FolderConfiguration
+	UpdateMask *fieldmaskpb.FieldMask
 }
 
 func (b0 UpdateFolderRequest_builder) Build() *UpdateFolderRequest {
 	m0 := &UpdateFolderRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_Folder = b.Folder
+	x.xxx_hidden_UpdateMask = b.UpdateMask
 	return m0
 }
 
@@ -613,7 +1013,7 @@ type UpdateFolderResponse struct {
 
 func (x *UpdateFolderResponse) Reset() {
 	*x = UpdateFolderResponse{}
-	mi := &file_api_v2_config_service_proto_msgTypes[13]
+	mi := &file_api_v2_config_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -625,7 +1025,7 @@ func (x *UpdateFolderResponse) String() string {
 func (*UpdateFolderResponse) ProtoMessage() {}
 
 func (x *UpdateFolderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v2_config_service_proto_msgTypes[13]
+	mi := &file_api_v2_config_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -652,24 +1052,42 @@ var File_api_v2_config_service_proto protoreflect.FileDescriptor
 
 const file_api_v2_config_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/v2/config_service.proto\x12\x06api.v2\x1a\x1dapi/v2/config_resources.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
-	"\x17GetConfigurationRequest\"I\n" +
+	"\x1bapi/v2/config_service.proto\x12\x06api.v2\x1a\x1dapi/v2/config_resources.proto\x1a google/protobuf/field_mask.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
+	"\x17GetConfigurationRequest\"\x1b\n" +
+	"\x19WatchConfigurationRequest\"I\n" +
 	"\x18GetConfigurationResponse\x12-\n" +
-	"\x06config\x18\x01 \x01(\v2\x15.api.v2.ConfigurationR\x06config\"\x12\n" +
-	"\x10AddDeviceRequest\"\x13\n" +
-	"\x11AddDeviceResponse\"\x15\n" +
-	"\x13RemoveDeviceRequest\"\x16\n" +
-	"\x14RemoveDeviceResponse\"\x15\n" +
-	"\x13UpdateDeviceRequest\"\x16\n" +
-	"\x14UpdateDeviceResponse\"\x12\n" +
-	"\x10AddFolderRequest\"\x13\n" +
-	"\x11AddFolderResponse\"\x15\n" +
-	"\x13RemoveFolderRequest\"\x16\n" +
-	"\x14RemoveFolderResponse\"\x15\n" +
-	"\x13UpdateFolderRequest\"\x16\n" +
-	"\x14UpdateFolderResponse2\xab\x04\n" +
+	"\x06config\x18\x01 \x01(\v2\x15.api.v2.ConfigurationR\x06config\"\x8b\x01\n" +
+	"\x14UpdateOptionsRequest\x126\n" +
+	"\aoptions\x18\x01 \x01(\v2\x1c.api.v2.OptionsConfigurationR\aoptions\x12;\n" +
+	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"\x17\n" +
+	"\x15UpdateOptionsResponse\"G\n" +
+	"\x10AddDeviceRequest\x123\n" +
+	"\x06device\x18\x01 \x01(\v2\x1b.api.v2.DeviceConfigurationR\x06device\"\x13\n" +
+	"\x11AddDeviceResponse\"2\n" +
+	"\x13RemoveDeviceRequest\x12\x1b\n" +
+	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId\"\x16\n" +
+	"\x14RemoveDeviceResponse\"\x87\x01\n" +
+	"\x13UpdateDeviceRequest\x123\n" +
+	"\x06device\x18\x01 \x01(\v2\x1b.api.v2.DeviceConfigurationR\x06device\x12;\n" +
+	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"\x16\n" +
+	"\x14UpdateDeviceResponse\"G\n" +
+	"\x10AddFolderRequest\x123\n" +
+	"\x06folder\x18\x01 \x01(\v2\x1b.api.v2.FolderConfigurationR\x06folder\"\x13\n" +
+	"\x11AddFolderResponse\"2\n" +
+	"\x13RemoveFolderRequest\x12\x1b\n" +
+	"\tfolder_id\x18\x01 \x01(\tR\bfolderId\"\x16\n" +
+	"\x14RemoveFolderResponse\"\x87\x01\n" +
+	"\x13UpdateFolderRequest\x123\n" +
+	"\x06folder\x18\x01 \x01(\v2\x1b.api.v2.FolderConfigurationR\x06folder\x12;\n" +
+	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
+	"updateMask\"\x16\n" +
+	"\x14UpdateFolderResponse2\xda\x05\n" +
 	"\x14ConfigurationService\x12W\n" +
-	"\x10GetConfiguration\x12\x1f.api.v2.GetConfigurationRequest\x1a .api.v2.GetConfigurationResponse\"\x00\x12B\n" +
+	"\x10GetConfiguration\x12\x1f.api.v2.GetConfigurationRequest\x1a .api.v2.GetConfigurationResponse\"\x00\x12]\n" +
+	"\x12WatchConfiguration\x12!.api.v2.WatchConfigurationRequest\x1a .api.v2.GetConfigurationResponse\"\x000\x01\x12N\n" +
+	"\rUpdateOptions\x12\x1c.api.v2.UpdateOptionsRequest\x1a\x1d.api.v2.UpdateOptionsResponse\"\x00\x12B\n" +
 	"\tAddDevice\x12\x18.api.v2.AddDeviceRequest\x1a\x19.api.v2.AddDeviceResponse\"\x00\x12K\n" +
 	"\fRemoveDevice\x12\x1b.api.v2.RemoveDeviceRequest\x1a\x1c.api.v2.RemoveDeviceResponse\"\x00\x12K\n" +
 	"\fUpdateDevice\x12\x1b.api.v2.UpdateDeviceRequest\x1a\x1c.api.v2.UpdateDeviceResponse\"\x00\x12B\n" +
@@ -679,45 +1097,64 @@ const file_api_v2_config_service_proto_rawDesc = "" +
 	"\n" +
 	"com.api.v2B\x12ConfigServiceProtoP\x01Z8github.com/syncthing/syncthing/internal/gen/api/v2;apiv2\xa2\x02\x03AXX\xaa\x02\x06Api.V2\xca\x02\x06Api\\V2\xe2\x02\x12Api\\V2\\GPBMetadata\xea\x02\aApi::V2\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
-var file_api_v2_config_service_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_api_v2_config_service_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_api_v2_config_service_proto_goTypes = []any{
-	(*GetConfigurationRequest)(nil),  // 0: api.v2.GetConfigurationRequest
-	(*GetConfigurationResponse)(nil), // 1: api.v2.GetConfigurationResponse
-	(*AddDeviceRequest)(nil),         // 2: api.v2.AddDeviceRequest
-	(*AddDeviceResponse)(nil),        // 3: api.v2.AddDeviceResponse
-	(*RemoveDeviceRequest)(nil),      // 4: api.v2.RemoveDeviceRequest
-	(*RemoveDeviceResponse)(nil),     // 5: api.v2.RemoveDeviceResponse
-	(*UpdateDeviceRequest)(nil),      // 6: api.v2.UpdateDeviceRequest
-	(*UpdateDeviceResponse)(nil),     // 7: api.v2.UpdateDeviceResponse
-	(*AddFolderRequest)(nil),         // 8: api.v2.AddFolderRequest
-	(*AddFolderResponse)(nil),        // 9: api.v2.AddFolderResponse
-	(*RemoveFolderRequest)(nil),      // 10: api.v2.RemoveFolderRequest
-	(*RemoveFolderResponse)(nil),     // 11: api.v2.RemoveFolderResponse
-	(*UpdateFolderRequest)(nil),      // 12: api.v2.UpdateFolderRequest
-	(*UpdateFolderResponse)(nil),     // 13: api.v2.UpdateFolderResponse
-	(*Configuration)(nil),            // 14: api.v2.Configuration
+	(*GetConfigurationRequest)(nil),   // 0: api.v2.GetConfigurationRequest
+	(*WatchConfigurationRequest)(nil), // 1: api.v2.WatchConfigurationRequest
+	(*GetConfigurationResponse)(nil),  // 2: api.v2.GetConfigurationResponse
+	(*UpdateOptionsRequest)(nil),      // 3: api.v2.UpdateOptionsRequest
+	(*UpdateOptionsResponse)(nil),     // 4: api.v2.UpdateOptionsResponse
+	(*AddDeviceRequest)(nil),          // 5: api.v2.AddDeviceRequest
+	(*AddDeviceResponse)(nil),         // 6: api.v2.AddDeviceResponse
+	(*RemoveDeviceRequest)(nil),       // 7: api.v2.RemoveDeviceRequest
+	(*RemoveDeviceResponse)(nil),      // 8: api.v2.RemoveDeviceResponse
+	(*UpdateDeviceRequest)(nil),       // 9: api.v2.UpdateDeviceRequest
+	(*UpdateDeviceResponse)(nil),      // 10: api.v2.UpdateDeviceResponse
+	(*AddFolderRequest)(nil),          // 11: api.v2.AddFolderRequest
+	(*AddFolderResponse)(nil),         // 12: api.v2.AddFolderResponse
+	(*RemoveFolderRequest)(nil),       // 13: api.v2.RemoveFolderRequest
+	(*RemoveFolderResponse)(nil),      // 14: api.v2.RemoveFolderResponse
+	(*UpdateFolderRequest)(nil),       // 15: api.v2.UpdateFolderRequest
+	(*UpdateFolderResponse)(nil),      // 16: api.v2.UpdateFolderResponse
+	(*Configuration)(nil),             // 17: api.v2.Configuration
+	(*OptionsConfiguration)(nil),      // 18: api.v2.OptionsConfiguration
+	(*fieldmaskpb.FieldMask)(nil),     // 19: google.protobuf.FieldMask
+	(*DeviceConfiguration)(nil),       // 20: api.v2.DeviceConfiguration
+	(*FolderConfiguration)(nil),       // 21: api.v2.FolderConfiguration
 }
 var file_api_v2_config_service_proto_depIdxs = []int32{
-	14, // 0: api.v2.GetConfigurationResponse.config:type_name -> api.v2.Configuration
-	0,  // 1: api.v2.ConfigurationService.GetConfiguration:input_type -> api.v2.GetConfigurationRequest
-	2,  // 2: api.v2.ConfigurationService.AddDevice:input_type -> api.v2.AddDeviceRequest
-	4,  // 3: api.v2.ConfigurationService.RemoveDevice:input_type -> api.v2.RemoveDeviceRequest
-	6,  // 4: api.v2.ConfigurationService.UpdateDevice:input_type -> api.v2.UpdateDeviceRequest
-	8,  // 5: api.v2.ConfigurationService.AddFolder:input_type -> api.v2.AddFolderRequest
-	10, // 6: api.v2.ConfigurationService.RemoveFolder:input_type -> api.v2.RemoveFolderRequest
-	12, // 7: api.v2.ConfigurationService.UpdateFolder:input_type -> api.v2.UpdateFolderRequest
-	1,  // 8: api.v2.ConfigurationService.GetConfiguration:output_type -> api.v2.GetConfigurationResponse
-	3,  // 9: api.v2.ConfigurationService.AddDevice:output_type -> api.v2.AddDeviceResponse
-	5,  // 10: api.v2.ConfigurationService.RemoveDevice:output_type -> api.v2.RemoveDeviceResponse
-	7,  // 11: api.v2.ConfigurationService.UpdateDevice:output_type -> api.v2.UpdateDeviceResponse
-	9,  // 12: api.v2.ConfigurationService.AddFolder:output_type -> api.v2.AddFolderResponse
-	11, // 13: api.v2.ConfigurationService.RemoveFolder:output_type -> api.v2.RemoveFolderResponse
-	13, // 14: api.v2.ConfigurationService.UpdateFolder:output_type -> api.v2.UpdateFolderResponse
-	8,  // [8:15] is the sub-list for method output_type
-	1,  // [1:8] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	17, // 0: api.v2.GetConfigurationResponse.config:type_name -> api.v2.Configuration
+	18, // 1: api.v2.UpdateOptionsRequest.options:type_name -> api.v2.OptionsConfiguration
+	19, // 2: api.v2.UpdateOptionsRequest.update_mask:type_name -> google.protobuf.FieldMask
+	20, // 3: api.v2.AddDeviceRequest.device:type_name -> api.v2.DeviceConfiguration
+	20, // 4: api.v2.UpdateDeviceRequest.device:type_name -> api.v2.DeviceConfiguration
+	19, // 5: api.v2.UpdateDeviceRequest.update_mask:type_name -> google.protobuf.FieldMask
+	21, // 6: api.v2.AddFolderRequest.folder:type_name -> api.v2.FolderConfiguration
+	21, // 7: api.v2.UpdateFolderRequest.folder:type_name -> api.v2.FolderConfiguration
+	19, // 8: api.v2.UpdateFolderRequest.update_mask:type_name -> google.protobuf.FieldMask
+	0,  // 9: api.v2.ConfigurationService.GetConfiguration:input_type -> api.v2.GetConfigurationRequest
+	1,  // 10: api.v2.ConfigurationService.WatchConfiguration:input_type -> api.v2.WatchConfigurationRequest
+	3,  // 11: api.v2.ConfigurationService.UpdateOptions:input_type -> api.v2.UpdateOptionsRequest
+	5,  // 12: api.v2.ConfigurationService.AddDevice:input_type -> api.v2.AddDeviceRequest
+	7,  // 13: api.v2.ConfigurationService.RemoveDevice:input_type -> api.v2.RemoveDeviceRequest
+	9,  // 14: api.v2.ConfigurationService.UpdateDevice:input_type -> api.v2.UpdateDeviceRequest
+	11, // 15: api.v2.ConfigurationService.AddFolder:input_type -> api.v2.AddFolderRequest
+	13, // 16: api.v2.ConfigurationService.RemoveFolder:input_type -> api.v2.RemoveFolderRequest
+	15, // 17: api.v2.ConfigurationService.UpdateFolder:input_type -> api.v2.UpdateFolderRequest
+	2,  // 18: api.v2.ConfigurationService.GetConfiguration:output_type -> api.v2.GetConfigurationResponse
+	2,  // 19: api.v2.ConfigurationService.WatchConfiguration:output_type -> api.v2.GetConfigurationResponse
+	4,  // 20: api.v2.ConfigurationService.UpdateOptions:output_type -> api.v2.UpdateOptionsResponse
+	6,  // 21: api.v2.ConfigurationService.AddDevice:output_type -> api.v2.AddDeviceResponse
+	8,  // 22: api.v2.ConfigurationService.RemoveDevice:output_type -> api.v2.RemoveDeviceResponse
+	10, // 23: api.v2.ConfigurationService.UpdateDevice:output_type -> api.v2.UpdateDeviceResponse
+	12, // 24: api.v2.ConfigurationService.AddFolder:output_type -> api.v2.AddFolderResponse
+	14, // 25: api.v2.ConfigurationService.RemoveFolder:output_type -> api.v2.RemoveFolderResponse
+	16, // 26: api.v2.ConfigurationService.UpdateFolder:output_type -> api.v2.UpdateFolderResponse
+	18, // [18:27] is the sub-list for method output_type
+	9,  // [9:18] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_api_v2_config_service_proto_init() }
@@ -732,7 +1169,7 @@ func file_api_v2_config_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v2_config_service_proto_rawDesc), len(file_api_v2_config_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

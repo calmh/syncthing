@@ -3,12 +3,16 @@ edition = "2023";
 package api.v2;
 
 import "api/v2/config_resources.proto";
+import "google/protobuf/field_mask.proto";
 import "google/protobuf/go_features.proto";
 
 option features.(pb.go).api_level = API_OPAQUE;
 
 service ConfigurationService {
   rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse) {}
+  rpc WatchConfiguration(WatchConfigurationRequest) returns (stream GetConfigurationResponse) {}
+
+  rpc UpdateOptions(UpdateOptionsRequest) returns (UpdateOptionsResponse) {}
 
   rpc AddDevice(AddDeviceRequest) returns (AddDeviceResponse) {}
   rpc RemoveDevice(RemoveDeviceRequest) returns (RemoveDeviceResponse) {}
@@ -21,24 +25,46 @@ service ConfigurationService {
 
 message GetConfigurationRequest {}
 
+message WatchConfigurationRequest {}
+
 message GetConfigurationResponse {
   Configuration config = 1;
 }
 
-message AddDeviceRequest {}
+message UpdateOptionsRequest {
+  OptionsConfiguration options = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+message UpdateOptionsResponse {}
+
+message AddDeviceRequest {
+  DeviceConfiguration device = 1;
+}
 message AddDeviceResponse {}
 
-message RemoveDeviceRequest {}
+message RemoveDeviceRequest {
+  string device_id = 2;
+}
 message RemoveDeviceResponse {}
 
-message UpdateDeviceRequest {}
+message UpdateDeviceRequest {
+  DeviceConfiguration device = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
 message UpdateDeviceResponse {}
 
-message AddFolderRequest {}
+message AddFolderRequest {
+  FolderConfiguration folder = 1;
+}
 message AddFolderResponse {}
 
-message RemoveFolderRequest {}
+message RemoveFolderRequest {
+  string folder_id = 1;
+}
 message RemoveFolderResponse {}
 
-message UpdateFolderRequest {}
+message UpdateFolderRequest {
+  FolderConfiguration folder = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
 message UpdateFolderResponse {}
