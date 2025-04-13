@@ -1,9 +1,11 @@
 version: v2
 modules:
   - path: proto
-    name: github.com/syncthing/syncthing
+    name: github.com/syncthing/syncthing-v1
+  - path: protonew
+    name: github.com/syncthing/syncthing-v2
 deps:
-- buf.build/protocolbuffers/wellknowntypes:v30.2
+  - buf.build/protocolbuffers/wellknowntypes:v30.2
 lint:
   use:
     - STANDARD

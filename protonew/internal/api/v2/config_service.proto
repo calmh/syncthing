@@ -2,7 +2,7 @@ edition = "2023";
 
 package api.v2;
 
-import "api/v2/config_resources.proto";
+import "internal/config/configuration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/go_features.proto";
 
