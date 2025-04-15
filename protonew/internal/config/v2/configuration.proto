@@ -1,6 +1,6 @@
 edition = "2023";
 
-package api.v2;
+package config.v2;
 
 import "google/protobuf/go_features.proto";
 
@@ -115,4 +115,6 @@ enum CopyRangeMethod {
 
 message XattrFilter {}
 
-message DeviceConfiguration {}
+message DeviceConfiguration {
+  string id = 1;
+}

@@ -7,7 +7,7 @@
 package apiv2
 
 import (
-	config "github.com/syncthing/syncthing/internal/config"
+	v2 "github.com/syncthing/syncthing/internal/config/v2"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/gofeaturespb"
@@ -111,7 +111,7 @@ func (b0 WatchConfigurationRequest_builder) Build() *WatchConfigurationRequest {
 
 type GetConfigurationResponse struct {
 	state             protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Config *config.Configuration  `protobuf:"bytes,1,opt,name=config"`
+	xxx_hidden_Config *v2.Configuration      `protobuf:"bytes,1,opt,name=config"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -141,14 +141,14 @@ func (x *GetConfigurationResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *GetConfigurationResponse) GetConfig() *config.Configuration {
+func (x *GetConfigurationResponse) GetConfig() *v2.Configuration {
 	if x != nil {
 		return x.xxx_hidden_Config
 	}
 	return nil
 }
 
-func (x *GetConfigurationResponse) SetConfig(v *config.Configuration) {
+func (x *GetConfigurationResponse) SetConfig(v *v2.Configuration) {
 	x.xxx_hidden_Config = v
 }
 
@@ -166,7 +166,7 @@ func (x *GetConfigurationResponse) ClearConfig() {
 type GetConfigurationResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Config *config.Configuration
+	Config *v2.Configuration
 }
 
 func (b0 GetConfigurationResponse_builder) Build() *GetConfigurationResponse {
@@ -178,9 +178,9 @@ func (b0 GetConfigurationResponse_builder) Build() *GetConfigurationResponse {
 }
 
 type UpdateOptionsRequest struct {
-	state                 protoimpl.MessageState       `protogen:"opaque.v1"`
-	xxx_hidden_Options    *config.OptionsConfiguration `protobuf:"bytes,1,opt,name=options"`
-	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask       `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
+	state                 protoimpl.MessageState   `protogen:"opaque.v1"`
+	xxx_hidden_Options    *v2.OptionsConfiguration `protobuf:"bytes,1,opt,name=options"`
+	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask   `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -210,7 +210,7 @@ func (x *UpdateOptionsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UpdateOptionsRequest) GetOptions() *config.OptionsConfiguration {
+func (x *UpdateOptionsRequest) GetOptions() *v2.OptionsConfiguration {
 	if x != nil {
 		return x.xxx_hidden_Options
 	}
@@ -224,7 +224,7 @@ func (x *UpdateOptionsRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
-func (x *UpdateOptionsRequest) SetOptions(v *config.OptionsConfiguration) {
+func (x *UpdateOptionsRequest) SetOptions(v *v2.OptionsConfiguration) {
 	x.xxx_hidden_Options = v
 }
 
@@ -257,7 +257,7 @@ func (x *UpdateOptionsRequest) ClearUpdateMask() {
 type UpdateOptionsRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Options    *config.OptionsConfiguration
+	Options    *v2.OptionsConfiguration
 	UpdateMask *fieldmaskpb.FieldMask
 }
 
@@ -314,8 +314,8 @@ func (b0 UpdateOptionsResponse_builder) Build() *UpdateOptionsResponse {
 }
 
 type AddDeviceRequest struct {
-	state             protoimpl.MessageState      `protogen:"opaque.v1"`
-	xxx_hidden_Device *config.DeviceConfiguration `protobuf:"bytes,1,opt,name=device"`
+	state             protoimpl.MessageState  `protogen:"opaque.v1"`
+	xxx_hidden_Device *v2.DeviceConfiguration `protobuf:"bytes,1,opt,name=device"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -345,14 +345,14 @@ func (x *AddDeviceRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *AddDeviceRequest) GetDevice() *config.DeviceConfiguration {
+func (x *AddDeviceRequest) GetDevice() *v2.DeviceConfiguration {
 	if x != nil {
 		return x.xxx_hidden_Device
 	}
 	return nil
 }
 
-func (x *AddDeviceRequest) SetDevice(v *config.DeviceConfiguration) {
+func (x *AddDeviceRequest) SetDevice(v *v2.DeviceConfiguration) {
 	x.xxx_hidden_Device = v
 }
 
@@ -370,7 +370,7 @@ func (x *AddDeviceRequest) ClearDevice() {
 type AddDeviceRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Device *config.DeviceConfiguration
+	Device *v2.DeviceConfiguration
 }
 
 func (b0 AddDeviceRequest_builder) Build() *AddDeviceRequest {
@@ -546,9 +546,9 @@ func (b0 RemoveDeviceResponse_builder) Build() *RemoveDeviceResponse {
 }
 
 type UpdateDeviceRequest struct {
-	state                 protoimpl.MessageState      `protogen:"opaque.v1"`
-	xxx_hidden_Device     *config.DeviceConfiguration `protobuf:"bytes,1,opt,name=device"`
-	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask      `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
+	state                 protoimpl.MessageState  `protogen:"opaque.v1"`
+	xxx_hidden_Device     *v2.DeviceConfiguration `protobuf:"bytes,1,opt,name=device"`
+	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask  `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -578,7 +578,7 @@ func (x *UpdateDeviceRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UpdateDeviceRequest) GetDevice() *config.DeviceConfiguration {
+func (x *UpdateDeviceRequest) GetDevice() *v2.DeviceConfiguration {
 	if x != nil {
 		return x.xxx_hidden_Device
 	}
@@ -592,7 +592,7 @@ func (x *UpdateDeviceRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
-func (x *UpdateDeviceRequest) SetDevice(v *config.DeviceConfiguration) {
+func (x *UpdateDeviceRequest) SetDevice(v *v2.DeviceConfiguration) {
 	x.xxx_hidden_Device = v
 }
 
@@ -625,7 +625,7 @@ func (x *UpdateDeviceRequest) ClearUpdateMask() {
 type UpdateDeviceRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Device     *config.DeviceConfiguration
+	Device     *v2.DeviceConfiguration
 	UpdateMask *fieldmaskpb.FieldMask
 }
 
@@ -682,8 +682,8 @@ func (b0 UpdateDeviceResponse_builder) Build() *UpdateDeviceResponse {
 }
 
 type AddFolderRequest struct {
-	state             protoimpl.MessageState      `protogen:"opaque.v1"`
-	xxx_hidden_Folder *config.FolderConfiguration `protobuf:"bytes,1,opt,name=folder"`
+	state             protoimpl.MessageState  `protogen:"opaque.v1"`
+	xxx_hidden_Folder *v2.FolderConfiguration `protobuf:"bytes,1,opt,name=folder"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -713,14 +713,14 @@ func (x *AddFolderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *AddFolderRequest) GetFolder() *config.FolderConfiguration {
+func (x *AddFolderRequest) GetFolder() *v2.FolderConfiguration {
 	if x != nil {
 		return x.xxx_hidden_Folder
 	}
 	return nil
 }
 
-func (x *AddFolderRequest) SetFolder(v *config.FolderConfiguration) {
+func (x *AddFolderRequest) SetFolder(v *v2.FolderConfiguration) {
 	x.xxx_hidden_Folder = v
 }
 
@@ -738,7 +738,7 @@ func (x *AddFolderRequest) ClearFolder() {
 type AddFolderRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Folder *config.FolderConfiguration
+	Folder *v2.FolderConfiguration
 }
 
 func (b0 AddFolderRequest_builder) Build() *AddFolderRequest {
@@ -914,9 +914,9 @@ func (b0 RemoveFolderResponse_builder) Build() *RemoveFolderResponse {
 }
 
 type UpdateFolderRequest struct {
-	state                 protoimpl.MessageState      `protogen:"opaque.v1"`
-	xxx_hidden_Folder     *config.FolderConfiguration `protobuf:"bytes,1,opt,name=folder"`
-	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask      `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
+	state                 protoimpl.MessageState  `protogen:"opaque.v1"`
+	xxx_hidden_Folder     *v2.FolderConfiguration `protobuf:"bytes,1,opt,name=folder"`
+	xxx_hidden_UpdateMask *fieldmaskpb.FieldMask  `protobuf:"bytes,2,opt,name=update_mask,json=updateMask"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -946,7 +946,7 @@ func (x *UpdateFolderRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *UpdateFolderRequest) GetFolder() *config.FolderConfiguration {
+func (x *UpdateFolderRequest) GetFolder() *v2.FolderConfiguration {
 	if x != nil {
 		return x.xxx_hidden_Folder
 	}
@@ -960,7 +960,7 @@ func (x *UpdateFolderRequest) GetUpdateMask() *fieldmaskpb.FieldMask {
 	return nil
 }
 
-func (x *UpdateFolderRequest) SetFolder(v *config.FolderConfiguration) {
+func (x *UpdateFolderRequest) SetFolder(v *v2.FolderConfiguration) {
 	x.xxx_hidden_Folder = v
 }
 
@@ -993,7 +993,7 @@ func (x *UpdateFolderRequest) ClearUpdateMask() {
 type UpdateFolderRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Folder     *config.FolderConfiguration
+	Folder     *v2.FolderConfiguration
 	UpdateMask *fieldmaskpb.FieldMask
 }
 
@@ -1053,35 +1053,35 @@ var File_internal_api_v2_config_service_proto protoreflect.FileDescriptor
 
 const file_internal_api_v2_config_service_proto_rawDesc = "" +
 	"\n" +
-	"$internal/api/v2/config_service.proto\x12\x06api.v2\x1a#internal/config/configuration.proto\x1a google/protobuf/field_mask.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
+	"$internal/api/v2/config_service.proto\x12\x06api.v2\x1a&internal/config/v2/configuration.proto\x1a google/protobuf/field_mask.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
 	"\x17GetConfigurationRequest\"\x1b\n" +
-	"\x19WatchConfigurationRequest\"I\n" +
-	"\x18GetConfigurationResponse\x12-\n" +
-	"\x06config\x18\x01 \x01(\v2\x15.api.v2.ConfigurationR\x06config\"\x8b\x01\n" +
-	"\x14UpdateOptionsRequest\x126\n" +
-	"\aoptions\x18\x01 \x01(\v2\x1c.api.v2.OptionsConfigurationR\aoptions\x12;\n" +
+	"\x19WatchConfigurationRequest\"L\n" +
+	"\x18GetConfigurationResponse\x120\n" +
+	"\x06config\x18\x01 \x01(\v2\x18.config.v2.ConfigurationR\x06config\"\x8e\x01\n" +
+	"\x14UpdateOptionsRequest\x129\n" +
+	"\aoptions\x18\x01 \x01(\v2\x1f.config.v2.OptionsConfigurationR\aoptions\x12;\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"\x17\n" +
-	"\x15UpdateOptionsResponse\"G\n" +
-	"\x10AddDeviceRequest\x123\n" +
-	"\x06device\x18\x01 \x01(\v2\x1b.api.v2.DeviceConfigurationR\x06device\"\x13\n" +
+	"\x15UpdateOptionsResponse\"J\n" +
+	"\x10AddDeviceRequest\x126\n" +
+	"\x06device\x18\x01 \x01(\v2\x1e.config.v2.DeviceConfigurationR\x06device\"\x13\n" +
 	"\x11AddDeviceResponse\"2\n" +
 	"\x13RemoveDeviceRequest\x12\x1b\n" +
 	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId\"\x16\n" +
-	"\x14RemoveDeviceResponse\"\x87\x01\n" +
-	"\x13UpdateDeviceRequest\x123\n" +
-	"\x06device\x18\x01 \x01(\v2\x1b.api.v2.DeviceConfigurationR\x06device\x12;\n" +
+	"\x14RemoveDeviceResponse\"\x8a\x01\n" +
+	"\x13UpdateDeviceRequest\x126\n" +
+	"\x06device\x18\x01 \x01(\v2\x1e.config.v2.DeviceConfigurationR\x06device\x12;\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"\x16\n" +
-	"\x14UpdateDeviceResponse\"G\n" +
-	"\x10AddFolderRequest\x123\n" +
-	"\x06folder\x18\x01 \x01(\v2\x1b.api.v2.FolderConfigurationR\x06folder\"\x13\n" +
+	"\x14UpdateDeviceResponse\"J\n" +
+	"\x10AddFolderRequest\x126\n" +
+	"\x06folder\x18\x01 \x01(\v2\x1e.config.v2.FolderConfigurationR\x06folder\"\x13\n" +
 	"\x11AddFolderResponse\"2\n" +
 	"\x13RemoveFolderRequest\x12\x1b\n" +
 	"\tfolder_id\x18\x01 \x01(\tR\bfolderId\"\x16\n" +
-	"\x14RemoveFolderResponse\"\x87\x01\n" +
-	"\x13UpdateFolderRequest\x123\n" +
-	"\x06folder\x18\x01 \x01(\v2\x1b.api.v2.FolderConfigurationR\x06folder\x12;\n" +
+	"\x14RemoveFolderResponse\"\x8a\x01\n" +
+	"\x13UpdateFolderRequest\x126\n" +
+	"\x06folder\x18\x01 \x01(\v2\x1e.config.v2.FolderConfigurationR\x06folder\x12;\n" +
 	"\vupdate_mask\x18\x02 \x01(\v2\x1a.google.protobuf.FieldMaskR\n" +
 	"updateMask\"\x16\n" +
 	"\x14UpdateFolderResponse2\xda\x05\n" +
@@ -1100,38 +1100,38 @@ const file_internal_api_v2_config_service_proto_rawDesc = "" +
 
 var file_internal_api_v2_config_service_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_internal_api_v2_config_service_proto_goTypes = []any{
-	(*GetConfigurationRequest)(nil),     // 0: api.v2.GetConfigurationRequest
-	(*WatchConfigurationRequest)(nil),   // 1: api.v2.WatchConfigurationRequest
-	(*GetConfigurationResponse)(nil),    // 2: api.v2.GetConfigurationResponse
-	(*UpdateOptionsRequest)(nil),        // 3: api.v2.UpdateOptionsRequest
-	(*UpdateOptionsResponse)(nil),       // 4: api.v2.UpdateOptionsResponse
-	(*AddDeviceRequest)(nil),            // 5: api.v2.AddDeviceRequest
-	(*AddDeviceResponse)(nil),           // 6: api.v2.AddDeviceResponse
-	(*RemoveDeviceRequest)(nil),         // 7: api.v2.RemoveDeviceRequest
-	(*RemoveDeviceResponse)(nil),        // 8: api.v2.RemoveDeviceResponse
-	(*UpdateDeviceRequest)(nil),         // 9: api.v2.UpdateDeviceRequest
-	(*UpdateDeviceResponse)(nil),        // 10: api.v2.UpdateDeviceResponse
-	(*AddFolderRequest)(nil),            // 11: api.v2.AddFolderRequest
-	(*AddFolderResponse)(nil),           // 12: api.v2.AddFolderResponse
-	(*RemoveFolderRequest)(nil),         // 13: api.v2.RemoveFolderRequest
-	(*RemoveFolderResponse)(nil),        // 14: api.v2.RemoveFolderResponse
-	(*UpdateFolderRequest)(nil),         // 15: api.v2.UpdateFolderRequest
-	(*UpdateFolderResponse)(nil),        // 16: api.v2.UpdateFolderResponse
-	(*config.Configuration)(nil),        // 17: api.v2.Configuration
-	(*config.OptionsConfiguration)(nil), // 18: api.v2.OptionsConfiguration
-	(*fieldmaskpb.FieldMask)(nil),       // 19: google.protobuf.FieldMask
-	(*config.DeviceConfiguration)(nil),  // 20: api.v2.DeviceConfiguration
-	(*config.FolderConfiguration)(nil),  // 21: api.v2.FolderConfiguration
+	(*GetConfigurationRequest)(nil),   // 0: api.v2.GetConfigurationRequest
+	(*WatchConfigurationRequest)(nil), // 1: api.v2.WatchConfigurationRequest
+	(*GetConfigurationResponse)(nil),  // 2: api.v2.GetConfigurationResponse
+	(*UpdateOptionsRequest)(nil),      // 3: api.v2.UpdateOptionsRequest
+	(*UpdateOptionsResponse)(nil),     // 4: api.v2.UpdateOptionsResponse
+	(*AddDeviceRequest)(nil),          // 5: api.v2.AddDeviceRequest
+	(*AddDeviceResponse)(nil),         // 6: api.v2.AddDeviceResponse
+	(*RemoveDeviceRequest)(nil),       // 7: api.v2.RemoveDeviceRequest
+	(*RemoveDeviceResponse)(nil),      // 8: api.v2.RemoveDeviceResponse
+	(*UpdateDeviceRequest)(nil),       // 9: api.v2.UpdateDeviceRequest
+	(*UpdateDeviceResponse)(nil),      // 10: api.v2.UpdateDeviceResponse
+	(*AddFolderRequest)(nil),          // 11: api.v2.AddFolderRequest
+	(*AddFolderResponse)(nil),         // 12: api.v2.AddFolderResponse
+	(*RemoveFolderRequest)(nil),       // 13: api.v2.RemoveFolderRequest
+	(*RemoveFolderResponse)(nil),      // 14: api.v2.RemoveFolderResponse
+	(*UpdateFolderRequest)(nil),       // 15: api.v2.UpdateFolderRequest
+	(*UpdateFolderResponse)(nil),      // 16: api.v2.UpdateFolderResponse
+	(*v2.Configuration)(nil),          // 17: config.v2.Configuration
+	(*v2.OptionsConfiguration)(nil),   // 18: config.v2.OptionsConfiguration
+	(*fieldmaskpb.FieldMask)(nil),     // 19: google.protobuf.FieldMask
+	(*v2.DeviceConfiguration)(nil),    // 20: config.v2.DeviceConfiguration
+	(*v2.FolderConfiguration)(nil),    // 21: config.v2.FolderConfiguration
 }
 var file_internal_api_v2_config_service_proto_depIdxs = []int32{
-	17, // 0: api.v2.GetConfigurationResponse.config:type_name -> api.v2.Configuration
-	18, // 1: api.v2.UpdateOptionsRequest.options:type_name -> api.v2.OptionsConfiguration
+	17, // 0: api.v2.GetConfigurationResponse.config:type_name -> config.v2.Configuration
+	18, // 1: api.v2.UpdateOptionsRequest.options:type_name -> config.v2.OptionsConfiguration
 	19, // 2: api.v2.UpdateOptionsRequest.update_mask:type_name -> google.protobuf.FieldMask
-	20, // 3: api.v2.AddDeviceRequest.device:type_name -> api.v2.DeviceConfiguration
-	20, // 4: api.v2.UpdateDeviceRequest.device:type_name -> api.v2.DeviceConfiguration
+	20, // 3: api.v2.AddDeviceRequest.device:type_name -> config.v2.DeviceConfiguration
+	20, // 4: api.v2.UpdateDeviceRequest.device:type_name -> config.v2.DeviceConfiguration
 	19, // 5: api.v2.UpdateDeviceRequest.update_mask:type_name -> google.protobuf.FieldMask
-	21, // 6: api.v2.AddFolderRequest.folder:type_name -> api.v2.FolderConfiguration
-	21, // 7: api.v2.UpdateFolderRequest.folder:type_name -> api.v2.FolderConfiguration
+	21, // 6: api.v2.AddFolderRequest.folder:type_name -> config.v2.FolderConfiguration
+	21, // 7: api.v2.UpdateFolderRequest.folder:type_name -> config.v2.FolderConfiguration
 	19, // 8: api.v2.UpdateFolderRequest.update_mask:type_name -> google.protobuf.FieldMask
 	0,  // 9: api.v2.ConfigurationService.GetConfiguration:input_type -> api.v2.GetConfigurationRequest
 	1,  // 10: api.v2.ConfigurationService.WatchConfiguration:input_type -> api.v2.WatchConfigurationRequest

@@ -2,7 +2,7 @@ edition = "2023";
 
 package api.v2;
 
-import "internal/config/configuration.proto";
+import "internal/config/v2/configuration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/go_features.proto";
 
@@ -28,17 +28,17 @@ message GetConfigurationRequest {}
 message WatchConfigurationRequest {}
 
 message GetConfigurationResponse {
-  Configuration config = 1;
+  config.v2.Configuration config = 1;
 }
 
 message UpdateOptionsRequest {
-  OptionsConfiguration options = 1;
+  config.v2.OptionsConfiguration options = 1;
   google.protobuf.FieldMask update_mask = 2;
 }
 message UpdateOptionsResponse {}
 
 message AddDeviceRequest {
-  DeviceConfiguration device = 1;
+  config.v2.DeviceConfiguration device = 1;
 }
 message AddDeviceResponse {}
 
@@ -48,13 +48,13 @@ message RemoveDeviceRequest {
 message RemoveDeviceResponse {}
 
 message UpdateDeviceRequest {
-  DeviceConfiguration device = 1;
+  config.v2.DeviceConfiguration device = 1;
   google.protobuf.FieldMask update_mask = 2;
 }
 message UpdateDeviceResponse {}
 
 message AddFolderRequest {
-  FolderConfiguration folder = 1;
+  config.v2.FolderConfiguration folder = 1;
 }
 message AddFolderResponse {}
 
@@ -64,7 +64,7 @@ message RemoveFolderRequest {
 message RemoveFolderResponse {}
 
 message UpdateFolderRequest {
-  FolderConfiguration folder = 1;
+  config.v2.FolderConfiguration folder = 1;
   google.protobuf.FieldMask update_mask = 2;
 }
 message UpdateFolderResponse {}
