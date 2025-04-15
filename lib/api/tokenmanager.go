@@ -14,9 +14,10 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/gen/apiproto"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/sync"
@@ -147,12 +148,12 @@ func (m *tokenManager) scheduledSave() {
 type tokenCookieManager struct {
 	cookieName string
 	shortID    string
-	guiCfg     config.GUIConfiguration
+	guiCfg     configv1.GUIConfiguration
 	evLogger   events.Logger
 	tokens     *tokenManager
 }
 
-func newTokenCookieManager(shortID string, guiCfg config.GUIConfiguration, evLogger events.Logger, miscDB *db.Typed) *tokenCookieManager {
+func newTokenCookieManager(shortID string, guiCfg configv1.GUIConfiguration, evLogger events.Logger, miscDB *db.Typed) *tokenCookieManager {
 	return &tokenCookieManager{
 		cookieName: "sessionid-" + shortID,
 		shortID:    shortID,

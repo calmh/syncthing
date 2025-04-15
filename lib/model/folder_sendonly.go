@@ -7,8 +7,9 @@
 package model
 
 import (
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/ignore"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -17,14 +18,14 @@ import (
 )
 
 func init() {
-	folderFactories[config.FolderTypeSendOnly] = newSendOnlyFolder
+	folderFactories[configv1.FolderTypeSendOnly] = newSendOnlyFolder
 }
 
 type sendOnlyFolder struct {
 	folder
 }
 
-func newSendOnlyFolder(model *model, ignores *ignore.Matcher, cfg config.FolderConfiguration, _ versioner.Versioner, evLogger events.Logger, ioLimiter *semaphore.Semaphore) service {
+func newSendOnlyFolder(model *model, ignores *ignore.Matcher, cfg configv1.FolderConfiguration, _ versioner.Versioner, evLogger events.Logger, ioLimiter *semaphore.Semaphore) service {
 	f := &sendOnlyFolder{
 		folder: newFolder(model, ignores, cfg, evLogger, ioLimiter, nil),
 	}
@@ -43,7 +44,7 @@ func (f *sendOnlyFolder) pull() (bool, error) {
 		return nil
 	})
 
-	for file, err := range itererr.Zip(f.db.AllNeededGlobalFiles(f.folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0)) {
+	for file, err := range itererr.Zip(f.db.AllNeededGlobalFiles(f.folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0)) {
 		if err != nil {
 			return false, err
 		}
@@ -103,7 +104,7 @@ func (f *sendOnlyFolder) override() error {
 		return nil
 	})
 
-	for need, err := range itererr.Zip(f.db.AllNeededGlobalFiles(f.folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0)) {
+	for need, err := range itererr.Zip(f.db.AllNeededGlobalFiles(f.folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0)) {
 		if err != nil {
 			return err
 		}

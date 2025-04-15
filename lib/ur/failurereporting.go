@@ -15,8 +15,9 @@ import (
 	"strings"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/svcutil"
@@ -61,22 +62,22 @@ func FailureDataWithGoroutines(description string) FailureData {
 
 type FailureHandler interface {
 	suture.Service
-	config.Committer
+	configv1.Committer
 }
 
-func NewFailureHandler(cfg config.Wrapper, evLogger events.Logger) FailureHandler {
+func NewFailureHandler(cfg configv1.Wrapper, evLogger events.Logger) FailureHandler {
 	return &failureHandler{
 		cfg:      cfg,
 		evLogger: evLogger,
-		optsChan: make(chan config.OptionsConfiguration),
+		optsChan: make(chan configv1.OptionsConfiguration),
 		buf:      make(map[string]*failureStat),
 	}
 }
 
 type failureHandler struct {
-	cfg      config.Wrapper
+	cfg      configv1.Wrapper
 	evLogger events.Logger
-	optsChan chan config.OptionsConfiguration
+	optsChan chan configv1.OptionsConfiguration
 	buf      map[string]*failureStat
 }
 
@@ -161,7 +162,7 @@ func (h *failureHandler) Serve(ctx context.Context) error {
 	return err
 }
 
-func (h *failureHandler) applyOpts(opts config.OptionsConfiguration, sub events.Subscription) (string, events.Subscription, <-chan events.Event) {
+func (h *failureHandler) applyOpts(opts configv1.OptionsConfiguration, sub events.Subscription) (string, events.Subscription, <-chan events.Event) {
 	// Sub nil checks just for safety - config updates can be racy.
 	url := opts.CRURL + "/failure"
 	if opts.URAccepted > 0 {
@@ -190,7 +191,7 @@ func (h *failureHandler) addReport(data FailureData, evTime time.Time) {
 	}
 }
 
-func (h *failureHandler) CommitConfiguration(from, to config.Configuration) bool {
+func (h *failureHandler) CommitConfiguration(from, to configv1.Configuration) bool {
 	if from.Options.CREnabled != to.Options.CREnabled || from.Options.CRURL != to.Options.CRURL {
 		h.optsChan <- to.Options
 	}

@@ -7,8 +7,9 @@
 package syncthing
 
 import (
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
-	"github.com/syncthing/syncthing/lib/config"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 	globalMigrationDBKey   = "globalMigrationVersion"
 )
 
-func globalMigration(kv db.KV, cfg config.Wrapper) error {
+func globalMigration(kv db.KV, cfg configv1.Wrapper) error {
 	miscDB := db.NewMiscDB(kv)
 	prevVersion, _, err := miscDB.Int64(globalMigrationDBKey)
 	if err != nil {

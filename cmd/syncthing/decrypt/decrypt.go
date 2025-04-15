@@ -19,8 +19,8 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/internal/gen/bep"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -55,7 +55,7 @@ func (c *CLI) Run() error {
 
 	if c.TokenPath == "" {
 		// This is a bit long to show as default in --help
-		c.TokenPath = filepath.Join(config.DefaultMarkerName, config.EncryptionTokenName)
+		c.TokenPath = filepath.Join(configv1.DefaultMarkerName, configv1.EncryptionTokenName)
 	}
 
 	if c.FolderID == "" {

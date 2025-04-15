@@ -12,7 +12,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/fs"
 )
 
@@ -28,7 +29,7 @@ type trashcan struct {
 	copyRangeMethod fs.CopyRangeMethod
 }
 
-func newTrashcan(cfg config.FolderConfiguration) Versioner {
+func newTrashcan(cfg configv1.FolderConfiguration) Versioner {
 	cleanoutDays, _ := strconv.Atoi(cfg.Versioning.Params["cleanoutDays"])
 	// On error we default to 0, "do not clean out the trash can"
 

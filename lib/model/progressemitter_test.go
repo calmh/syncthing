@@ -15,7 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/sync"
@@ -60,10 +61,10 @@ func TestProgressEmitter(t *testing.T) {
 
 	w := evLogger.Subscribe(events.DownloadProgress)
 
-	c, cfgCancel := newConfigWrapper(config.Configuration{Version: config.CurrentVersion})
+	c, cfgCancel := newConfigWrapper(configv1.Configuration{Version: configv1.CurrentVersion})
 	defer os.Remove(c.ConfigPath())
 	defer cfgCancel()
-	waiter, err := c.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.Modify(func(cfg *configv1.Configuration) {
 		cfg.Options.ProgressUpdateIntervalS = 60 // irrelevant, but must be positive
 	})
 	if err != nil {
@@ -113,10 +114,10 @@ func TestProgressEmitter(t *testing.T) {
 }
 
 func TestSendDownloadProgressMessages(t *testing.T) {
-	c, cfgCancel := newConfigWrapper(config.Configuration{Version: config.CurrentVersion})
+	c, cfgCancel := newConfigWrapper(configv1.Configuration{Version: configv1.CurrentVersion})
 	defer os.Remove(c.ConfigPath())
 	defer cfgCancel()
-	waiter, err := c.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.Modify(func(cfg *configv1.Configuration) {
 		cfg.Options.ProgressUpdateIntervalS = 60 // irrelevant, but must be positive
 		cfg.Options.TempIndexMinBlocks = 10
 	})

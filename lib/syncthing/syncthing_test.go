@@ -12,8 +12,9 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db/sqlite"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/svcutil"
@@ -31,8 +32,8 @@ func tempCfgFilename(t *testing.T) string {
 }
 
 func TestShortIDCheck(t *testing.T) {
-	cfg := config.Wrap(tempCfgFilename(t), config.Configuration{
-		Devices: []config.DeviceConfiguration{
+	cfg := configv1.Wrap(tempCfgFilename(t), configv1.Configuration{
+		Devices: []configv1.DeviceConfiguration{
 			{DeviceID: protocol.DeviceID{8, 16, 24, 32, 40, 48, 56, 0, 0}},
 			{DeviceID: protocol.DeviceID{8, 16, 24, 32, 40, 48, 56, 1, 1}}, // first 56 bits same, differ in the first 64 bits
 		},
@@ -43,8 +44,8 @@ func TestShortIDCheck(t *testing.T) {
 		t.Error("Unexpected error:", err)
 	}
 
-	cfg = config.Wrap("/tmp/test", config.Configuration{
-		Devices: []config.DeviceConfiguration{
+	cfg = configv1.Wrap("/tmp/test", configv1.Configuration{
+		Devices: []configv1.DeviceConfiguration{
 			{DeviceID: protocol.DeviceID{8, 16, 24, 32, 40, 48, 56, 64, 0}},
 			{DeviceID: protocol.DeviceID{8, 16, 24, 32, 40, 48, 56, 64, 1}}, // first 64 bits same
 		},
@@ -64,8 +65,8 @@ func TestStartupFail(t *testing.T) {
 	conflID := protocol.DeviceID{}
 	copy(conflID[:8], id[:8])
 
-	cfg := config.Wrap(tempCfgFilename(t), config.Configuration{
-		Devices: []config.DeviceConfiguration{
+	cfg := configv1.Wrap(tempCfgFilename(t), configv1.Configuration{
+		Devices: []configv1.DeviceConfiguration{
 			{DeviceID: id},
 			{DeviceID: conflID},
 		},

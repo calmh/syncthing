@@ -18,8 +18,9 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -216,16 +217,16 @@ func TestRequestCreateTmpSymlink(t *testing.T) {
 
 func TestPullInvalidIgnoredSO(t *testing.T) {
 	t.Skip("flaky")
-	pullInvalidIgnored(t, config.FolderTypeSendOnly)
+	pullInvalidIgnored(t, configv1.FolderTypeSendOnly)
 }
 
 func TestPullInvalidIgnoredSR(t *testing.T) {
 	t.Skip("flaky")
-	pullInvalidIgnored(t, config.FolderTypeSendReceive)
+	pullInvalidIgnored(t, configv1.FolderTypeSendReceive)
 }
 
 // This test checks that (un-)ignored/invalid/deleted files are treated as expected.
-func pullInvalidIgnored(t *testing.T, ft config.FolderType) {
+func pullInvalidIgnored(t *testing.T, ft configv1.FolderType) {
 	w, wCancel := newConfigWrapper(defaultCfgWrapper.RawCopy())
 	defer wCancel()
 	fcfg := w.FolderList()[0]
@@ -1272,7 +1273,7 @@ func TestRequestReceiveEncrypted(t *testing.T) {
 	w, fcfg, wCancel := newDefaultCfgWrapper()
 	defer wCancel()
 	tfs := fcfg.Filesystem()
-	fcfg.Type = config.FolderTypeReceiveEncrypted
+	fcfg.Type = configv1.FolderTypeReceiveEncrypted
 	setFolder(t, w, fcfg)
 
 	encToken := protocol.PasswordToken(protocol.NewKeyGenerator(), fcfg.ID, "pw")
@@ -1366,10 +1367,10 @@ func TestRequestGlobalInvalidToValid(t *testing.T) {
 
 	m, fc, fcfg, wcfgCancel := setupModelWithConnection(t)
 	defer wcfgCancel()
-	fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{DeviceID: device2})
-	waiter, err := m.cfg.Modify(func(cfg *config.Configuration) {
+	fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{DeviceID: device2})
+	waiter, err := m.cfg.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(newDeviceConfiguration(cfg.Defaults.Device, device2, "device2"))
-		fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{DeviceID: device2})
+		fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{DeviceID: device2})
 		cfg.SetFolder(fcfg)
 	})
 	must(t, err)

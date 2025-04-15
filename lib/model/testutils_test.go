@@ -12,8 +12,9 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db/sqlite"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
@@ -24,11 +25,11 @@ import (
 
 var (
 	myID, device1, device2  protocol.DeviceID
-	defaultCfgWrapper       config.Wrapper
+	defaultCfgWrapper       configv1.Wrapper
 	defaultCfgWrapperCancel context.CancelFunc
-	defaultFolderConfig     config.FolderConfiguration
-	defaultCfg              config.Configuration
-	defaultAutoAcceptCfg    config.Configuration
+	defaultFolderConfig     configv1.FolderConfiguration
+	defaultCfg              configv1.Configuration
+	defaultAutoAcceptCfg    configv1.Configuration
 	device1Conn             = &mocks.Connection{}
 	device2Conn             = &mocks.Connection{}
 )
@@ -42,13 +43,13 @@ func init() {
 	device2Conn.DeviceIDReturns(device2)
 	device2Conn.ConnectionIDReturns(rand.String(16))
 
-	cfg := config.New(myID)
+	cfg := configv1.New(myID)
 	cfg.Options.MinHomeDiskFree.Value = 0 // avoids unnecessary free space checks
 	defaultCfgWrapper, defaultCfgWrapperCancel = newConfigWrapper(cfg)
 
 	defaultFolderConfig = newFolderConfig()
 
-	waiter, _ := defaultCfgWrapper.Modify(func(cfg *config.Configuration) {
+	waiter, _ := defaultCfgWrapper.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(newDeviceConfiguration(cfg.Defaults.Device, device1, "device1"))
 		cfg.SetFolder(defaultFolderConfig)
 		cfg.Options.KeepTemporariesH = 1
@@ -57,9 +58,9 @@ func init() {
 
 	defaultCfg = defaultCfgWrapper.RawCopy()
 
-	defaultAutoAcceptCfg = config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	defaultAutoAcceptCfg = configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID: myID, // self
 			},
@@ -72,50 +73,50 @@ func init() {
 				AutoAcceptFolders: true,
 			},
 		},
-		Defaults: config.Defaults{
-			Folder: config.FolderConfiguration{
-				FilesystemType: config.FilesystemTypeFake,
+		Defaults: configv1.Defaults{
+			Folder: configv1.FolderConfiguration{
+				FilesystemType: configv1.FilesystemTypeFake,
 				Path:           rand.String(32),
 			},
 		},
-		Options: config.OptionsConfiguration{
-			MinHomeDiskFree: config.Size{}, // avoids unnecessary free space checks
+		Options: configv1.OptionsConfiguration{
+			MinHomeDiskFree: configv1.Size{}, // avoids unnecessary free space checks
 		},
 	}
 }
 
-func newConfigWrapper(cfg config.Configuration) (config.Wrapper, context.CancelFunc) {
-	wrapper := config.Wrap("", cfg, myID, events.NoopLogger)
+func newConfigWrapper(cfg configv1.Configuration) (configv1.Wrapper, context.CancelFunc) {
+	wrapper := configv1.Wrap("", cfg, myID, events.NoopLogger)
 	ctx, cancel := context.WithCancel(context.Background())
 	go wrapper.Serve(ctx)
 	return wrapper, cancel
 }
 
-func newDefaultCfgWrapper() (config.Wrapper, config.FolderConfiguration, context.CancelFunc) {
+func newDefaultCfgWrapper() (configv1.Wrapper, configv1.FolderConfiguration, context.CancelFunc) {
 	w, cancel := newConfigWrapper(defaultCfgWrapper.RawCopy())
 	fcfg := newFolderConfig()
-	_, _ = w.Modify(func(cfg *config.Configuration) {
+	_, _ = w.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetFolder(fcfg)
 	})
 	return w, fcfg, cancel
 }
 
-func newFolderConfig() config.FolderConfiguration {
-	cfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", config.FilesystemTypeFake, rand.String(32)+"?content=true")
+func newFolderConfig() configv1.FolderConfiguration {
+	cfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", configv1.FilesystemTypeFake, rand.String(32)+"?content=true")
 	cfg.FSWatcherEnabled = false
 	cfg.PullerDelayS = 0
-	cfg.Devices = append(cfg.Devices, config.FolderDeviceConfiguration{DeviceID: device1})
+	cfg.Devices = append(cfg.Devices, configv1.FolderDeviceConfiguration{DeviceID: device1})
 	return cfg
 }
 
-func setupModelWithConnection(t testing.TB) (*testModel, *fakeConnection, config.FolderConfiguration, context.CancelFunc) {
+func setupModelWithConnection(t testing.TB) (*testModel, *fakeConnection, configv1.FolderConfiguration, context.CancelFunc) {
 	t.Helper()
 	w, fcfg, cancel := newDefaultCfgWrapper()
 	m, fc := setupModelWithConnectionFromWrapper(t, w)
 	return m, fc, fcfg, cancel
 }
 
-func setupModelWithConnectionFromWrapper(t testing.TB, w config.Wrapper) (*testModel, *fakeConnection) {
+func setupModelWithConnectionFromWrapper(t testing.TB, w configv1.Wrapper) (*testModel, *fakeConnection) {
 	t.Helper()
 	m := setupModel(t, w)
 
@@ -127,7 +128,7 @@ func setupModelWithConnectionFromWrapper(t testing.TB, w config.Wrapper) (*testM
 	return m, fc
 }
 
-func setupModel(t testing.TB, w config.Wrapper) *testModel {
+func setupModel(t testing.TB, w configv1.Wrapper) *testModel {
 	t.Helper()
 	m := newModel(t, w, myID, nil)
 	m.ServeBackground()
@@ -146,7 +147,7 @@ type testModel struct {
 	stopped  chan struct{}
 }
 
-func newModel(t testing.TB, cfg config.Wrapper, id protocol.DeviceID, protectedFiles []string) *testModel {
+func newModel(t testing.TB, cfg configv1.Wrapper, id protocol.DeviceID, protectedFiles []string) *testModel {
 	t.Helper()
 	evLogger := events.NewLogger()
 	mdb, err := sqlite.OpenTemp()
@@ -241,7 +242,7 @@ func (*alwaysChanged) Changed() bool {
 // reloads when asked to, instead of checking file mtimes. This is
 // because we will be changing the files on disk often enough that the
 // mtimes will be unreliable to determine change status.
-func folderIgnoresAlwaysReload(t testing.TB, m *testModel, fcfg config.FolderConfiguration) {
+func folderIgnoresAlwaysReload(t testing.TB, m *testModel, fcfg configv1.FolderConfiguration) {
 	t.Helper()
 	m.removeFolder(fcfg)
 	ignores := ignore.New(fcfg.Filesystem(), ignore.WithCache(true), ignore.WithChangeDetector(newAlwaysChanged()))
@@ -287,16 +288,16 @@ func localIndexUpdate(m *testModel, folder string, fs []protocol.FileInfo) {
 	})
 }
 
-func newDeviceConfiguration(defaultCfg config.DeviceConfiguration, id protocol.DeviceID, name string) config.DeviceConfiguration {
+func newDeviceConfiguration(defaultCfg configv1.DeviceConfiguration, id protocol.DeviceID, name string) configv1.DeviceConfiguration {
 	cfg := defaultCfg.Copy()
 	cfg.DeviceID = id
 	cfg.Name = name
 	return cfg
 }
 
-func replace(t testing.TB, w config.Wrapper, to config.Configuration) {
+func replace(t testing.TB, w configv1.Wrapper, to configv1.Configuration) {
 	t.Helper()
-	waiter, err := w.Modify(func(cfg *config.Configuration) {
+	waiter, err := w.Modify(func(cfg *configv1.Configuration) {
 		*cfg = to
 	})
 	if err != nil {
@@ -305,9 +306,9 @@ func replace(t testing.TB, w config.Wrapper, to config.Configuration) {
 	waiter.Wait()
 }
 
-func pauseFolder(t testing.TB, w config.Wrapper, id string, paused bool) {
+func pauseFolder(t testing.TB, w configv1.Wrapper, id string, paused bool) {
 	t.Helper()
-	waiter, err := w.Modify(func(cfg *config.Configuration) {
+	waiter, err := w.Modify(func(cfg *configv1.Configuration) {
 		_, i, _ := cfg.Folder(id)
 		cfg.Folders[i].Paused = paused
 	})
@@ -317,9 +318,9 @@ func pauseFolder(t testing.TB, w config.Wrapper, id string, paused bool) {
 	waiter.Wait()
 }
 
-func setFolder(t testing.TB, w config.Wrapper, fcfg config.FolderConfiguration) {
+func setFolder(t testing.TB, w configv1.Wrapper, fcfg configv1.FolderConfiguration) {
 	t.Helper()
-	waiter, err := w.Modify(func(cfg *config.Configuration) {
+	waiter, err := w.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetFolder(fcfg)
 	})
 	if err != nil {
@@ -328,9 +329,9 @@ func setFolder(t testing.TB, w config.Wrapper, fcfg config.FolderConfiguration) 
 	waiter.Wait()
 }
 
-func pauseDevice(t testing.TB, w config.Wrapper, id protocol.DeviceID, paused bool) {
+func pauseDevice(t testing.TB, w configv1.Wrapper, id protocol.DeviceID, paused bool) {
 	t.Helper()
-	waiter, err := w.Modify(func(cfg *config.Configuration) {
+	waiter, err := w.Modify(func(cfg *configv1.Configuration) {
 		_, i, _ := cfg.Device(id)
 		cfg.Devices[i].Paused = paused
 	})
@@ -340,9 +341,9 @@ func pauseDevice(t testing.TB, w config.Wrapper, id protocol.DeviceID, paused bo
 	waiter.Wait()
 }
 
-func setDevice(t testing.TB, w config.Wrapper, device config.DeviceConfiguration) {
+func setDevice(t testing.TB, w configv1.Wrapper, device configv1.DeviceConfiguration) {
 	t.Helper()
-	waiter, err := w.Modify(func(cfg *config.Configuration) {
+	waiter, err := w.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(device)
 	})
 	if err != nil {
@@ -351,10 +352,10 @@ func setDevice(t testing.TB, w config.Wrapper, device config.DeviceConfiguration
 	waiter.Wait()
 }
 
-func addDevice2(t testing.TB, w config.Wrapper, fcfg config.FolderConfiguration) {
-	waiter, err := w.Modify(func(cfg *config.Configuration) {
+func addDevice2(t testing.TB, w configv1.Wrapper, fcfg configv1.FolderConfiguration) {
+	waiter, err := w.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(newDeviceConfiguration(cfg.Defaults.Device, device2, "device2"))
-		fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{DeviceID: device2})
+		fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{DeviceID: device2})
 		cfg.SetFolder(fcfg)
 	})
 	must(t, err)

@@ -9,7 +9,8 @@ package connections
 import (
 	"testing"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
@@ -33,8 +34,8 @@ func TestIsLANHost(t *testing.T) {
 		{"„‹›ﬂ´ﬁÎ‡‰ˇ¨Á˝", false},
 	}
 
-	cfg := config.Wrap("/dev/null", config.Configuration{
-		Options: config.OptionsConfiguration{
+	cfg := configv1.Wrap("/dev/null", configv1.Configuration{
+		Options: configv1.OptionsConfiguration{
 			AlwaysLocalNets: []string{"10.20.30.0/24"},
 		},
 	}, protocol.LocalDeviceID, events.NoopLogger)

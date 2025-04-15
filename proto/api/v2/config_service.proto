@@ -1,0 +1,70 @@
+edition = "2023";
+
+package syncthing.api.v2;
+
+import "config/v2/configuration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/go_features.proto";
+
+option features.(pb.go).api_level = API_OPAQUE;
+
+service ConfigurationService {
+  rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse) {}
+  rpc WatchConfiguration(WatchConfigurationRequest) returns (stream GetConfigurationResponse) {}
+
+  rpc UpdateOptions(UpdateOptionsRequest) returns (UpdateOptionsResponse) {}
+
+  rpc AddDevice(AddDeviceRequest) returns (AddDeviceResponse) {}
+  rpc RemoveDevice(RemoveDeviceRequest) returns (RemoveDeviceResponse) {}
+  rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse) {}
+
+  rpc AddFolder(AddFolderRequest) returns (AddFolderResponse) {}
+  rpc RemoveFolder(RemoveFolderRequest) returns (RemoveFolderResponse) {}
+  rpc UpdateFolder(UpdateFolderRequest) returns (UpdateFolderResponse) {}
+}
+
+message GetConfigurationRequest {}
+
+message WatchConfigurationRequest {}
+
+message GetConfigurationResponse {
+  config.v2.Configuration config = 1;
+}
+
+message UpdateOptionsRequest {
+  config.v2.OptionsConfiguration options = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+message UpdateOptionsResponse {}
+
+message AddDeviceRequest {
+  config.v2.DeviceConfiguration device = 1;
+}
+message AddDeviceResponse {}
+
+message RemoveDeviceRequest {
+  string device_id = 2;
+}
+message RemoveDeviceResponse {}
+
+message UpdateDeviceRequest {
+  config.v2.DeviceConfiguration device = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+message UpdateDeviceResponse {}
+
+message AddFolderRequest {
+  config.v2.FolderConfiguration folder = 1;
+}
+message AddFolderResponse {}
+
+message RemoveFolderRequest {
+  string folder_id = 1;
+}
+message RemoveFolderResponse {}
+
+message UpdateFolderRequest {
+  config.v2.FolderConfiguration folder = 1;
+  google.protobuf.FieldMask update_mask = 2;
+}
+message UpdateFolderResponse {}

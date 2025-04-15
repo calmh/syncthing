@@ -14,7 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/nat"
@@ -34,7 +35,7 @@ type relayListener struct {
 	onAddressesChangedNotifier
 
 	uri     *url.URL
-	cfg     config.Wrapper
+	cfg     configv1.Wrapper
 	tlsCfg  *tls.Config
 	conns   chan internalConn
 	factory listenerFactory
@@ -177,7 +178,7 @@ func (*relayListener) NATType() string {
 
 type relayListenerFactory struct{}
 
-func (f *relayListenerFactory) New(uri *url.URL, cfg config.Wrapper, tlsCfg *tls.Config, conns chan internalConn, _ *nat.Service, _ *registry.Registry, _ *lanChecker) genericListener {
+func (f *relayListenerFactory) New(uri *url.URL, cfg configv1.Wrapper, tlsCfg *tls.Config, conns chan internalConn, _ *nat.Service, _ *registry.Registry, _ *lanChecker) genericListener {
 	t := &relayListener{
 		uri:     uri,
 		cfg:     cfg,
@@ -189,7 +190,7 @@ func (f *relayListenerFactory) New(uri *url.URL, cfg config.Wrapper, tlsCfg *tls
 	return t
 }
 
-func (relayListenerFactory) Valid(cfg config.Configuration) error {
+func (relayListenerFactory) Valid(cfg configv1.Configuration) error {
 	if !cfg.Options.RelaysEnabled {
 		return errDisabled
 	}

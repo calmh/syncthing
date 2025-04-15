@@ -13,7 +13,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/fs"
 )
 
@@ -34,7 +35,7 @@ type staggered struct {
 	copyRangeMethod fs.CopyRangeMethod
 }
 
-func newStaggered(cfg config.FolderConfiguration) Versioner {
+func newStaggered(cfg configv1.FolderConfiguration) Versioner {
 	params := cfg.Versioning.Params
 	maxAge, err := strconv.ParseInt(params["maxAge"], 10, 0)
 	if err != nil {

@@ -14,7 +14,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/fs"
 )
 
@@ -26,11 +27,11 @@ func TestTrashcanArchiveRestoreSwitcharoo(t *testing.T) {
 
 	tmpDir2 := t.TempDir()
 
-	cfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeBasic,
+	cfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           tmpDir1,
-		Versioning: config.VersioningConfiguration{
-			FSType: config.FilesystemTypeBasic,
+		Versioning: configv1.VersioningConfiguration{
+			FSType: configv1.FilesystemTypeBasic,
 			FSPath: tmpDir2,
 		},
 	}
@@ -104,11 +105,11 @@ func TestTrashcanRestoreDeletedFile(t *testing.T) {
 
 	tmpDir2 := t.TempDir()
 
-	cfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeBasic,
+	cfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           tmpDir1,
-		Versioning: config.VersioningConfiguration{
-			FSType: config.FilesystemTypeBasic,
+		Versioning: configv1.VersioningConfiguration{
+			FSType: configv1.FilesystemTypeBasic,
 			FSPath: tmpDir2,
 		},
 	}
@@ -199,10 +200,10 @@ func writeFile(t *testing.T, filesystem fs.Filesystem, name, content string) {
 func TestTrashcanCleanOut(t *testing.T) {
 	testDir := t.TempDir()
 
-	cfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeBasic,
+	cfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           testDir,
-		Versioning: config.VersioningConfiguration{
+		Versioning: configv1.VersioningConfiguration{
 			Params: map[string]string{
 				"cleanoutDays": "7",
 			},

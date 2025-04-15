@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 func TestTaggedFilename(t *testing.T) {
@@ -55,10 +55,10 @@ func TestSimpleVersioningVersionCount(t *testing.T) {
 
 	dir := t.TempDir()
 
-	cfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeBasic,
+	cfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           dir,
-		Versioning: config.VersioningConfiguration{
+		Versioning: configv1.VersioningConfiguration{
 			Params: map[string]string{
 				"keep": "2",
 			},
@@ -105,12 +105,12 @@ func TestPathTildes(t *testing.T) {
 	}
 	os.Mkdir(filepath.Join(home, "folder"), 0o755)
 
-	cfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeBasic,
+	cfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           "~/folder",
-		Versioning: config.VersioningConfiguration{
+		Versioning: configv1.VersioningConfiguration{
 			FSPath: "~/versions",
-			FSType: config.FilesystemTypeBasic,
+			FSType: configv1.FilesystemTypeBasic,
 			Params: map[string]string{
 				"keep": "2",
 			},

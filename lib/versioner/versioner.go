@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 type Versioner interface {
@@ -30,7 +30,7 @@ type FileVersion struct {
 	Size        int64     `json:"size"`
 }
 
-type factory func(cfg config.FolderConfiguration) Versioner
+type factory func(cfg configv1.FolderConfiguration) Versioner
 
 var factories = make(map[string]factory)
 
@@ -41,7 +41,7 @@ const (
 	timeGlob   = "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9][0-9][0-9]" // glob pattern matching TimeFormat
 )
 
-func New(cfg config.FolderConfiguration) (Versioner, error) {
+func New(cfg configv1.FolderConfiguration) (Versioner, error) {
 	fac, ok := factories[cfg.Versioning.Type]
 	if !ok {
 		return nil, fmt.Errorf("requested versioning type %q does not exist", cfg.Versioning.Type)

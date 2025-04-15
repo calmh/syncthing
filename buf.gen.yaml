@@ -5,11 +5,11 @@ managed:
     - module: buf.build/protocolbuffers/wellknowntypes
   override:
     - file_option: go_package_prefix
-      value: github.com/syncthing/syncthing
-      module: github.com/syncthing/syncthing-v2
+      value: github.com/syncthing/syncthing/internal
+      module: github.com/syncthing/syncthing
     - file_option: go_package_prefix
       value: github.com/syncthing/syncthing/internal/gen
-      module: github.com/syncthing/syncthing-v1
+      module: github.com/syncthing/syncthing-internal
 plugins:
   - local: protoc-gen-go
     out: .
@@ -20,5 +20,5 @@ plugins:
   # - remote: buf.build/bufbuild/es:v2.2.5
     # out: gui/default/proto
 inputs:
+  - directory: internalproto
   - directory: proto
-  - directory: protonew

@@ -17,14 +17,15 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
 var (
 	device1, device2, device3, device4     protocol.DeviceID
-	dev1Conf, dev2Conf, dev3Conf, dev4Conf config.DeviceConfiguration
+	dev1Conf, dev2Conf, dev3Conf, dev4Conf configv1.DeviceConfiguration
 )
 
 func init() {
@@ -34,15 +35,15 @@ func init() {
 	device4, _ = protocol.DeviceIDFromString("P56IOI7-MZJNU2Y-IQGDREY-DM2MGTI-MGL3BXN-PQ6W5BM-TBBZ4TJ-XZWICQ2")
 }
 
-func newDeviceConfiguration(w config.Wrapper, id protocol.DeviceID, name string) config.DeviceConfiguration {
+func newDeviceConfiguration(w configv1.Wrapper, id protocol.DeviceID, name string) configv1.DeviceConfiguration {
 	cfg := w.DefaultDevice()
 	cfg.DeviceID = id
 	cfg.Name = name
 	return cfg
 }
 
-func initConfig() (config.Wrapper, context.CancelFunc) {
-	wrapper := config.Wrap("/dev/null", config.New(device1), device1, events.NoopLogger)
+func initConfig() (configv1.Wrapper, context.CancelFunc) {
+	wrapper := configv1.Wrap("/dev/null", configv1.New(device1), device1, events.NoopLogger)
 	dev1Conf = newDeviceConfiguration(wrapper, device1, "device1")
 	dev2Conf = newDeviceConfiguration(wrapper, device2, "device2")
 	dev3Conf = newDeviceConfiguration(wrapper, device3, "device3")
@@ -54,8 +55,8 @@ func initConfig() (config.Wrapper, context.CancelFunc) {
 	dev2Conf.MaxRecvKbps = rand.Int() % 100000
 	dev2Conf.MaxSendKbps = rand.Int() % 100000
 
-	waiter, _ := wrapper.Modify(func(cfg *config.Configuration) {
-		cfg.SetDevices([]config.DeviceConfiguration{dev1Conf, dev2Conf, dev3Conf, dev4Conf})
+	waiter, _ := wrapper.Modify(func(cfg *configv1.Configuration) {
+		cfg.SetDevices([]configv1.DeviceConfiguration{dev1Conf, dev2Conf, dev3Conf, dev4Conf})
 	})
 	waiter.Wait()
 	return wrapper, cancel
@@ -106,8 +107,8 @@ func TestSetDeviceLimits(t *testing.T) {
 	dev3ReadLimit := rand.Int() % 10000
 	dev3Conf.MaxRecvKbps = dev3ReadLimit
 
-	waiter, _ := wrapper.Modify(func(cfg *config.Configuration) {
-		cfg.SetDevices([]config.DeviceConfiguration{dev1Conf, dev2Conf, dev3Conf, dev4Conf})
+	waiter, _ := wrapper.Modify(func(cfg *configv1.Configuration) {
+		cfg.SetDevices([]configv1.DeviceConfiguration{dev1Conf, dev2Conf, dev3Conf, dev4Conf})
 	})
 	waiter.Wait()
 
@@ -159,7 +160,7 @@ func TestAddDevice(t *testing.T) {
 	addDevConf.MaxRecvKbps = 120
 	addDevConf.MaxSendKbps = 240
 
-	waiter, _ := wrapper.Modify(func(cfg *config.Configuration) {
+	waiter, _ := wrapper.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(addDevConf)
 	})
 	waiter.Wait()
@@ -193,7 +194,7 @@ func TestAddAndRemove(t *testing.T) {
 	addDevConf.MaxRecvKbps = 120
 	addDevConf.MaxSendKbps = 240
 
-	waiter, _ := wrapper.Modify(func(cfg *config.Configuration) {
+	waiter, _ := wrapper.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(addDevConf)
 	})
 	waiter.Wait()

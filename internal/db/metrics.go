@@ -12,7 +12,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -97,7 +97,7 @@ func (m metricsDB) AllLocalFilesBySequence(folder string, device protocol.Device
 	return m.DB.AllLocalFilesBySequence(folder, device, startSeq, limit)
 }
 
-func (m metricsDB) AllNeededGlobalFiles(folder string, device protocol.DeviceID, order config.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error) {
+func (m metricsDB) AllNeededGlobalFiles(folder string, device protocol.DeviceID, order configv1.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error) {
 	defer m.account(folder, "AllNeededGlobalFiles")()
 	return m.DB.AllNeededGlobalFiles(folder, device, order, limit, offset)
 }

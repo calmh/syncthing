@@ -21,7 +21,8 @@ import (
 
 	"github.com/quic-go/quic-go"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/nat"
 	"github.com/syncthing/syncthing/lib/stun"
@@ -42,7 +43,7 @@ type quicListener struct {
 	onAddressesChangedNotifier
 
 	uri        *url.URL
-	cfg        config.Wrapper
+	cfg        configv1.Wrapper
 	tlsCfg     *tls.Config
 	conns      chan internalConn
 	factory    listenerFactory
@@ -228,13 +229,13 @@ func (t *quicListener) NATType() string {
 
 type quicListenerFactory struct{}
 
-func (*quicListenerFactory) Valid(config.Configuration) error {
+func (*quicListenerFactory) Valid(configv1.Configuration) error {
 	return nil
 }
 
-func (f *quicListenerFactory) New(uri *url.URL, cfg config.Wrapper, tlsCfg *tls.Config, conns chan internalConn, _ *nat.Service, registry *registry.Registry, lanChecker *lanChecker) genericListener {
+func (f *quicListenerFactory) New(uri *url.URL, cfg configv1.Wrapper, tlsCfg *tls.Config, conns chan internalConn, _ *nat.Service, registry *registry.Registry, lanChecker *lanChecker) genericListener {
 	l := &quicListener{
-		uri:        fixupPort(uri, config.DefaultQUICPort),
+		uri:        fixupPort(uri, configv1.DefaultQUICPort),
 		cfg:        cfg,
 		tlsCfg:     tlsCfg,
 		conns:      conns,
@@ -247,6 +248,6 @@ func (f *quicListenerFactory) New(uri *url.URL, cfg config.Wrapper, tlsCfg *tls.
 	return l
 }
 
-func (quicListenerFactory) Enabled(_ config.Configuration) bool {
+func (quicListenerFactory) Enabled(_ configv1.Configuration) bool {
 	return true
 }

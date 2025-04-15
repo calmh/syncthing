@@ -13,8 +13,9 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -599,8 +600,8 @@ func setupROFolder(t *testing.T) (*testModel, *receiveOnlyFolder, context.Cancel
 	fcfg := newFolderConfig()
 	fcfg.ID = "ro"
 	fcfg.Label = "ro"
-	fcfg.Type = config.FolderTypeReceiveOnly
-	cfg.Folders = []config.FolderConfiguration{fcfg}
+	fcfg.Type = configv1.FolderTypeReceiveOnly
+	cfg.Folders = []configv1.FolderConfiguration{fcfg}
 	replace(t, w, cfg)
 
 	m := newModel(t, w, myID, nil)

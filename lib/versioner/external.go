@@ -15,8 +15,9 @@ import (
 	"strings"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/fs"
 
 	"github.com/kballard/go-shellquote"
@@ -32,7 +33,7 @@ type external struct {
 	filesystem fs.Filesystem
 }
 
-func newExternal(cfg config.FolderConfiguration) Versioner {
+func newExternal(cfg configv1.FolderConfiguration) Versioner {
 	command := cfg.Versioning.Params["command"]
 
 	if build.IsWindows {

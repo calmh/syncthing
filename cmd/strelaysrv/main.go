@@ -21,9 +21,9 @@ import (
 
 	"golang.org/x/time/rate"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	_ "github.com/syncthing/syncthing/lib/automaxprocs"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/nat"
 	"github.com/syncthing/syncthing/lib/osutil"
@@ -186,9 +186,9 @@ func main() {
 		log.Println("ID:", id)
 	}
 
-	wrapper := config.Wrap("config", config.New(id), id, events.NoopLogger)
+	wrapper := configv1.Wrap("config", configv1.New(id), id, events.NoopLogger)
 	go wrapper.Serve(context.TODO())
-	wrapper.Modify(func(cfg *config.Configuration) {
+	wrapper.Modify(func(cfg *configv1.Configuration) {
 		cfg.Options.NATLeaseM = natLease
 		cfg.Options.NATRenewalM = natRenewal
 		cfg.Options.NATTimeoutS = natTimeout

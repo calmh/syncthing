@@ -25,10 +25,11 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
@@ -41,7 +42,7 @@ import (
 	"github.com/syncthing/syncthing/lib/versioner"
 )
 
-func newState(t testing.TB, cfg config.Configuration) (*testModel, context.CancelFunc) {
+func newState(t testing.TB, cfg configv1.Configuration) (*testModel, context.CancelFunc) {
 	wcfg, cancel := newConfigWrapper(cfg)
 
 	m := setupModel(t, wcfg)
@@ -262,8 +263,8 @@ func TestDeviceRename(t *testing.T) {
 		ClientVersion: "v0.9.4",
 	}
 
-	rawCfg := config.New(device1)
-	rawCfg.Devices = []config.DeviceConfiguration{
+	rawCfg := configv1.New(device1)
+	rawCfg.Devices = []configv1.DeviceConfiguration{
 		{
 			DeviceID: device1,
 		},
@@ -320,7 +321,7 @@ func TestDeviceRename(t *testing.T) {
 
 	m.Closed(conn, protocol.ErrTimeout)
 
-	waiter, err := cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := cfg.Modify(func(cfg *configv1.Configuration) {
 		cfg.Options.OverwriteRemoteDevNames = true
 	})
 	must(t, err)
@@ -335,7 +336,7 @@ func TestDeviceRename(t *testing.T) {
 }
 
 // Adjusted copy of the original function for testing purposes
-func saveConfig(ffs fs.Filesystem, path string, cfg config.Configuration) error {
+func saveConfig(ffs fs.Filesystem, path string, cfg configv1.Configuration) error {
 	fd, err := ffs.Create(path)
 	if err != nil {
 		l.Debugln("Create:", err)
@@ -360,7 +361,7 @@ func saveConfig(ffs fs.Filesystem, path string, cfg config.Configuration) error 
 }
 
 // Adjusted copy of the original function for testing purposes
-func loadConfig(ffs fs.Filesystem, path string, myID protocol.DeviceID, evLogger events.Logger) (config.Wrapper, int, error) {
+func loadConfig(ffs fs.Filesystem, path string, myID protocol.DeviceID, evLogger events.Logger) (configv1.Wrapper, int, error) {
 	if _, err := ffs.Lstat(path); err != nil {
 		return nil, 0, err
 	}
@@ -370,18 +371,18 @@ func loadConfig(ffs fs.Filesystem, path string, myID protocol.DeviceID, evLogger
 	}
 	defer fd.Close()
 
-	cfg, originalVersion, err := config.ReadXML(fd, myID)
+	cfg, originalVersion, err := configv1.ReadXML(fd, myID)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	return config.Wrap(path, cfg, myID, evLogger), originalVersion, nil
+	return configv1.Wrap(path, cfg, myID, evLogger), originalVersion, nil
 }
 
 func TestClusterConfig(t *testing.T) {
-	cfg := config.New(device1)
+	cfg := configv1.New(device1)
 	cfg.Options.MinHomeDiskFree.Value = 0 // avoids unnecessary free space checks
-	cfg.Devices = []config.DeviceConfiguration{
+	cfg.Devices = []configv1.DeviceConfiguration{
 		{
 			DeviceID:   device1,
 			Introducer: true,
@@ -390,31 +391,31 @@ func TestClusterConfig(t *testing.T) {
 			DeviceID: device2,
 		},
 	}
-	cfg.Folders = []config.FolderConfiguration{
+	cfg.Folders = []configv1.FolderConfiguration{
 		{
-			FilesystemType: config.FilesystemTypeFake,
+			FilesystemType: configv1.FilesystemTypeFake,
 			ID:             "folder1",
 			Path:           "testdata1",
-			Devices: []config.FolderDeviceConfiguration{
+			Devices: []configv1.FolderDeviceConfiguration{
 				{DeviceID: device1},
 				{DeviceID: device2},
 			},
 		},
 		{
-			FilesystemType: config.FilesystemTypeFake,
+			FilesystemType: configv1.FilesystemTypeFake,
 			ID:             "folder2",
 			Path:           "testdata2",
 			Paused:         true, // should still be included
-			Devices: []config.FolderDeviceConfiguration{
+			Devices: []configv1.FolderDeviceConfiguration{
 				{DeviceID: device1},
 				{DeviceID: device2},
 			},
 		},
 		{
-			FilesystemType: config.FilesystemTypeFake,
+			FilesystemType: configv1.FilesystemTypeFake,
 			ID:             "folder3",
 			Path:           "testdata3",
-			Devices: []config.FolderDeviceConfiguration{
+			Devices: []configv1.FolderDeviceConfiguration{
 				{DeviceID: device1},
 				// should not be included, does not include device2
 			},
@@ -478,7 +479,7 @@ func TestIntroducer(t *testing.T) {
 	var introducedByAnyone protocol.DeviceID
 
 	// LocalDeviceID is a magic value meaning don't check introducer
-	contains := func(cfg config.FolderConfiguration, id, introducedBy protocol.DeviceID) bool {
+	contains := func(cfg configv1.FolderConfiguration, id, introducedBy protocol.DeviceID) bool {
 		for _, dev := range cfg.Devices {
 			if dev.DeviceID.Equals(id) {
 				if introducedBy.Equals(introducedByAnyone) {
@@ -490,28 +491,28 @@ func TestIntroducer(t *testing.T) {
 		return false
 	}
 
-	m, cancel := newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel := newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: true,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 				},
 			},
@@ -547,9 +548,9 @@ func TestIntroducer(t *testing.T) {
 
 	cleanupModel(m)
 	cancel()
-	m, cancel = newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel = newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: true,
@@ -559,21 +560,21 @@ func TestIntroducer(t *testing.T) {
 				IntroducedBy: device1,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 				},
 			},
@@ -602,9 +603,9 @@ func TestIntroducer(t *testing.T) {
 
 	cleanupModel(m)
 	cancel()
-	m, cancel = newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel = newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: true,
@@ -614,21 +615,21 @@ func TestIntroducer(t *testing.T) {
 				IntroducedBy: device1,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
@@ -654,9 +655,9 @@ func TestIntroducer(t *testing.T) {
 
 	cleanupModel(m)
 	cancel()
-	m, cancel = newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel = newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: false,
@@ -666,21 +667,21 @@ func TestIntroducer(t *testing.T) {
 				IntroducedBy: device1,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
@@ -705,9 +706,9 @@ func TestIntroducer(t *testing.T) {
 
 	cleanupModel(m)
 	cancel()
-	m, cancel = newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel = newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:                 device1,
 				Introducer:               true,
@@ -718,21 +719,21 @@ func TestIntroducer(t *testing.T) {
 				IntroducedBy: device1,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 				},
 			},
@@ -762,9 +763,9 @@ func TestIntroducer(t *testing.T) {
 
 	cleanupModel(m)
 	cancel()
-	m, cancel = newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel = newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: true,
@@ -774,21 +775,21 @@ func TestIntroducer(t *testing.T) {
 				IntroducedBy: device1,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2},
 				},
@@ -813,9 +814,9 @@ func TestIntroducer(t *testing.T) {
 
 	cleanupModel(m)
 	cancel()
-	m, cancel = newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel = newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: true,
@@ -825,21 +826,21 @@ func TestIntroducer(t *testing.T) {
 				IntroducedBy: device1,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: device1},
 				},
 			},
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder2",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 					{DeviceID: device2, IntroducedBy: myID},
 				},
@@ -864,20 +865,20 @@ func TestIntroducer(t *testing.T) {
 }
 
 func TestIssue4897(t *testing.T) {
-	m, cancel := newState(t, config.Configuration{
-		Version: config.CurrentVersion,
-		Devices: []config.DeviceConfiguration{
+	m, cancel := newState(t, configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID:   device1,
 				Introducer: true,
 			},
 		},
-		Folders: []config.FolderConfiguration{
+		Folders: []configv1.FolderConfiguration{
 			{
-				FilesystemType: config.FilesystemTypeFake,
+				FilesystemType: configv1.FilesystemTypeFake,
 				ID:             "folder1",
 				Path:           "testdata",
-				Devices: []config.FolderDeviceConfiguration{
+				Devices: []configv1.FolderDeviceConfiguration{
 					{DeviceID: device1},
 				},
 				Paused: true,
@@ -1031,7 +1032,7 @@ func TestAutoAcceptNewFolderPremutationsNoPanic(t *testing.T) {
 				for _, dev2folder := range premutations {
 					cfg := defaultAutoAcceptCfg.Copy()
 					if localFolder.Label != "" {
-						fcfg := newFolderConfiguration(defaultCfgWrapper, localFolder.ID, localFolder.Label, config.FilesystemTypeFake, localFolder.ID)
+						fcfg := newFolderConfiguration(defaultCfgWrapper, localFolder.ID, localFolder.Label, configv1.FilesystemTypeFake, localFolder.ID)
 						fcfg.Paused = localFolderPaused
 						cfg.Folders = append(cfg.Folders, fcfg)
 					}
@@ -1074,9 +1075,9 @@ func TestAutoAcceptExistingFolder(t *testing.T) {
 	idOther := srand.String(8) // To check that path does not get changed.
 
 	tcfg := defaultAutoAcceptCfg.Copy()
-	tcfg.Folders = []config.FolderConfiguration{
+	tcfg.Folders = []configv1.FolderConfiguration{
 		{
-			FilesystemType: config.FilesystemTypeFake,
+			FilesystemType: configv1.FilesystemTypeFake,
 			ID:             id,
 			Path:           idOther, // To check that path does not get changed.
 		},
@@ -1100,9 +1101,9 @@ func TestAutoAcceptNewAndExistingFolder(t *testing.T) {
 	id2 := srand.String(8)
 
 	tcfg := defaultAutoAcceptCfg.Copy()
-	tcfg.Folders = []config.FolderConfiguration{
+	tcfg.Folders = []configv1.FolderConfiguration{
 		{
-			FilesystemType: config.FilesystemTypeFake,
+			FilesystemType: configv1.FilesystemTypeFake,
 			ID:             id1,
 			Path:           id1, // from previous test case, to verify that path doesn't get changed.
 		},
@@ -1126,12 +1127,12 @@ func TestAutoAcceptAlreadyShared(t *testing.T) {
 	// Already shared
 	id := srand.String(8)
 	tcfg := defaultAutoAcceptCfg.Copy()
-	tcfg.Folders = []config.FolderConfiguration{
+	tcfg.Folders = []configv1.FolderConfiguration{
 		{
-			FilesystemType: config.FilesystemTypeFake,
+			FilesystemType: configv1.FilesystemTypeFake,
 			ID:             id,
 			Path:           id,
-			Devices: []config.FolderDeviceConfiguration{
+			Devices: []configv1.FolderDeviceConfiguration{
 				{
 					DeviceID: device1,
 				},
@@ -1227,15 +1228,15 @@ func TestAutoAcceptPausedWhenFolderConfigChanged(t *testing.T) {
 	idOther := srand.String(8) // To check that path does not get changed.
 
 	tcfg := defaultAutoAcceptCfg.Copy()
-	fcfg := newFolderConfiguration(defaultCfgWrapper, id, "", config.FilesystemTypeFake, idOther)
+	fcfg := newFolderConfiguration(defaultCfgWrapper, id, "", configv1.FilesystemTypeFake, idOther)
 	fcfg.Paused = true
 	// The order of devices here is wrong (cfg.clean() sorts them), which will cause the folder to restart.
 	// Because of the restart, folder gets removed from m.deviceFolder, which means that generateClusterConfig will not panic.
 	// This wasn't an issue before, yet keeping the test case to prove that it still isn't.
-	fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{
+	fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{
 		DeviceID: device1,
 	})
-	tcfg.Folders = []config.FolderConfiguration{fcfg}
+	tcfg.Folders = []configv1.FolderConfiguration{fcfg}
 	m, cancel := newState(t, tcfg)
 	defer cleanupModel(m)
 	defer cancel()
@@ -1273,18 +1274,18 @@ func TestAutoAcceptPausedWhenFolderConfigNotChanged(t *testing.T) {
 	idOther := srand.String(8) // To check that path does not get changed.
 
 	tcfg := defaultAutoAcceptCfg.Copy()
-	fcfg := newFolderConfiguration(defaultCfgWrapper, id, "", config.FilesystemTypeFake, idOther)
+	fcfg := newFolderConfiguration(defaultCfgWrapper, id, "", configv1.FilesystemTypeFake, idOther)
 	fcfg.Paused = true
 	// The new folder is exactly the same as the one constructed by handleAutoAccept, which means
 	// the folder will not be restarted (even if it's paused), yet handleAutoAccept used to add the folder
 	// to m.deviceFolders which had caused panics when calling generateClusterConfig, as the folder
 	// did not have a file set.
-	fcfg.Devices = append([]config.FolderDeviceConfiguration{
+	fcfg.Devices = append([]configv1.FolderDeviceConfiguration{
 		{
 			DeviceID: device1,
 		},
 	}, fcfg.Devices...) // Need to ensure this device order to avoid folder restart.
-	tcfg.Folders = []config.FolderConfiguration{fcfg}
+	tcfg.Folders = []configv1.FolderConfiguration{fcfg}
 	m, cancel := newState(t, tcfg)
 	defer cleanupModel(m)
 	defer cancel()
@@ -1371,7 +1372,7 @@ func TestAutoAcceptEnc(t *testing.T) {
 		if !cfg.SharedWith(device1) {
 			t.Fatal("unexpected unshared")
 		}
-		if cfg.Type != config.FolderTypeReceiveEncrypted {
+		if cfg.Type != configv1.FolderTypeReceiveEncrypted {
 			t.Fatal("Folder not added as receiveEncrypted")
 		}
 	}
@@ -1404,7 +1405,7 @@ func TestAutoAcceptEnc(t *testing.T) {
 		if !cfg.SharedWith(device1) {
 			t.Fatal("unexpected unshared")
 		}
-		if cfg.Type != config.FolderTypeSendReceive {
+		if cfg.Type != configv1.FolderTypeSendReceive {
 			t.Fatal("Folder not added as send-receive")
 		}
 	}
@@ -1494,7 +1495,7 @@ func TestIgnores(t *testing.T) {
 	defer cleanupModel(m)
 
 	// Assure a clean start state
-	must(t, ffs.MkdirAll(config.DefaultMarkerName, 0o644))
+	must(t, ffs.MkdirAll(configv1.DefaultMarkerName, 0o644))
 	writeFile(t, ffs, ".stignore", []byte(".*\nquux\n"))
 
 	folderIgnoresAlwaysReload(t, m, defaultFolderConfig)
@@ -1520,9 +1521,9 @@ func TestIgnores(t *testing.T) {
 	}
 
 	// Invalid path, treated like no patterns at all.
-	fcfg := config.FolderConfiguration{
+	fcfg := configv1.FolderConfiguration{
 		ID: "fresh", Path: "XXX",
-		FilesystemType: config.FilesystemTypeFake,
+		FilesystemType: configv1.FilesystemTypeFake,
 	}
 	ignores := ignore.New(fcfg.Filesystem(), ignore.WithCache(m.cfg.Options().CacheIgnoredFiles))
 	m.mut.Lock()
@@ -1609,18 +1610,18 @@ func waitForState(t *testing.T, sub events.Subscription, folder, expected string
 }
 
 func TestROScanRecovery(t *testing.T) {
-	fcfg := config.FolderConfiguration{
-		FilesystemType:  config.FilesystemTypeFake,
+	fcfg := configv1.FolderConfiguration{
+		FilesystemType:  configv1.FilesystemTypeFake,
 		ID:              "default",
 		Path:            srand.String(32),
-		Type:            config.FolderTypeSendOnly,
+		Type:            configv1.FolderTypeSendOnly,
 		RescanIntervalS: 1,
-		MarkerName:      config.DefaultMarkerName,
+		MarkerName:      configv1.DefaultMarkerName,
 	}
-	cfg, cancel := newConfigWrapper(config.Configuration{
-		Version: config.CurrentVersion,
-		Folders: []config.FolderConfiguration{fcfg},
-		Devices: []config.DeviceConfiguration{
+	cfg, cancel := newConfigWrapper(configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Folders: []configv1.FolderConfiguration{fcfg},
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID: device1,
 			},
@@ -1643,9 +1644,9 @@ func TestROScanRecovery(t *testing.T) {
 	m.ServeBackground()
 	defer cleanupModel(m)
 
-	waitForState(t, sub, "default", config.ErrMarkerMissing.Error())
+	waitForState(t, sub, "default", configv1.ErrMarkerMissing.Error())
 
-	fd, err := ffs.Create(config.DefaultMarkerName)
+	fd, err := ffs.Create(configv1.DefaultMarkerName)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1655,18 +1656,18 @@ func TestROScanRecovery(t *testing.T) {
 }
 
 func TestRWScanRecovery(t *testing.T) {
-	fcfg := config.FolderConfiguration{
-		FilesystemType:  config.FilesystemTypeFake,
+	fcfg := configv1.FolderConfiguration{
+		FilesystemType:  configv1.FilesystemTypeFake,
 		ID:              "default",
 		Path:            srand.String(32),
-		Type:            config.FolderTypeSendReceive,
+		Type:            configv1.FolderTypeSendReceive,
 		RescanIntervalS: 1,
-		MarkerName:      config.DefaultMarkerName,
+		MarkerName:      configv1.DefaultMarkerName,
 	}
-	cfg, cancel := newConfigWrapper(config.Configuration{
-		Version: config.CurrentVersion,
-		Folders: []config.FolderConfiguration{fcfg},
-		Devices: []config.DeviceConfiguration{
+	cfg, cancel := newConfigWrapper(configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Folders: []configv1.FolderConfiguration{fcfg},
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID: device1,
 			},
@@ -1682,7 +1683,7 @@ func TestRWScanRecovery(t *testing.T) {
 	ffs := fcfg.Filesystem()
 
 	// Generate error
-	if err := ffs.Remove(config.DefaultMarkerName); err != nil {
+	if err := ffs.Remove(configv1.DefaultMarkerName); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1691,9 +1692,9 @@ func TestRWScanRecovery(t *testing.T) {
 	m.ServeBackground()
 	defer cleanupModel(m)
 
-	waitForState(t, sub, "default", config.ErrMarkerMissing.Error())
+	waitForState(t, sub, "default", configv1.ErrMarkerMissing.Error())
 
-	fd, err := ffs.Create(config.DefaultMarkerName)
+	fd, err := ffs.Create(configv1.DefaultMarkerName)
 	if err != nil {
 		t.Error(err)
 	}
@@ -2073,7 +2074,7 @@ func TestIssue3028(t *testing.T) {
 func TestIssue4357(t *testing.T) {
 	cfg := defaultCfgWrapper.RawCopy()
 	// Create a separate wrapper not to pollute other tests.
-	wrapper, cancel := newConfigWrapper(config.Configuration{Version: config.CurrentVersion})
+	wrapper, cancel := newConfigWrapper(configv1.Configuration{Version: configv1.CurrentVersion})
 	defer cancel()
 	m := newModel(t, wrapper, myID, nil)
 	m.ServeBackground()
@@ -2099,7 +2100,7 @@ func TestIssue4357(t *testing.T) {
 		t.Error("should still have folder in config")
 	}
 
-	replace(t, wrapper, config.Configuration{Version: config.CurrentVersion})
+	replace(t, wrapper, configv1.Configuration{Version: configv1.CurrentVersion})
 
 	if _, ok := m.cfg.Folder("default"); ok {
 		t.Error("should not have folder in config")
@@ -2116,7 +2117,7 @@ func TestIssue4357(t *testing.T) {
 	}
 
 	// Should not panic when removing a running folder.
-	replace(t, wrapper, config.Configuration{Version: config.CurrentVersion})
+	replace(t, wrapper, configv1.Configuration{Version: configv1.CurrentVersion})
 
 	if _, ok := m.folderCfgs["default"]; ok {
 		t.Error("Folder should not be running")
@@ -2361,10 +2362,10 @@ func TestCustomMarkerName(t *testing.T) {
 	fcfg.ID = "default"
 	fcfg.RescanIntervalS = 1
 	fcfg.MarkerName = "myfile"
-	cfg, cancel := newConfigWrapper(config.Configuration{
-		Version: config.CurrentVersion,
-		Folders: []config.FolderConfiguration{fcfg},
-		Devices: []config.DeviceConfiguration{
+	cfg, cancel := newConfigWrapper(configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Folders: []configv1.FolderConfiguration{fcfg},
+		Devices: []configv1.DeviceConfiguration{
 			{
 				DeviceID: device1,
 			},
@@ -2380,7 +2381,7 @@ func TestCustomMarkerName(t *testing.T) {
 		{Name: "dummyfile"},
 	})
 
-	if err := ffs.Remove(config.DefaultMarkerName); err != nil {
+	if err := ffs.Remove(configv1.DefaultMarkerName); err != nil {
 		t.Fatal(err)
 	}
 
@@ -2389,7 +2390,7 @@ func TestCustomMarkerName(t *testing.T) {
 	m.ServeBackground()
 	defer cleanupModel(m)
 
-	waitForState(t, sub, "default", config.ErrMarkerMissing.Error())
+	waitForState(t, sub, "default", configv1.ErrMarkerMissing.Error())
 
 	fd, _ := ffs.Create("myfile")
 	fd.Close()
@@ -2521,14 +2522,14 @@ func TestVersionRestore(t *testing.T) {
 	// We verify that the content matches at the expected filenames
 	// after the restore operation.
 
-	fcfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", config.FilesystemTypeFake, srand.String(32))
+	fcfg := newFolderConfiguration(defaultCfgWrapper, "default", "default", configv1.FilesystemTypeFake, srand.String(32))
 	fcfg.Versioning.Type = "simple"
 	fcfg.FSWatcherEnabled = false
 	filesystem := fcfg.Filesystem()
 
-	rawConfig := config.Configuration{
-		Version: config.CurrentVersion,
-		Folders: []config.FolderConfiguration{fcfg},
+	rawConfig := configv1.Configuration{
+		Version: configv1.CurrentVersion,
+		Folders: []configv1.FolderConfiguration{fcfg},
 	}
 	cfg, cancel := newConfigWrapper(rawConfig)
 	defer cancel()
@@ -2733,7 +2734,7 @@ func TestPausedFolders(t *testing.T) {
 
 func TestIssue4094(t *testing.T) {
 	// Create a separate wrapper not to pollute other tests.
-	wrapper, cancel := newConfigWrapper(config.Configuration{Version: config.CurrentVersion})
+	wrapper, cancel := newConfigWrapper(configv1.Configuration{Version: configv1.CurrentVersion})
 	defer cancel()
 	m := newModel(t, wrapper, myID, nil)
 	m.ServeBackground()
@@ -2742,16 +2743,16 @@ func TestIssue4094(t *testing.T) {
 	// Force the model to wire itself and add the folders
 	folderPath := "nonexistent"
 	cfg := defaultCfgWrapper.RawCopy()
-	fcfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeFake,
+	fcfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeFake,
 		ID:             "folder1",
 		Path:           folderPath,
 		Paused:         true,
-		Devices: []config.FolderDeviceConfiguration{
+		Devices: []configv1.FolderDeviceConfiguration{
 			{DeviceID: device1},
 		},
 	}
-	cfg.Folders = []config.FolderConfiguration{fcfg}
+	cfg.Folders = []configv1.FolderConfiguration{fcfg}
 	replace(t, wrapper, cfg)
 
 	if err := m.SetIgnores(fcfg.ID, []string{"foo"}); err != nil {
@@ -2764,7 +2765,7 @@ func TestIssue4094(t *testing.T) {
 }
 
 func TestIssue4903(t *testing.T) {
-	wrapper, cancel := newConfigWrapper(config.Configuration{Version: config.CurrentVersion})
+	wrapper, cancel := newConfigWrapper(configv1.Configuration{Version: configv1.CurrentVersion})
 	defer cancel()
 	m := setupModel(t, wrapper)
 	defer cleanupModel(m)
@@ -2772,19 +2773,19 @@ func TestIssue4903(t *testing.T) {
 	// Force the model to wire itself and add the folders
 	folderPath := "nonexistent"
 	cfg := defaultCfgWrapper.RawCopy()
-	fcfg := config.FolderConfiguration{
+	fcfg := configv1.FolderConfiguration{
 		ID:             "folder1",
 		Path:           folderPath,
-		FilesystemType: config.FilesystemTypeBasic,
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Paused:         true,
-		Devices: []config.FolderDeviceConfiguration{
+		Devices: []configv1.FolderDeviceConfiguration{
 			{DeviceID: device1},
 		},
 	}
-	cfg.Folders = []config.FolderConfiguration{fcfg}
+	cfg.Folders = []configv1.FolderConfiguration{fcfg}
 	replace(t, wrapper, cfg)
 
-	if err := fcfg.CheckPath(); err != config.ErrPathMissing {
+	if err := fcfg.CheckPath(); err != configv1.ErrPathMissing {
 		t.Fatalf("expected path missing error, got: %v, debug: %s", err, fcfg.CheckPath())
 	}
 
@@ -2858,10 +2859,10 @@ func TestFolderRestartZombies(t *testing.T) {
 	wrapper, cancel := newConfigWrapper(defaultCfg.Copy())
 	defer cancel()
 
-	waiter, err := wrapper.Modify(func(cfg *config.Configuration) {
+	waiter, err := wrapper.Modify(func(cfg *configv1.Configuration) {
 		cfg.Options.RawMaxFolderConcurrency = -1
 		_, i, _ := cfg.Folder("default")
-		cfg.Folders[i].FilesystemType = config.FilesystemTypeFake
+		cfg.Folders[i].FilesystemType = configv1.FilesystemTypeFake
 	})
 	must(t, err)
 	waiter.Wait()
@@ -2914,7 +2915,7 @@ func TestRequestLimit(t *testing.T) {
 	fd.Close()
 
 	defer cancel()
-	waiter, err := wrapper.Modify(func(cfg *config.Configuration) {
+	waiter, err := wrapper.Modify(func(cfg *configv1.Configuration) {
 		_, i, _ := cfg.Device(device1)
 		cfg.Devices[i].MaxRequestKiB = 1
 	})
@@ -3414,11 +3415,11 @@ func TestScanRenameCaseOnly(t *testing.T) {
 }
 
 func TestClusterConfigOnFolderAdd(t *testing.T) {
-	testConfigChangeTriggersClusterConfigs(t, false, true, nil, func(wrapper config.Wrapper) {
+	testConfigChangeTriggersClusterConfigs(t, false, true, nil, func(wrapper configv1.Wrapper) {
 		fcfg := newFolderConfig()
 		fcfg.ID = "second"
 		fcfg.Label = "second"
-		fcfg.Devices = []config.FolderDeviceConfiguration{{
+		fcfg.Devices = []configv1.FolderDeviceConfiguration{{
 			DeviceID:     device2,
 			IntroducedBy: protocol.EmptyDeviceID,
 		}}
@@ -3427,9 +3428,9 @@ func TestClusterConfigOnFolderAdd(t *testing.T) {
 }
 
 func TestClusterConfigOnFolderShare(t *testing.T) {
-	testConfigChangeTriggersClusterConfigs(t, true, true, nil, func(cfg config.Wrapper) {
+	testConfigChangeTriggersClusterConfigs(t, true, true, nil, func(cfg configv1.Wrapper) {
 		fcfg := cfg.FolderList()[0]
-		fcfg.Devices = []config.FolderDeviceConfiguration{{
+		fcfg.Devices = []configv1.FolderDeviceConfiguration{{
 			DeviceID:     device2,
 			IntroducedBy: protocol.EmptyDeviceID,
 		}}
@@ -3438,7 +3439,7 @@ func TestClusterConfigOnFolderShare(t *testing.T) {
 }
 
 func TestClusterConfigOnFolderUnshare(t *testing.T) {
-	testConfigChangeTriggersClusterConfigs(t, true, false, nil, func(cfg config.Wrapper) {
+	testConfigChangeTriggersClusterConfigs(t, true, false, nil, func(cfg configv1.Wrapper) {
 		fcfg := cfg.FolderList()[0]
 		fcfg.Devices = nil
 		setFolder(t, cfg, fcfg)
@@ -3446,7 +3447,7 @@ func TestClusterConfigOnFolderUnshare(t *testing.T) {
 }
 
 func TestClusterConfigOnFolderRemove(t *testing.T) {
-	testConfigChangeTriggersClusterConfigs(t, true, false, nil, func(cfg config.Wrapper) {
+	testConfigChangeTriggersClusterConfigs(t, true, false, nil, func(cfg configv1.Wrapper) {
 		rcfg := cfg.RawCopy()
 		rcfg.Folders = nil
 		replace(t, cfg, rcfg)
@@ -3454,15 +3455,15 @@ func TestClusterConfigOnFolderRemove(t *testing.T) {
 }
 
 func TestClusterConfigOnFolderPause(t *testing.T) {
-	testConfigChangeTriggersClusterConfigs(t, true, false, nil, func(cfg config.Wrapper) {
+	testConfigChangeTriggersClusterConfigs(t, true, false, nil, func(cfg configv1.Wrapper) {
 		pauseFolder(t, cfg, cfg.FolderList()[0].ID, true)
 	})
 }
 
 func TestClusterConfigOnFolderUnpause(t *testing.T) {
-	testConfigChangeTriggersClusterConfigs(t, true, false, func(cfg config.Wrapper) {
+	testConfigChangeTriggersClusterConfigs(t, true, false, func(cfg configv1.Wrapper) {
 		pauseFolder(t, cfg, cfg.FolderList()[0].ID, true)
-	}, func(cfg config.Wrapper) {
+	}, func(cfg configv1.Wrapper) {
 		pauseFolder(t, cfg, cfg.FolderList()[0].ID, false)
 	})
 }
@@ -3488,7 +3489,7 @@ func TestScanDeletedROChangedOnSR(t *testing.T) {
 	ffs := fcfg.Filesystem()
 	defer wCancel()
 	defer cleanupModelAndRemoveDir(m, ffs.URI())
-	fcfg.Type = config.FolderTypeReceiveOnly
+	fcfg.Type = configv1.FolderTypeReceiveOnly
 	setFolder(t, m.cfg, fcfg)
 
 	name := "foo"
@@ -3511,7 +3512,7 @@ func TestScanDeletedROChangedOnSR(t *testing.T) {
 		t.Fatal("expected one receive only changed deleted item")
 	}
 
-	fcfg.Type = config.FolderTypeSendReceive
+	fcfg.Type = configv1.FolderTypeSendReceive
 	setFolder(t, m.cfg, fcfg)
 	m.ScanFolders()
 
@@ -3523,7 +3524,7 @@ func TestScanDeletedROChangedOnSR(t *testing.T) {
 	}
 }
 
-func testConfigChangeTriggersClusterConfigs(t *testing.T, expectFirst, expectSecond bool, pre func(config.Wrapper), fn func(config.Wrapper)) {
+func testConfigChangeTriggersClusterConfigs(t *testing.T, expectFirst, expectSecond bool, pre func(configv1.Wrapper), fn func(configv1.Wrapper)) {
 	t.Helper()
 	wcfg, _, wcfgCancel := newDefaultCfgWrapper()
 	defer wcfgCancel()
@@ -3591,10 +3592,10 @@ func TestIssue6961(t *testing.T) {
 	wcfg, fcfg, wcfgCancel := newDefaultCfgWrapper()
 	defer wcfgCancel()
 	tfs := fcfg.Filesystem()
-	waiter, err := wcfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := wcfg.Modify(func(cfg *configv1.Configuration) {
 		cfg.SetDevice(newDeviceConfiguration(cfg.Defaults.Device, device2, "device2"))
-		fcfg.Type = config.FolderTypeReceiveOnly
-		fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{DeviceID: device2})
+		fcfg.Type = configv1.FolderTypeReceiveOnly
+		fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{DeviceID: device2})
 		cfg.SetFolder(fcfg)
 	})
 	must(t, err)
@@ -3804,10 +3805,10 @@ func TestCcCheckEncryption(t *testing.T) {
 	for i, tc := range testCases {
 		tfcfg := fcfg.Copy()
 		if tc.isEncryptedLocal {
-			tfcfg.Type = config.FolderTypeReceiveEncrypted
+			tfcfg.Type = configv1.FolderTypeReceiveEncrypted
 			m.folderEncryptionPasswordTokens[fcfg.ID] = token
 		}
-		dcfg := config.FolderDeviceConfiguration{DeviceID: device1}
+		dcfg := configv1.FolderDeviceConfiguration{DeviceID: device1}
 		if tc.isEncryptedRemote {
 			dcfg.EncryptionPassword = pw
 		}
@@ -3885,7 +3886,7 @@ func TestPendingFolder(t *testing.T) {
 	m := setupModel(t, w)
 	defer cleanupModel(m)
 
-	setDevice(t, w, config.DeviceConfiguration{DeviceID: device2})
+	setDevice(t, w, configv1.DeviceConfiguration{DeviceID: device2})
 	pfolder := "default"
 	of := db.ObservedFolder{
 		Time:  time.Now().Truncate(time.Second),
@@ -3909,7 +3910,7 @@ func TestPendingFolder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	setDevice(t, w, config.DeviceConfiguration{DeviceID: device3})
+	setDevice(t, w, configv1.DeviceConfiguration{DeviceID: device3})
 	if err := m.observed.AddOrUpdatePendingFolder(pfolder, of, device3); err != nil {
 		t.Fatal(err)
 	}
@@ -3952,14 +3953,14 @@ func TestPendingFolder(t *testing.T) {
 }
 
 func TestDeletedNotLocallyChangedReceiveOnly(t *testing.T) {
-	deletedNotLocallyChanged(t, config.FolderTypeReceiveOnly)
+	deletedNotLocallyChanged(t, configv1.FolderTypeReceiveOnly)
 }
 
 func TestDeletedNotLocallyChangedReceiveEncrypted(t *testing.T) {
-	deletedNotLocallyChanged(t, config.FolderTypeReceiveEncrypted)
+	deletedNotLocallyChanged(t, configv1.FolderTypeReceiveEncrypted)
 }
 
-func deletedNotLocallyChanged(t *testing.T, ft config.FolderType) {
+func deletedNotLocallyChanged(t *testing.T, ft configv1.FolderType) {
 	w, fcfg, wCancel := newDefaultCfgWrapper()
 	tfs := fcfg.Filesystem()
 	fcfg.Type = ft

@@ -30,10 +30,11 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
@@ -136,7 +137,7 @@ type model struct {
 	*suture.Supervisor
 
 	// constructor parameters
-	cfg            config.Wrapper
+	cfg            configv1.Wrapper
 	id             protocol.DeviceID
 	sdb            db.DB
 	protectedFiles []string
@@ -159,7 +160,7 @@ type model struct {
 
 	// fields protected by mut
 	mut                            sync.RWMutex
-	folderCfgs                     map[string]config.FolderConfiguration                  // folder -> cfg
+	folderCfgs                     map[string]configv1.FolderConfiguration                // folder -> cfg
 	deviceStatRefs                 map[protocol.DeviceID]*stats.DeviceStatisticsReference // deviceID -> statsRef
 	folderIgnores                  map[string]*ignore.Matcher                             // folder -> matcher object
 	folderRunners                  *serviceMap[string, service]                           // folder -> puller or scanner
@@ -181,11 +182,11 @@ type model struct {
 	foldersRunning atomic.Int32
 }
 
-var _ config.Verifier = &model{}
+var _ configv1.Verifier = &model{}
 
-type folderFactory func(*model, *ignore.Matcher, config.FolderConfiguration, versioner.Versioner, events.Logger, *semaphore.Semaphore) service
+type folderFactory func(*model, *ignore.Matcher, configv1.FolderConfiguration, versioner.Versioner, events.Logger, *semaphore.Semaphore) service
 
-var folderFactories = make(map[config.FolderType]folderFactory)
+var folderFactories = make(map[configv1.FolderType]folderFactory)
 
 var (
 	errDeviceUnknown    = errors.New("unknown device")
@@ -212,7 +213,7 @@ var (
 // NewModel creates and starts a new model. The model starts in read-only mode,
 // where it sends index information to connected peers and responds to requests
 // for file data without altering the local folder in any way.
-func NewModel(cfg config.Wrapper, id protocol.DeviceID, sdb db.DB, protectedFiles []string, evLogger events.Logger, keyGen *protocol.KeyGenerator) Model {
+func NewModel(cfg configv1.Wrapper, id protocol.DeviceID, sdb db.DB, protectedFiles []string, evLogger events.Logger, keyGen *protocol.KeyGenerator) Model {
 	spec := svcutil.SpecWithDebugLogger(l)
 	m := &model{
 		Supervisor: suture.New("model", spec),
@@ -237,7 +238,7 @@ func NewModel(cfg config.Wrapper, id protocol.DeviceID, sdb db.DB, protectedFile
 
 		// fields protected by mut
 		mut:                            sync.NewRWMutex(),
-		folderCfgs:                     make(map[string]config.FolderConfiguration),
+		folderCfgs:                     make(map[string]configv1.FolderConfiguration),
 		deviceStatRefs:                 make(map[protocol.DeviceID]*stats.DeviceStatisticsReference),
 		folderIgnores:                  make(map[string]*ignore.Matcher),
 		folderRunners:                  newServiceMap[string, service](evLogger),
@@ -294,7 +295,7 @@ func (m *model) serve(ctx context.Context) error {
 	}
 }
 
-func (m *model) initFolders(cfg config.Configuration) error {
+func (m *model) initFolders(cfg configv1.Configuration) error {
 	clusterConfigDevices := make(deviceIDSet, len(cfg.Devices))
 	for _, folderCfg := range cfg.Folders {
 		if folderCfg.Paused {
@@ -336,9 +337,9 @@ func (m *model) fatal(err error) {
 }
 
 // Need to hold lock on m.mut when calling this.
-func (m *model) addAndStartFolderLocked(cfg config.FolderConfiguration, cacheIgnoredFiles bool) {
+func (m *model) addAndStartFolderLocked(cfg configv1.FolderConfiguration, cacheIgnoredFiles bool) {
 	ignores := ignore.New(cfg.Filesystem(), ignore.WithCache(cacheIgnoredFiles))
-	if cfg.Type != config.FolderTypeReceiveEncrypted {
+	if cfg.Type != configv1.FolderTypeReceiveEncrypted {
 		if err := ignores.Load(".stignore"); err != nil && !fs.IsNotExist(err) {
 			l.Warnln("Loading ignores:", err)
 		}
@@ -348,7 +349,7 @@ func (m *model) addAndStartFolderLocked(cfg config.FolderConfiguration, cacheIgn
 }
 
 // Only needed for testing, use addAndStartFolderLocked instead.
-func (m *model) addAndStartFolderLockedWithIgnores(cfg config.FolderConfiguration, ignores *ignore.Matcher) {
+func (m *model) addAndStartFolderLockedWithIgnores(cfg configv1.FolderConfiguration, ignores *ignore.Matcher) {
 	m.folderCfgs[cfg.ID] = cfg
 	m.folderIgnores[cfg.ID] = ignores
 
@@ -394,7 +395,7 @@ func (m *model) addAndStartFolderLockedWithIgnores(cfg config.FolderConfiguratio
 		}
 	}
 
-	if cfg.Type == config.FolderTypeReceiveEncrypted {
+	if cfg.Type == configv1.FolderTypeReceiveEncrypted {
 		if encryptionToken, err := readEncryptionToken(cfg); err == nil {
 			m.folderEncryptionPasswordTokens[folder] = encryptionToken
 		} else if !fs.IsNotExist(err) {
@@ -404,7 +405,7 @@ func (m *model) addAndStartFolderLockedWithIgnores(cfg config.FolderConfiguratio
 
 	// These are our metadata files, and they should always be hidden.
 	ffs := cfg.Filesystem()
-	_ = ffs.Hide(config.DefaultMarkerName)
+	_ = ffs.Hide(configv1.DefaultMarkerName)
 	_ = ffs.Hide(versioner.DefaultPath)
 	_ = ffs.Hide(".stignore")
 
@@ -426,8 +427,8 @@ func (m *model) addAndStartFolderLockedWithIgnores(cfg config.FolderConfiguratio
 	l.Infof("Ready to synchronize %s (%s)", cfg.Description(), cfg.Type)
 }
 
-func (m *model) warnAboutOverwritingProtectedFiles(cfg config.FolderConfiguration, ignores *ignore.Matcher) {
-	if cfg.Type == config.FolderTypeSendOnly {
+func (m *model) warnAboutOverwritingProtectedFiles(cfg configv1.FolderConfiguration, ignores *ignore.Matcher) {
+	if cfg.Type == configv1.FolderTypeSendOnly {
 		return
 	}
 
@@ -459,7 +460,7 @@ func (m *model) warnAboutOverwritingProtectedFiles(cfg config.FolderConfiguratio
 	}
 }
 
-func (m *model) removeFolder(cfg config.FolderConfiguration) {
+func (m *model) removeFolder(cfg configv1.FolderConfiguration) {
 	m.mut.RLock()
 	wait := m.folderRunners.StopAndWaitChan(cfg.ID, 0)
 	m.mut.RUnlock()
@@ -478,9 +479,9 @@ func (m *model) removeFolder(cfg config.FolderConfiguration) {
 		// Remove (if empty and removable) or move away (if non-empty or
 		// otherwise not removable) Syncthing-specific marker files.
 		if err := cfg.RemoveMarker(); err != nil && !errors.Is(err, os.ErrNotExist) {
-			moved := config.DefaultMarkerName + time.Now().Format(".removed-20060102-150405")
+			moved := configv1.DefaultMarkerName + time.Now().Format(".removed-20060102-150405")
 			fs := cfg.Filesystem()
-			_ = fs.Rename(config.DefaultMarkerName, moved)
+			_ = fs.Rename(configv1.DefaultMarkerName, moved)
 		}
 	}
 
@@ -497,7 +498,7 @@ func (m *model) removeFolder(cfg config.FolderConfiguration) {
 }
 
 // Need to hold lock on m.mut when calling this.
-func (m *model) cleanupFolderLocked(cfg config.FolderConfiguration) {
+func (m *model) cleanupFolderLocked(cfg configv1.FolderConfiguration) {
 	// clear up our config maps
 	m.folderRunners.Remove(cfg.ID)
 	delete(m.folderCfgs, cfg.ID)
@@ -507,7 +508,7 @@ func (m *model) cleanupFolderLocked(cfg config.FolderConfiguration) {
 	delete(m.folderEncryptionFailures, cfg.ID)
 }
 
-func (m *model) restartFolder(from, to config.FolderConfiguration, cacheIgnoredFiles bool) error {
+func (m *model) restartFolder(from, to configv1.FolderConfiguration, cacheIgnoredFiles bool) error {
 	if to.ID == "" {
 		panic("bug: cannot restart empty folder ID")
 	}
@@ -560,7 +561,7 @@ func (m *model) restartFolder(from, to config.FolderConfiguration, cacheIgnoredF
 	return nil
 }
 
-func (m *model) newFolder(cfg config.FolderConfiguration, cacheIgnoredFiles bool) error {
+func (m *model) newFolder(cfg configv1.FolderConfiguration, cacheIgnoredFiles bool) error {
 	m.mut.Lock()
 	defer m.mut.Unlock()
 
@@ -1036,7 +1037,7 @@ func (m *model) NeedFolderFiles(folder string, page, perpage int) ([]protocol.Fi
 
 	if p.get > 0 {
 		rest = make([]protocol.FileInfo, 0, p.get)
-		it, errFn := m.sdb.AllNeededGlobalFiles(folder, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0)
+		it, errFn := m.sdb.AllNeededGlobalFiles(folder, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0)
 		for f := range it {
 			if cfg.IgnoreDelete && f.IsDeleted() {
 				continue
@@ -1072,7 +1073,7 @@ func (m *model) RemoteNeedFolderFiles(folder string, device protocol.DeviceID, p
 		return nil, ErrFolderMissing
 	}
 
-	it, errFn := m.sdb.AllNeededGlobalFiles(folder, device, config.PullOrderAlphabetic, perpage, (page-1)*perpage)
+	it, errFn := m.sdb.AllNeededGlobalFiles(folder, device, configv1.PullOrderAlphabetic, perpage, (page-1)*perpage)
 	files := slices.Collect(it)
 	return files, errFn()
 }
@@ -1256,8 +1257,8 @@ func (m *model) ClusterConfig(conn protocol.Connection, cm *protocol.ClusterConf
 
 	// Needs to happen outside of the mut, as can cause CommitConfiguration
 	if deviceCfg.AutoAcceptFolders {
-		w, _ := m.cfg.Modify(func(cfg *config.Configuration) {
-			changedFcfg := make(map[string]config.FolderConfiguration)
+		w, _ := m.cfg.Modify(func(cfg *configv1.Configuration) {
+			changedFcfg := make(map[string]configv1.FolderConfiguration)
 			haveFcfg := cfg.FolderMap()
 			for _, folder := range cm.Folders {
 				from, ok := haveFcfg[folder.ID]
@@ -1314,17 +1315,17 @@ func (m *model) ClusterConfig(conn protocol.Connection, cm *protocol.ClusterConf
 	}
 
 	if deviceCfg.Introducer {
-		m.cfg.Modify(func(cfg *config.Configuration) {
+		m.cfg.Modify(func(cfg *configv1.Configuration) {
 			folders, devices, foldersDevices, introduced := m.handleIntroductions(deviceCfg, cm, cfg.FolderMap(), cfg.DeviceMap())
 			folders, devices, deintroduced := m.handleDeintroductions(deviceCfg, foldersDevices, folders, devices)
 			if !introduced && !deintroduced {
 				return
 			}
-			cfg.Folders = make([]config.FolderConfiguration, 0, len(folders))
+			cfg.Folders = make([]configv1.FolderConfiguration, 0, len(folders))
 			for _, fcfg := range folders {
 				cfg.Folders = append(cfg.Folders, fcfg)
 			}
-			cfg.Devices = make([]config.DeviceConfiguration, 0, len(devices))
+			cfg.Devices = make([]configv1.DeviceConfiguration, 0, len(devices))
 			for _, dcfg := range devices {
 				cfg.Devices = append(cfg.Devices, dcfg)
 			}
@@ -1385,8 +1386,8 @@ func (m *model) getIndexHandlerRLocked(conn protocol.Connection) (*indexHandlerR
 	return nil, false
 }
 
-func (m *model) ccHandleFolders(folders []protocol.Folder, deviceCfg config.DeviceConfiguration, ccDeviceInfos map[string]*clusterConfigDeviceInfo, indexHandlers *indexHandlerRegistry) ([]string, map[string]remoteFolderState, error) {
-	var folderDevice config.FolderDeviceConfiguration
+func (m *model) ccHandleFolders(folders []protocol.Folder, deviceCfg configv1.DeviceConfiguration, ccDeviceInfos map[string]*clusterConfigDeviceInfo, indexHandlers *indexHandlerRegistry) ([]string, map[string]remoteFolderState, error) {
+	var folderDevice configv1.FolderDeviceConfiguration
 	tempIndexFolders := make([]string, 0, len(folders))
 	seenFolders := make(map[string]remoteFolderState, len(folders))
 	updatedPending := make([]updatedPendingFolder, 0, len(folders))
@@ -1521,11 +1522,11 @@ func (m *model) ccHandleFolders(folders []protocol.Folder, deviceCfg config.Devi
 	return tempIndexFolders, seenFolders, nil
 }
 
-func (m *model) ccCheckEncryption(fcfg config.FolderConfiguration, folderDevice config.FolderDeviceConfiguration, ccDeviceInfos *clusterConfigDeviceInfo, deviceUntrusted bool) error {
+func (m *model) ccCheckEncryption(fcfg configv1.FolderConfiguration, folderDevice configv1.FolderDeviceConfiguration, ccDeviceInfos *clusterConfigDeviceInfo, deviceUntrusted bool) error {
 	hasTokenRemote := len(ccDeviceInfos.remote.EncryptionPasswordToken) > 0
 	hasTokenLocal := len(ccDeviceInfos.local.EncryptionPasswordToken) > 0
 	isEncryptedRemote := folderDevice.EncryptionPassword != ""
-	isEncryptedLocal := fcfg.Type == config.FolderTypeReceiveEncrypted
+	isEncryptedLocal := fcfg.Type == configv1.FolderTypeReceiveEncrypted
 
 	if !isEncryptedRemote && !isEncryptedLocal && deviceUntrusted {
 		return errEncryptionNotEncryptedUntrusted
@@ -1647,7 +1648,7 @@ func (m *model) sendClusterConfig(ids []protocol.DeviceID) {
 }
 
 // handleIntroductions handles adding devices/folders that are shared by an introducer device
-func (m *model) handleIntroductions(introducerCfg config.DeviceConfiguration, cm *protocol.ClusterConfig, folders map[string]config.FolderConfiguration, devices map[protocol.DeviceID]config.DeviceConfiguration) (map[string]config.FolderConfiguration, map[protocol.DeviceID]config.DeviceConfiguration, folderDeviceSet, bool) {
+func (m *model) handleIntroductions(introducerCfg configv1.DeviceConfiguration, cm *protocol.ClusterConfig, folders map[string]configv1.FolderConfiguration, devices map[protocol.DeviceID]configv1.DeviceConfiguration) (map[string]configv1.FolderConfiguration, map[protocol.DeviceID]configv1.DeviceConfiguration, folderDeviceSet, bool) {
 	changed := false
 
 	foldersDevices := make(folderDeviceSet)
@@ -1683,7 +1684,7 @@ func (m *model) handleIntroductions(introducerCfg config.DeviceConfiguration, cm
 				continue
 			}
 
-			if fcfg.Type != config.FolderTypeReceiveEncrypted && device.EncryptionPasswordToken != nil {
+			if fcfg.Type != configv1.FolderTypeReceiveEncrypted && device.EncryptionPasswordToken != nil {
 				l.Infof("Cannot share folder %s with %v because the introducer %v encrypts data, which requires a password", folder.Description(), device.ID, introducerCfg.DeviceID)
 				continue
 			}
@@ -1691,7 +1692,7 @@ func (m *model) handleIntroductions(introducerCfg config.DeviceConfiguration, cm
 			// We don't yet share this folder with this device. Add the device
 			// to sharing list of the folder.
 			l.Infof("Sharing folder %s with %v (vouched for by introducer %v)", folder.Description(), device.ID, introducerCfg.DeviceID)
-			fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{
+			fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{
 				DeviceID:     device.ID,
 				IntroducedBy: introducerCfg.DeviceID,
 			})
@@ -1708,7 +1709,7 @@ func (m *model) handleIntroductions(introducerCfg config.DeviceConfiguration, cm
 }
 
 // handleDeintroductions handles removals of devices/shares that are removed by an introducer device
-func (*model) handleDeintroductions(introducerCfg config.DeviceConfiguration, foldersDevices folderDeviceSet, folders map[string]config.FolderConfiguration, devices map[protocol.DeviceID]config.DeviceConfiguration) (map[string]config.FolderConfiguration, map[protocol.DeviceID]config.DeviceConfiguration, bool) {
+func (*model) handleDeintroductions(introducerCfg configv1.DeviceConfiguration, foldersDevices folderDeviceSet, folders map[string]configv1.FolderConfiguration, devices map[protocol.DeviceID]configv1.DeviceConfiguration) (map[string]configv1.FolderConfiguration, map[protocol.DeviceID]configv1.DeviceConfiguration, bool) {
 	if introducerCfg.SkipIntroductionRemovals {
 		return folders, devices, false
 	}
@@ -1760,7 +1761,7 @@ func (*model) handleDeintroductions(introducerCfg config.DeviceConfiguration, fo
 
 // handleAutoAccepts handles adding and sharing folders for devices that have
 // AutoAcceptFolders set to true.
-func (m *model) handleAutoAccepts(deviceID protocol.DeviceID, folder protocol.Folder, ccDeviceInfos *clusterConfigDeviceInfo, cfg config.FolderConfiguration, haveCfg bool, defaultFolderCfg config.FolderConfiguration) (config.FolderConfiguration, bool) {
+func (m *model) handleAutoAccepts(deviceID protocol.DeviceID, folder protocol.Folder, ccDeviceInfos *clusterConfigDeviceInfo, cfg configv1.FolderConfiguration, haveCfg bool, defaultFolderCfg configv1.FolderConfiguration) (configv1.FolderConfiguration, bool) {
 	if !haveCfg {
 		defaultPathFs := fs.NewFilesystem(defaultFolderCfg.FilesystemType.ToFS(), defaultFolderCfg.Path)
 		var pathAlternatives []string
@@ -1772,7 +1773,7 @@ func (m *model) handleAutoAccepts(deviceID protocol.DeviceID, folder protocol.Fo
 		}
 		if len(pathAlternatives) == 0 {
 			l.Infof("Failed to auto-accept folder %s from %s due to lack of path alternatives", folder.Description(), deviceID)
-			return config.FolderConfiguration{}, false
+			return configv1.FolderConfiguration{}, false
 		}
 		for _, path := range pathAlternatives {
 			// Make sure the folder path doesn't already exist.
@@ -1788,12 +1789,12 @@ func (m *model) handleAutoAccepts(deviceID protocol.DeviceID, folder protocol.Fo
 			}
 
 			fcfg := newFolderConfiguration(m.cfg, folder.ID, folder.Label, defaultFolderCfg.FilesystemType, fullPath)
-			fcfg.Devices = append(fcfg.Devices, config.FolderDeviceConfiguration{
+			fcfg.Devices = append(fcfg.Devices, configv1.FolderDeviceConfiguration{
 				DeviceID: deviceID,
 			})
 
 			if len(ccDeviceInfos.remote.EncryptionPasswordToken) > 0 || len(ccDeviceInfos.local.EncryptionPasswordToken) > 0 {
-				fcfg.Type = config.FolderTypeReceiveEncrypted
+				fcfg.Type = configv1.FolderTypeReceiveEncrypted
 				// Override the user-configured defaults, as normally done by the GUI
 				fcfg.FSWatcherEnabled = false
 				if fcfg.RescanIntervalS != 0 {
@@ -1815,26 +1816,26 @@ func (m *model) handleAutoAccepts(deviceID protocol.DeviceID, folder protocol.Fo
 			return fcfg, true
 		}
 		l.Infof("Failed to auto-accept folder %s from %s due to path conflict", folder.Description(), deviceID)
-		return config.FolderConfiguration{}, false
+		return configv1.FolderConfiguration{}, false
 	} else {
 		for _, device := range cfg.DeviceIDs() {
 			if device == deviceID {
 				// Already shared nothing todo.
-				return config.FolderConfiguration{}, false
+				return configv1.FolderConfiguration{}, false
 			}
 		}
-		if cfg.Type == config.FolderTypeReceiveEncrypted {
+		if cfg.Type == configv1.FolderTypeReceiveEncrypted {
 			if len(ccDeviceInfos.remote.EncryptionPasswordToken) == 0 && len(ccDeviceInfos.local.EncryptionPasswordToken) == 0 {
 				l.Infof("Failed to auto-accept device %s on existing folder %s as the remote wants to send us unencrypted data, but the folder type is receive-encrypted", folder.Description(), deviceID)
-				return config.FolderConfiguration{}, false
+				return configv1.FolderConfiguration{}, false
 			}
 		} else {
 			if len(ccDeviceInfos.remote.EncryptionPasswordToken) > 0 || len(ccDeviceInfos.local.EncryptionPasswordToken) > 0 {
 				l.Infof("Failed to auto-accept device %s on existing folder %s as the remote wants to send us encrypted data, but the folder type is not receive-encrypted", folder.Description(), deviceID)
-				return config.FolderConfiguration{}, false
+				return configv1.FolderConfiguration{}, false
 			}
 		}
-		cfg.Devices = append(cfg.Devices, config.FolderDeviceConfiguration{
+		cfg.Devices = append(cfg.Devices, configv1.FolderDeviceConfiguration{
 			DeviceID: deviceID,
 		})
 		l.Infof("Shared %s with %s due to auto-accept", folder.ID, deviceID)
@@ -1842,7 +1843,7 @@ func (m *model) handleAutoAccepts(deviceID protocol.DeviceID, folder protocol.Fo
 	}
 }
 
-func (m *model) introduceDevice(device protocol.Device, introducerCfg config.DeviceConfiguration) config.DeviceConfiguration {
+func (m *model) introduceDevice(device protocol.Device, introducerCfg configv1.DeviceConfiguration) configv1.DeviceConfiguration {
 	addresses := []string{"dynamic"}
 	for _, addr := range device.Addresses {
 		if addr != "dynamic" {
@@ -2078,7 +2079,7 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 		return nil, protocol.ErrGeneric
 	}
 
-	if folderCfg.Type != config.FolderTypeReceiveEncrypted && len(req.Hash) > 0 && !scanner.Validate(res.data[:n], req.Hash) {
+	if folderCfg.Type != configv1.FolderTypeReceiveEncrypted && len(req.Hash) > 0 && !scanner.Validate(res.data[:n], req.Hash) {
 		m.recheckFile(deviceID, req.Folder, req.Name, req.Offset, req.Hash)
 		l.Debugf("%v REQ(in) failed validating data: %s: %q / %q o=%d s=%d", m, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
 		return nil, protocol.ErrNoSuchFile
@@ -2183,7 +2184,7 @@ func (m *model) LoadIgnores(folder string) ([]string, []string, error) {
 		}
 	}
 
-	if cfg.Type == config.FolderTypeReceiveEncrypted {
+	if cfg.Type == configv1.FolderTypeReceiveEncrypted {
 		return nil, nil, nil
 	}
 
@@ -2231,15 +2232,15 @@ func (m *model) SetIgnores(folder string, content []string) error {
 	return m.setIgnores(cfg, content)
 }
 
-func (m *model) setIgnores(cfg config.FolderConfiguration, content []string) error {
+func (m *model) setIgnores(cfg configv1.FolderConfiguration, content []string) error {
 	err := cfg.CheckPath()
-	if err == config.ErrPathMissing {
+	if err == configv1.ErrPathMissing {
 		if err = cfg.CreateRoot(); err != nil {
 			return fmt.Errorf("failed to create folder root: %w", err)
 		}
 		err = cfg.CheckPath()
 	}
-	if err != nil && err != config.ErrMarkerMissing {
+	if err != nil && err != configv1.ErrMarkerMissing {
 		return err
 	}
 
@@ -2331,7 +2332,7 @@ func (m *model) AddConnection(conn protocol.Connection, hello protocol.Hello) {
 	m.mut.Unlock()
 
 	if (deviceCfg.Name == "" || m.cfg.Options().OverwriteRemoteDevNames) && hello.DeviceName != "" {
-		m.cfg.Modify(func(cfg *config.Configuration) {
+		m.cfg.Modify(func(cfg *configv1.Configuration) {
 			for i := range cfg.Devices {
 				if cfg.Devices[i].DeviceID == deviceID {
 					if cfg.Devices[i].Name == "" || cfg.Options.OverwriteRemoteDevNames {
@@ -2576,7 +2577,7 @@ func (m *model) generateClusterConfigRLocked(device protocol.DeviceID) (*protoco
 		}
 
 		encryptionToken, hasEncryptionToken := m.folderEncryptionPasswordTokens[folderCfg.ID]
-		if folderCfg.Type == config.FolderTypeReceiveEncrypted && !hasEncryptionToken {
+		if folderCfg.Type == configv1.FolderTypeReceiveEncrypted && !hasEncryptionToken {
 			// We haven't gotten a token for us yet and without one the other
 			// side can't validate us - pretend we don't have the folder yet.
 			continue
@@ -2585,7 +2586,7 @@ func (m *model) generateClusterConfigRLocked(device protocol.DeviceID) (*protoco
 		protocolFolder := protocol.Folder{
 			ID:                 folderCfg.ID,
 			Label:              folderCfg.Label,
-			ReadOnly:           folderCfg.Type == config.FolderTypeSendOnly,
+			ReadOnly:           folderCfg.Type == configv1.FolderTypeSendOnly,
 			IgnorePermissions:  folderCfg.IgnorePerms,
 			IgnoreDelete:       folderCfg.IgnoreDelete,
 			DisableTempIndexes: folderCfg.DisableTempIndexes,
@@ -2837,13 +2838,13 @@ func (m *model) Availability(folder string, file protocol.FileInfo, block protoc
 	return m.blockAvailabilityRLocked(cfg, file, block), nil
 }
 
-func (m *model) blockAvailability(cfg config.FolderConfiguration, file protocol.FileInfo, block protocol.BlockInfo) []Availability {
+func (m *model) blockAvailability(cfg configv1.FolderConfiguration, file protocol.FileInfo, block protocol.BlockInfo) []Availability {
 	m.mut.RLock()
 	defer m.mut.RUnlock()
 	return m.blockAvailabilityRLocked(cfg, file, block)
 }
 
-func (m *model) blockAvailabilityRLocked(cfg config.FolderConfiguration, file protocol.FileInfo, block protocol.BlockInfo) []Availability {
+func (m *model) blockAvailabilityRLocked(cfg configv1.FolderConfiguration, file protocol.FileInfo, block protocol.BlockInfo) []Availability {
 	var candidates []Availability
 
 	candidates = append(candidates, m.fileAvailabilityRLocked(cfg, file)...)
@@ -2852,13 +2853,13 @@ func (m *model) blockAvailabilityRLocked(cfg config.FolderConfiguration, file pr
 	return candidates
 }
 
-func (m *model) fileAvailability(cfg config.FolderConfiguration, file protocol.FileInfo) []Availability {
+func (m *model) fileAvailability(cfg configv1.FolderConfiguration, file protocol.FileInfo) []Availability {
 	m.mut.RLock()
 	defer m.mut.RUnlock()
 	return m.fileAvailabilityRLocked(cfg, file)
 }
 
-func (m *model) fileAvailabilityRLocked(cfg config.FolderConfiguration, file protocol.FileInfo) []Availability {
+func (m *model) fileAvailabilityRLocked(cfg configv1.FolderConfiguration, file protocol.FileInfo) []Availability {
 	var availabilities []Availability
 	devs, err := m.sdb.GetGlobalAvailability(cfg.ID, file.Name)
 	if err != nil {
@@ -2879,7 +2880,7 @@ func (m *model) fileAvailabilityRLocked(cfg config.FolderConfiguration, file pro
 	return availabilities
 }
 
-func (m *model) blockAvailabilityFromTemporaryRLocked(cfg config.FolderConfiguration, file protocol.FileInfo, block protocol.BlockInfo) []Availability {
+func (m *model) blockAvailabilityFromTemporaryRLocked(cfg configv1.FolderConfiguration, file protocol.FileInfo, block protocol.BlockInfo) []Availability {
 	var availabilities []Availability
 	for _, device := range cfg.Devices {
 		if m.deviceDownloads[device.DeviceID].Has(cfg.ID, file.Name, file.Version, int(block.Offset/int64(file.BlockSize()))) {
@@ -2915,11 +2916,11 @@ func (m *model) String() string {
 	return fmt.Sprintf("model@%p", m)
 }
 
-func (*model) VerifyConfiguration(from, to config.Configuration) error {
+func (*model) VerifyConfiguration(from, to configv1.Configuration) error {
 	toFolders := to.FolderMap()
 	for _, from := range from.Folders {
 		to, ok := toFolders[from.ID]
-		if ok && from.Type != to.Type && (from.Type == config.FolderTypeReceiveEncrypted || to.Type == config.FolderTypeReceiveEncrypted) {
+		if ok && from.Type != to.Type && (from.Type == configv1.FolderTypeReceiveEncrypted || to.Type == configv1.FolderTypeReceiveEncrypted) {
 			return errors.New("folder type must not be changed from/to receive-encrypted")
 		}
 	}
@@ -2936,7 +2937,7 @@ func (*model) VerifyConfiguration(from, to config.Configuration) error {
 	return nil
 }
 
-func (m *model) CommitConfiguration(from, to config.Configuration) bool {
+func (m *model) CommitConfiguration(from, to configv1.Configuration) bool {
 	// TODO: This should not use reflect, and should take more care to try to handle stuff without restart.
 
 	// Delay processing config changes until after the initial setup
@@ -2989,7 +2990,7 @@ func (m *model) CommitConfiguration(from, to config.Configuration) bool {
 				return true
 			}
 			clusterConfigDevices.add(fromCfg.DeviceIDs())
-			if toCfg.Type != config.FolderTypeReceiveEncrypted {
+			if toCfg.Type != configv1.FolderTypeReceiveEncrypted {
 				clusterConfigDevices.add(toCfg.DeviceIDs())
 			} else {
 				// If we don't have the encryption token yet, we need to drop
@@ -3102,7 +3103,7 @@ func (m *model) CommitConfiguration(from, to config.Configuration) bool {
 	return true
 }
 
-func (m *model) setConnRequestLimitersLocked(cfg config.DeviceConfiguration) {
+func (m *model) setConnRequestLimitersLocked(cfg configv1.DeviceConfiguration) {
 	// Touches connRequestLimiters which is protected by the mutex.
 	// 0: default, <0: no limiting
 	switch {
@@ -3113,7 +3114,7 @@ func (m *model) setConnRequestLimitersLocked(cfg config.DeviceConfiguration) {
 	}
 }
 
-func (m *model) cleanPending(existingDevices map[protocol.DeviceID]config.DeviceConfiguration, existingFolders map[string]config.FolderConfiguration, ignoredDevices deviceIDSet, removedFolders map[string]struct{}) {
+func (m *model) cleanPending(existingDevices map[protocol.DeviceID]configv1.DeviceConfiguration, existingFolders map[string]configv1.FolderConfiguration, ignoredDevices deviceIDSet, removedFolders map[string]struct{}) {
 	var removedPendingFolders []map[string]string
 	pendingFolders, err := m.observed.PendingFolders()
 	if err != nil {
@@ -3292,8 +3293,8 @@ func (m *model) DismissPendingFolder(device protocol.DeviceID, folder string) er
 
 // mapFolders returns a map of folder ID to folder configuration for the given
 // slice of folder configurations.
-func mapFolders(folders []config.FolderConfiguration) map[string]config.FolderConfiguration {
-	m := make(map[string]config.FolderConfiguration, len(folders))
+func mapFolders(folders []configv1.FolderConfiguration) map[string]configv1.FolderConfiguration {
+	m := make(map[string]configv1.FolderConfiguration, len(folders))
 	for _, cfg := range folders {
 		m[cfg.ID] = cfg
 	}
@@ -3310,7 +3311,7 @@ func mapDevices(devices []protocol.DeviceID) map[protocol.DeviceID]struct{} {
 	return m
 }
 
-func observedDeviceSet(devices []config.ObservedDevice) deviceIDSet {
+func observedDeviceSet(devices []configv1.ObservedDevice) deviceIDSet {
 	res := make(deviceIDSet, len(devices))
 	for _, dev := range devices {
 		res[dev.ID] = struct{}{}
@@ -3390,8 +3391,8 @@ func (s deviceIDSet) AsSlice() []protocol.DeviceID {
 	return ids
 }
 
-func encryptionTokenPath(cfg config.FolderConfiguration) string {
-	return filepath.Join(cfg.MarkerName, config.EncryptionTokenName)
+func encryptionTokenPath(cfg configv1.FolderConfiguration) string {
+	return filepath.Join(cfg.MarkerName, configv1.EncryptionTokenName)
 }
 
 type storedEncryptionToken struct {
@@ -3399,7 +3400,7 @@ type storedEncryptionToken struct {
 	Token    []byte
 }
 
-func readEncryptionToken(cfg config.FolderConfiguration) ([]byte, error) {
+func readEncryptionToken(cfg configv1.FolderConfiguration) ([]byte, error) {
 	fd, err := cfg.Filesystem().Open(encryptionTokenPath(cfg))
 	if err != nil {
 		return nil, err
@@ -3412,7 +3413,7 @@ func readEncryptionToken(cfg config.FolderConfiguration) ([]byte, error) {
 	return stored.Token, nil
 }
 
-func writeEncryptionToken(token []byte, cfg config.FolderConfiguration) error {
+func writeEncryptionToken(token []byte, cfg configv1.FolderConfiguration) error {
 	tokenName := encryptionTokenPath(cfg)
 	fd, err := cfg.Filesystem().OpenFile(tokenName, fs.OptReadWrite|fs.OptCreate, 0o666)
 	if err != nil {
@@ -3425,7 +3426,7 @@ func writeEncryptionToken(token []byte, cfg config.FolderConfiguration) error {
 	})
 }
 
-func newFolderConfiguration(w config.Wrapper, id, label string, fsType config.FilesystemType, path string) config.FolderConfiguration {
+func newFolderConfiguration(w configv1.Wrapper, id, label string, fsType configv1.FilesystemType, path string) configv1.FolderConfiguration {
 	fcfg := w.DefaultFolder()
 	fcfg.ID = id
 	fcfg.Label = label

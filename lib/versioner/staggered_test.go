@@ -16,7 +16,7 @@ import (
 
 	"github.com/d4l3k/messagediff"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 func TestStaggeredVersioningVersionCount(t *testing.T) {
@@ -99,10 +99,10 @@ func TestStaggeredVersioningVersionCount(t *testing.T) {
 	}
 	sort.Strings(delete)
 
-	cfg := config.FolderConfiguration{
-		FilesystemType: config.FilesystemTypeBasic,
+	cfg := configv1.FolderConfiguration{
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           "testdata",
-		Versioning: config.VersioningConfiguration{
+		Versioning: configv1.VersioningConfiguration{
 			Params: map[string]string{
 				"maxAge": strconv.Itoa(365 * 86400),
 			},
@@ -138,13 +138,13 @@ func TestCreateVersionPath(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	folderCfg := config.FolderConfiguration{
+	folderCfg := configv1.FolderConfiguration{
 		ID:             "default",
-		FilesystemType: config.FilesystemTypeBasic,
+		FilesystemType: configv1.FilesystemTypeBasic,
 		Path:           tmpDir,
-		Versioning: config.VersioningConfiguration{
+		Versioning: configv1.VersioningConfiguration{
 			Type:   "staggered",
-			FSType: config.FilesystemTypeBasic,
+			FSType: configv1.FilesystemTypeBasic,
 			FSPath: versionsDir,
 		},
 	}

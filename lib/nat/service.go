@@ -16,7 +16,8 @@ import (
 	stdsync "sync"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/sync"
 )
@@ -25,7 +26,7 @@ import (
 // setup/renewal of a port mapping.
 type Service struct {
 	id               protocol.DeviceID
-	cfg              config.Wrapper
+	cfg              configv1.Wrapper
 	processScheduled chan struct{}
 
 	mappings []*Mapping
@@ -33,7 +34,7 @@ type Service struct {
 	mut      sync.RWMutex
 }
 
-func NewService(id protocol.DeviceID, cfg config.Wrapper) *Service {
+func NewService(id protocol.DeviceID, cfg configv1.Wrapper) *Service {
 	s := &Service{
 		id:               id,
 		cfg:              cfg,
@@ -46,7 +47,7 @@ func NewService(id protocol.DeviceID, cfg config.Wrapper) *Service {
 	return s
 }
 
-func (s *Service) CommitConfiguration(_, to config.Configuration) bool {
+func (s *Service) CommitConfiguration(_, to configv1.Configuration) bool {
 	s.mut.Lock()
 	if !s.enabled && to.Options.NATEnabled {
 		l.Debugln("Starting NAT service")

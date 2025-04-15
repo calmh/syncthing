@@ -12,7 +12,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/fs"
 )
 
@@ -29,7 +30,7 @@ type simple struct {
 	copyRangeMethod fs.CopyRangeMethod
 }
 
-func newSimple(cfg config.FolderConfiguration) Versioner {
+func newSimple(cfg configv1.FolderConfiguration) Versioner {
 	keep, err := strconv.Atoi(cfg.Versioning.Params["keep"])
 	cleanoutDays, _ := strconv.Atoi(cfg.Versioning.Params["cleanoutDays"])
 	// On error we default to 0, "do not clean out the versioned items"

@@ -10,11 +10,11 @@ import (
 	"archive/zip"
 	"io"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 // getRedactedConfig redacting some parts of config
-func getRedactedConfig(s *service) config.Configuration {
+func getRedactedConfig(s *service) configv1.Configuration {
 	rawConf := s.cfg.RawCopy()
 	rawConf.GUI.APIKey = "REDACTED"
 	if rawConf.GUI.Password != "" {

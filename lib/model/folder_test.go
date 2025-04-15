@@ -12,8 +12,9 @@ import (
 
 	"github.com/d4l3k/messagediff"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/rand"
@@ -68,16 +69,16 @@ func unifySubsCases() []unifySubsCase {
 		{
 			// 6. .stignore and .stfolder are special and are passed on
 			// verbatim even though they are unknown
-			[]string{config.DefaultMarkerName, ".stignore"},
+			[]string{configv1.DefaultMarkerName, ".stignore"},
 			[]string{},
-			[]string{config.DefaultMarkerName, ".stignore"},
+			[]string{configv1.DefaultMarkerName, ".stignore"},
 		},
 		{
 			// 7. but the presence of something else unknown forces an actual
 			// scan
-			[]string{config.DefaultMarkerName, ".stignore", "foo/bar"},
+			[]string{configv1.DefaultMarkerName, ".stignore", "foo/bar"},
 			[]string{},
-			[]string{config.DefaultMarkerName, ".stignore", "foo"},
+			[]string{configv1.DefaultMarkerName, ".stignore", "foo"},
 		},
 		{
 			// 8. explicit request to scan all
@@ -180,7 +181,7 @@ func TestSetPlatformData(t *testing.T) {
 	// Minimum required to support setPlatformData
 	sr := &sendReceiveFolder{
 		folder: folder{
-			FolderConfiguration: config.FolderConfiguration{
+			FolderConfiguration: configv1.FolderConfiguration{
 				SyncXattrs: true,
 			},
 			mtimefs: fs,

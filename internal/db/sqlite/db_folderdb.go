@@ -15,9 +15,9 @@ import (
 	"strings"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/rand"
 )
@@ -209,7 +209,7 @@ func (s *DB) AllLocalFilesWithBlocksHash(folder string, h []byte) (iter.Seq[db.F
 	return fdb.AllLocalFilesWithBlocksHash(h)
 }
 
-func (s *DB) AllNeededGlobalFiles(folder string, device protocol.DeviceID, order config.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error) {
+func (s *DB) AllNeededGlobalFiles(folder string, device protocol.DeviceID, order configv1.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error) {
 	fdb, err := s.getFolderDB(folder, false)
 	if errors.Is(err, errNoSuchFolder) {
 		return func(yield func(protocol.FileInfo) bool) {}, func() error { return nil }

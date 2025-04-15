@@ -13,7 +13,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/structutil"
 )
@@ -21,7 +22,7 @@ import (
 type configMuxBuilder struct {
 	*httprouter.Router
 	id  protocol.DeviceID
-	cfg config.Wrapper
+	cfg configv1.Wrapper
 }
 
 func (c *configMuxBuilder) registerConfig(path string) {
@@ -67,7 +68,7 @@ func (c *configMuxBuilder) registerFolders(path string) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		folders := make([]config.FolderConfiguration, len(data))
+		folders := make([]configv1.FolderConfiguration, len(data))
 		defaultFolder := c.cfg.DefaultFolder()
 		for i, bs := range data {
 			folders[i] = defaultFolder.Copy()
@@ -76,7 +77,7 @@ func (c *configMuxBuilder) registerFolders(path string) {
 				return
 			}
 		}
-		waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+		waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 			cfg.SetFolders(folders)
 		})
 		if err != nil {
@@ -102,7 +103,7 @@ func (c *configMuxBuilder) registerDevices(path string) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		devices := make([]config.DeviceConfiguration, len(data))
+		devices := make([]configv1.DeviceConfiguration, len(data))
 		defaultDevice := c.cfg.DefaultDevice()
 		for i, bs := range data {
 			devices[i] = defaultDevice.Copy()
@@ -111,7 +112,7 @@ func (c *configMuxBuilder) registerDevices(path string) {
 				return
 			}
 		}
-		waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+		waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 			cfg.SetDevices(devices)
 		})
 		if err != nil {
@@ -160,16 +161,16 @@ func (c *configMuxBuilder) registerFolder(path string) {
 }
 
 func (c *configMuxBuilder) registerDevice(path string) {
-	deviceFromParams := func(w http.ResponseWriter, p httprouter.Params) (config.DeviceConfiguration, bool) {
+	deviceFromParams := func(w http.ResponseWriter, p httprouter.Params) (configv1.DeviceConfiguration, bool) {
 		id, err := protocol.DeviceIDFromString(p.ByName("id"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return config.DeviceConfiguration{}, false
+			return configv1.DeviceConfiguration{}, false
 		}
 		device, ok := c.cfg.Device(id)
 		if !ok {
 			http.Error(w, "No device with given ID", http.StatusNotFound)
-			return config.DeviceConfiguration{}, false
+			return configv1.DeviceConfiguration{}, false
 		}
 		return device, true
 	}
@@ -211,7 +212,7 @@ func (c *configMuxBuilder) registerDefaultFolder(path string) {
 	})
 
 	c.HandlerFunc(http.MethodPut, path, func(w http.ResponseWriter, r *http.Request) {
-		var cfg config.FolderConfiguration
+		var cfg configv1.FolderConfiguration
 		structutil.SetDefaults(&cfg)
 		c.adjustFolder(w, r, cfg, true)
 	})
@@ -227,7 +228,7 @@ func (c *configMuxBuilder) registerDefaultDevice(path string) {
 	})
 
 	c.HandlerFunc(http.MethodPut, path, func(w http.ResponseWriter, r *http.Request) {
-		var cfg config.DeviceConfiguration
+		var cfg configv1.DeviceConfiguration
 		structutil.SetDefaults(&cfg)
 		c.adjustDevice(w, r, cfg, true)
 	})
@@ -243,12 +244,12 @@ func (c *configMuxBuilder) registerDefaultIgnores(path string) {
 	})
 
 	c.HandlerFunc(http.MethodPut, path, func(w http.ResponseWriter, r *http.Request) {
-		var ignores config.Ignores
+		var ignores configv1.Ignores
 		if err := unmarshalTo(r.Body, &ignores); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+		waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 			cfg.Defaults.Ignores = ignores
 		})
 		if err != nil {
@@ -265,7 +266,7 @@ func (c *configMuxBuilder) registerOptions(path string) {
 	})
 
 	c.HandlerFunc(http.MethodPut, path, func(w http.ResponseWriter, r *http.Request) {
-		var cfg config.OptionsConfiguration
+		var cfg configv1.OptionsConfiguration
 		structutil.SetDefaults(&cfg)
 		c.adjustOptions(w, r, cfg)
 	})
@@ -281,7 +282,7 @@ func (c *configMuxBuilder) registerLDAP(path string) {
 	})
 
 	c.HandlerFunc(http.MethodPut, path, func(w http.ResponseWriter, r *http.Request) {
-		var cfg config.LDAPConfiguration
+		var cfg configv1.LDAPConfiguration
 		structutil.SetDefaults(&cfg)
 		c.adjustLDAP(w, r, cfg)
 	})
@@ -297,7 +298,7 @@ func (c *configMuxBuilder) registerGUI(path string) {
 	})
 
 	c.HandlerFunc(http.MethodPut, path, func(w http.ResponseWriter, r *http.Request) {
-		var cfg config.GUIConfiguration
+		var cfg configv1.GUIConfiguration
 		structutil.SetDefaults(&cfg)
 		c.adjustGUI(w, r, cfg)
 	})
@@ -308,7 +309,7 @@ func (c *configMuxBuilder) registerGUI(path string) {
 }
 
 func (c *configMuxBuilder) adjustConfig(w http.ResponseWriter, r *http.Request) {
-	to, err := config.ReadJSON(r.Body, c.id)
+	to, err := configv1.ReadJSON(r.Body, c.id)
 	r.Body.Close()
 	if err != nil {
 		l.Warnln("Decoding posted config:", err)
@@ -317,7 +318,7 @@ func (c *configMuxBuilder) adjustConfig(w http.ResponseWriter, r *http.Request) 
 	}
 	var errMsg string
 	var status int
-	waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 		if err := c.postAdjustGui(&cfg.GUI, &to.GUI); err != nil {
 			errMsg = err.Error()
 			status = http.StatusInternalServerError
@@ -334,12 +335,12 @@ func (c *configMuxBuilder) adjustConfig(w http.ResponseWriter, r *http.Request) 
 	c.finish(w, waiter)
 }
 
-func (c *configMuxBuilder) adjustFolder(w http.ResponseWriter, r *http.Request, folder config.FolderConfiguration, defaults bool) {
+func (c *configMuxBuilder) adjustFolder(w http.ResponseWriter, r *http.Request, folder configv1.FolderConfiguration, defaults bool) {
 	if err := unmarshalTo(r.Body, &folder); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 		if defaults {
 			cfg.Defaults.Folder = folder
 		} else {
@@ -353,12 +354,12 @@ func (c *configMuxBuilder) adjustFolder(w http.ResponseWriter, r *http.Request, 
 	c.finish(w, waiter)
 }
 
-func (c *configMuxBuilder) adjustDevice(w http.ResponseWriter, r *http.Request, device config.DeviceConfiguration, defaults bool) {
+func (c *configMuxBuilder) adjustDevice(w http.ResponseWriter, r *http.Request, device configv1.DeviceConfiguration, defaults bool) {
 	if err := unmarshalTo(r.Body, &device); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 		if defaults {
 			cfg.Defaults.Device = device
 		} else {
@@ -372,12 +373,12 @@ func (c *configMuxBuilder) adjustDevice(w http.ResponseWriter, r *http.Request, 
 	c.finish(w, waiter)
 }
 
-func (c *configMuxBuilder) adjustOptions(w http.ResponseWriter, r *http.Request, opts config.OptionsConfiguration) {
+func (c *configMuxBuilder) adjustOptions(w http.ResponseWriter, r *http.Request, opts configv1.OptionsConfiguration) {
 	if err := unmarshalTo(r.Body, &opts); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 		cfg.Options = opts
 	})
 	if err != nil {
@@ -387,7 +388,7 @@ func (c *configMuxBuilder) adjustOptions(w http.ResponseWriter, r *http.Request,
 	c.finish(w, waiter)
 }
 
-func (c *configMuxBuilder) adjustGUI(w http.ResponseWriter, r *http.Request, gui config.GUIConfiguration) {
+func (c *configMuxBuilder) adjustGUI(w http.ResponseWriter, r *http.Request, gui configv1.GUIConfiguration) {
 	err := unmarshalTo(r.Body, &gui)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -395,7 +396,7 @@ func (c *configMuxBuilder) adjustGUI(w http.ResponseWriter, r *http.Request, gui
 	}
 	var errMsg string
 	var status int
-	waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 		if err := c.postAdjustGui(&cfg.GUI, &gui); err != nil {
 			errMsg = err.Error()
 			status = http.StatusInternalServerError
@@ -412,7 +413,7 @@ func (c *configMuxBuilder) adjustGUI(w http.ResponseWriter, r *http.Request, gui
 	c.finish(w, waiter)
 }
 
-func (c *configMuxBuilder) postAdjustGui(from *config.GUIConfiguration, to *config.GUIConfiguration) error {
+func (c *configMuxBuilder) postAdjustGui(from *configv1.GUIConfiguration, to *configv1.GUIConfiguration) error {
 	if to.Password != from.Password {
 		if err := to.SetPassword(to.Password); err != nil {
 			l.Warnln("hashing password:", err)
@@ -422,12 +423,12 @@ func (c *configMuxBuilder) postAdjustGui(from *config.GUIConfiguration, to *conf
 	return nil
 }
 
-func (c *configMuxBuilder) adjustLDAP(w http.ResponseWriter, r *http.Request, ldap config.LDAPConfiguration) {
+func (c *configMuxBuilder) adjustLDAP(w http.ResponseWriter, r *http.Request, ldap configv1.LDAPConfiguration) {
 	if err := unmarshalTo(r.Body, &ldap); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	waiter, err := c.cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := c.cfg.Modify(func(cfg *configv1.Configuration) {
 		cfg.LDAP = ldap
 	})
 	if err != nil {
@@ -453,7 +454,7 @@ func unmarshalToRawMessages(body io.ReadCloser) ([]json.RawMessage, error) {
 	return data, err
 }
 
-func (c *configMuxBuilder) finish(w http.ResponseWriter, waiter config.Waiter) {
+func (c *configMuxBuilder) finish(w http.ResponseWriter, waiter configv1.Waiter) {
 	waiter.Wait()
 	if err := c.cfg.Save(); err != nil {
 		l.Warnln("Saving config:", err)

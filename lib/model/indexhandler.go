@@ -13,9 +13,10 @@ import (
 	"sync"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/svcutil"
@@ -51,7 +52,7 @@ type indexHandler struct {
 	runner service
 }
 
-func newIndexHandler(conn protocol.Connection, downloads *deviceDownloadState, folder config.FolderConfiguration, sdb db.DB, runner service, startInfo *clusterConfigDeviceInfo, evLogger events.Logger) (*indexHandler, error) {
+func newIndexHandler(conn protocol.Connection, downloads *deviceDownloadState, folder configv1.FolderConfiguration, sdb db.DB, runner service, startInfo *clusterConfigDeviceInfo, evLogger events.Logger) (*indexHandler, error) {
 	myIndexID, err := sdb.GetIndexID(folder.ID, protocol.LocalDeviceID)
 	if err != nil {
 		return nil, err
@@ -122,7 +123,7 @@ func newIndexHandler(conn protocol.Connection, downloads *deviceDownloadState, f
 		conn:                     conn,
 		downloads:                downloads,
 		folder:                   folder.ID,
-		folderIsReceiveEncrypted: folder.Type == config.FolderTypeReceiveEncrypted,
+		folderIsReceiveEncrypted: folder.Type == configv1.FolderTypeReceiveEncrypted,
 		localPrevSequence:        startSequence,
 		sentPrevSequence:         startSequence,
 		evLogger:                 evLogger,
@@ -506,7 +507,7 @@ type indexHandlerRegistry struct {
 }
 
 type indexHandlerFolderState struct {
-	cfg    config.FolderConfiguration
+	cfg    configv1.FolderConfiguration
 	runner service
 }
 
@@ -534,7 +535,7 @@ func (r *indexHandlerRegistry) Serve(ctx context.Context) error {
 	return r.indexHandlers.Serve(ctx)
 }
 
-func (r *indexHandlerRegistry) startLocked(folder config.FolderConfiguration, runner service, startInfo *clusterConfigDeviceInfo) error {
+func (r *indexHandlerRegistry) startLocked(folder configv1.FolderConfiguration, runner service, startInfo *clusterConfigDeviceInfo) error {
 	r.indexHandlers.RemoveAndWait(folder.ID, 0)
 	delete(r.startInfos, folder.ID)
 
@@ -606,7 +607,7 @@ func (r *indexHandlerRegistry) RemoveAllExcept(except map[string]remoteFolderSta
 // RegisterFolderState must be called whenever something about the folder
 // changes. The exception being if the folder is removed entirely, then call
 // Remove. The fset and runner arguments may be nil, if given folder is paused.
-func (r *indexHandlerRegistry) RegisterFolderState(folder config.FolderConfiguration, runner service) {
+func (r *indexHandlerRegistry) RegisterFolderState(folder configv1.FolderConfiguration, runner service) {
 	if !folder.SharedWith(r.conn.DeviceID()) {
 		r.Remove(folder.ID)
 		return
@@ -637,7 +638,7 @@ func (r *indexHandlerRegistry) folderPausedLocked(folder string) {
 // folderRunningLocked resumes an already running index handler or starts it, if it
 // was added while paused.
 // It is a noop if the folder isn't known.
-func (r *indexHandlerRegistry) folderRunningLocked(folder config.FolderConfiguration, runner service) {
+func (r *indexHandlerRegistry) folderRunningLocked(folder configv1.FolderConfiguration, runner service) {
 	r.folderStates[folder.ID] = &indexHandlerFolderState{
 		cfg:    folder,
 		runner: runner,

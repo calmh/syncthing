@@ -15,13 +15,14 @@ import (
 	"sync"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	newdb "github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/db/olddb"
 	"github.com/syncthing/syncthing/internal/db/olddb/backend"
 	"github.com/syncthing/syncthing/internal/db/sqlite"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/locations"
@@ -65,8 +66,8 @@ func GenerateCertificate(certFile, keyFile string) (tls.Certificate, error) {
 	return tlsutil.NewCertificate(certFile, keyFile, tlsDefaultCommonName, deviceCertLifetimeDays)
 }
 
-func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, noDefaultFolder, skipPortProbing bool) (config.Wrapper, error) {
-	newCfg := config.New(myID)
+func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, noDefaultFolder, skipPortProbing bool) (configv1.Wrapper, error) {
+	newCfg := configv1.New(myID)
 
 	if skipPortProbing {
 		l.Infoln("Using default network port numbers instead of probing for free ports")
@@ -78,26 +79,26 @@ func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, 
 
 	if noDefaultFolder {
 		l.Infoln("We will skip creation of a default folder on first start")
-		return config.Wrap(path, newCfg, myID, evLogger), nil
+		return configv1.Wrap(path, newCfg, myID, evLogger), nil
 	}
 
 	fcfg := newCfg.Defaults.Folder.Copy()
 	fcfg.ID = "default"
 	fcfg.Label = "Default Folder"
-	fcfg.FilesystemType = config.FilesystemTypeBasic
+	fcfg.FilesystemType = configv1.FilesystemTypeBasic
 	fcfg.Path = locations.Get(locations.DefFolder)
 	newCfg.Folders = append(newCfg.Folders, fcfg)
 	l.Infoln("Default folder created and/or linked to new config")
-	return config.Wrap(path, newCfg, myID, evLogger), nil
+	return configv1.Wrap(path, newCfg, myID, evLogger), nil
 }
 
 // LoadConfigAtStartup loads an existing config. If it doesn't yet exist, it
 // creates a default one, without the default folder if noDefaultFolder is true.
 // Otherwise it checks the version, and archives and upgrades the config if
 // necessary or returns an error, if the version isn't compatible.
-func LoadConfigAtStartup(path string, cert tls.Certificate, evLogger events.Logger, allowNewerConfig, noDefaultFolder, skipPortProbing bool) (config.Wrapper, error) {
+func LoadConfigAtStartup(path string, cert tls.Certificate, evLogger events.Logger, allowNewerConfig, noDefaultFolder, skipPortProbing bool) (configv1.Wrapper, error) {
 	myID := protocol.NewDeviceID(cert.Certificate[0])
-	cfg, originalVersion, err := config.Load(path, myID, evLogger)
+	cfg, originalVersion, err := configv1.Load(path, myID, evLogger)
 	if fs.IsNotExist(err) {
 		cfg, err = DefaultConfig(path, myID, evLogger, noDefaultFolder, skipPortProbing)
 		if err != nil {
@@ -114,12 +115,12 @@ func LoadConfigAtStartup(path string, cert tls.Certificate, evLogger events.Logg
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	if originalVersion != config.CurrentVersion {
-		if originalVersion == config.CurrentVersion+1101 {
+	if originalVersion != configv1.CurrentVersion {
+		if originalVersion == configv1.CurrentVersion+1101 {
 			l.Infof("Now, THAT's what we call a config from the future! Don't worry. As long as you hit that wire with the connecting hook at precisely eighty-eight miles per hour the instant the lightning strikes the tower... everything will be fine.")
 		}
-		if originalVersion > config.CurrentVersion && !allowNewerConfig {
-			return nil, fmt.Errorf("config file version (%d) is newer than supported version (%d). If this is expected, use --allow-newer-config to override.", originalVersion, config.CurrentVersion)
+		if originalVersion > configv1.CurrentVersion && !allowNewerConfig {
+			return nil, fmt.Errorf("config file version (%d) is newer than supported version (%d). If this is expected, use --allow-newer-config to override.", originalVersion, configv1.CurrentVersion)
 		}
 		err = archiveAndSaveConfig(cfg, originalVersion)
 		if err != nil {
@@ -130,7 +131,7 @@ func LoadConfigAtStartup(path string, cert tls.Certificate, evLogger events.Logg
 	return cfg, nil
 }
 
-func archiveAndSaveConfig(cfg config.Wrapper, originalVersion int) error {
+func archiveAndSaveConfig(cfg configv1.Wrapper, originalVersion int) error {
 	// Copy the existing config to an archive copy
 	archivePath := cfg.ConfigPath() + fmt.Sprintf(".v%d", originalVersion)
 	l.Infoln("Archiving a copy of old config file format at:", archivePath)

@@ -17,7 +17,8 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/nat"
 	"github.com/syncthing/syncthing/lib/osutil"
@@ -153,9 +154,9 @@ func (c internalConn) String() string {
 }
 
 type dialerFactory interface {
-	New(config.OptionsConfiguration, *tls.Config, *registry.Registry, *lanChecker) genericDialer
+	New(configv1.OptionsConfiguration, *tls.Config, *registry.Registry, *lanChecker) genericDialer
 	AlwaysWAN() bool
-	Valid(config.Configuration) error
+	Valid(configv1.Configuration) error
 	String() string
 }
 
@@ -192,8 +193,8 @@ type genericDialer interface {
 }
 
 type listenerFactory interface {
-	New(*url.URL, config.Wrapper, *tls.Config, chan internalConn, *nat.Service, *registry.Registry, *lanChecker) genericListener
-	Valid(config.Configuration) error
+	New(*url.URL, configv1.Wrapper, *tls.Config, chan internalConn, *nat.Service, *registry.Registry, *lanChecker) genericListener
+	Valid(configv1.Configuration) error
 }
 
 type ListenerAddresses struct {

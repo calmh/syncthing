@@ -13,7 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 )
@@ -95,8 +96,8 @@ type aggregator struct {
 	// folderID never changes and is accessed in CommitConfiguration, which
 	// asynchronously updates folderCfg -> can't use folderCfg.ID (racy)
 	folderID        string
-	folderCfg       config.FolderConfiguration
-	folderCfgUpdate chan config.FolderConfiguration
+	folderCfg       configv1.FolderConfiguration
+	folderCfgUpdate chan configv1.FolderConfiguration
 	// Time after which an event is scheduled for scanning when no modifications occur.
 	notifyDelay time.Duration
 	// Time after which an event is scheduled for scanning even though modifications occur.
@@ -124,10 +125,10 @@ func (c *eventCounter) add(typ fs.EventType, n int) {
 
 func (c *eventCounter) total() int { return c.removes + c.nonRemoves }
 
-func newAggregator(ctx context.Context, folderCfg config.FolderConfiguration) *aggregator {
+func newAggregator(ctx context.Context, folderCfg configv1.FolderConfiguration) *aggregator {
 	a := &aggregator{
 		folderID:              folderCfg.ID,
-		folderCfgUpdate:       make(chan config.FolderConfiguration),
+		folderCfgUpdate:       make(chan configv1.FolderConfiguration),
 		notifyTimerNeedsReset: false,
 		notifyTimerResetChan:  make(chan time.Duration),
 		root:                  newEventDir(),
@@ -139,14 +140,14 @@ func newAggregator(ctx context.Context, folderCfg config.FolderConfiguration) *a
 	return a
 }
 
-func Aggregate(ctx context.Context, in <-chan fs.Event, out chan<- []string, folderCfg config.FolderConfiguration, cfg config.Wrapper, evLogger events.Logger) {
+func Aggregate(ctx context.Context, in <-chan fs.Event, out chan<- []string, folderCfg configv1.FolderConfiguration, cfg configv1.Wrapper, evLogger events.Logger) {
 	a := newAggregator(ctx, folderCfg)
 
 	// Necessary for unit tests where the backend is mocked
 	go a.mainLoop(in, out, cfg, evLogger)
 }
 
-func (a *aggregator) mainLoop(in <-chan fs.Event, out chan<- []string, cfg config.Wrapper, evLogger events.Logger) {
+func (a *aggregator) mainLoop(in <-chan fs.Event, out chan<- []string, cfg configv1.Wrapper, evLogger events.Logger) {
 	a.notifyTimer = time.NewTimer(a.notifyDelay)
 	defer a.notifyTimer.Stop()
 
@@ -421,7 +422,7 @@ func (a *aggregator) String() string {
 	return fmt.Sprintf("aggregator/%s:", a.folderCfg.Description())
 }
 
-func (a *aggregator) CommitConfiguration(_, to config.Configuration) bool {
+func (a *aggregator) CommitConfiguration(_, to configv1.Configuration) bool {
 	for _, folderCfg := range to.Folders {
 		if folderCfg.ID == a.folderID {
 			select {
@@ -435,7 +436,7 @@ func (a *aggregator) CommitConfiguration(_, to config.Configuration) bool {
 	return true
 }
 
-func (a *aggregator) updateConfig(folderCfg config.FolderConfiguration) {
+func (a *aggregator) updateConfig(folderCfg configv1.FolderConfiguration) {
 	a.notifyDelay = time.Duration(folderCfg.FSWatcherDelayS) * time.Second
 	if maxDelay := folderCfg.FSWatcherTimeoutS; maxDelay > 0 {
 		// FSWatcherTimeoutS is set explicitly so use that, but it also

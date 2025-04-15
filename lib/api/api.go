@@ -40,9 +40,9 @@ import (
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections"
 	"github.com/syncthing/syncthing/lib/discover"
 	"github.com/syncthing/syncthing/lib/events"
@@ -73,7 +73,7 @@ type service struct {
 	suture.Service
 
 	id                   protocol.DeviceID
-	cfg                  config.Wrapper
+	cfg                  configv1.Wrapper
 	statics              *staticsServer
 	model                model.Model
 	eventSubs            map[events.EventType]events.BufferedSubscription
@@ -98,15 +98,15 @@ type service struct {
 	systemLog logger.Recorder
 }
 
-var _ config.Verifier = &service{}
+var _ configv1.Verifier = &service{}
 
 type Service interface {
 	suture.Service
-	config.Committer
+	configv1.Committer
 	WaitForStart() error
 }
 
-func New(id protocol.DeviceID, cfg config.Wrapper, assetDir, tlsDefaultCommonName string, m model.Model, defaultSub, diskSub events.BufferedSubscription, evLogger events.Logger, discoverer discover.Manager, connectionsService connections.Service, urService *ur.Service, fss model.FolderSummaryService, errors, systemLog logger.Recorder, noUpgrade bool, miscDB *db.Typed) Service {
+func New(id protocol.DeviceID, cfg configv1.Wrapper, assetDir, tlsDefaultCommonName string, m model.Model, defaultSub, diskSub events.BufferedSubscription, evLogger events.Logger, discoverer discover.Manager, connectionsService connections.Service, urService *ur.Service, fss model.FolderSummaryService, errors, systemLog logger.Recorder, noUpgrade bool, miscDB *db.Typed) Service {
 	return &service{
 		id:      id,
 		cfg:     cfg,
@@ -139,7 +139,7 @@ func (s *service) WaitForStart() error {
 	return s.startupErr
 }
 
-func (s *service) getListener(guiCfg config.GUIConfiguration) (net.Listener, error) {
+func (s *service) getListener(guiCfg configv1.GUIConfiguration) (net.Listener, error) {
 	httpsCertFile := locations.Get(locations.HTTPSCertFile)
 	httpsKeyFile := locations.Get(locations.HTTPSKeyFile)
 	cert, err := tls.LoadX509KeyPair(httpsCertFile, httpsKeyFile)
@@ -477,7 +477,7 @@ func (s *service) String() string {
 	return fmt.Sprintf("api.service@%p", s)
 }
 
-func (*service) VerifyConfiguration(_, to config.Configuration) error {
+func (*service) VerifyConfiguration(_, to configv1.Configuration) error {
 	if to.GUI.Network() != "tcp" {
 		return nil
 	}
@@ -485,7 +485,7 @@ func (*service) VerifyConfiguration(_, to config.Configuration) error {
 	return err
 }
 
-func (s *service) CommitConfiguration(from, to config.Configuration) bool {
+func (s *service) CommitConfiguration(from, to configv1.Configuration) bool {
 	// No action required when this changes, so mask the fact that it changed at all.
 	from.GUI.Debugging = to.GUI.Debugging
 
@@ -1553,7 +1553,7 @@ func (s *service) makeDevicePauseHandler(paused bool) http.HandlerFunc {
 
 		var msg string
 		var status int
-		_, err := s.cfg.Modify(func(cfg *config.Configuration) {
+		_, err := s.cfg.Modify(func(cfg *configv1.Configuration) {
 			if deviceStr == "" {
 				for i := range cfg.Devices {
 					cfg.Devices[i].Paused = paused
@@ -1734,7 +1734,7 @@ func (*service) getSystemBrowse(w http.ResponseWriter, r *http.Request) {
 	current := qs.Get("current")
 
 	// Default value or in case of error unmarshalling ends up being basic fs.
-	var fsType config.FilesystemType
+	var fsType configv1.FilesystemType
 	fsType.UnmarshalText([]byte(qs.Get("filesystem")))
 
 	sendJSON(w, browse(fsType.ToFS(), current))

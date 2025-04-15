@@ -12,7 +12,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -31,7 +32,7 @@ type tcpDialer struct {
 }
 
 func (d *tcpDialer) Dial(ctx context.Context, _ protocol.DeviceID, uri *url.URL) (internalConn, error) {
-	uri = fixupPort(uri, config.DefaultTCPPort)
+	uri = fixupPort(uri, configv1.DefaultTCPPort)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
@@ -68,7 +69,7 @@ func (d *tcpDialer) Dial(ctx context.Context, _ protocol.DeviceID, uri *url.URL)
 
 type tcpDialerFactory struct{}
 
-func (tcpDialerFactory) New(opts config.OptionsConfiguration, tlsCfg *tls.Config, registry *registry.Registry, lanChecker *lanChecker) genericDialer {
+func (tcpDialerFactory) New(opts configv1.OptionsConfiguration, tlsCfg *tls.Config, registry *registry.Registry, lanChecker *lanChecker) genericDialer {
 	return &tcpDialer{
 		commonDialer: commonDialer{
 			trafficClass:      opts.TrafficClass,
@@ -87,7 +88,7 @@ func (tcpDialerFactory) AlwaysWAN() bool {
 	return false
 }
 
-func (tcpDialerFactory) Valid(_ config.Configuration) error {
+func (tcpDialerFactory) Valid(_ configv1.Configuration) error {
 	// Always valid
 	return nil
 }

@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"iter"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
@@ -103,20 +103,20 @@ func (s *folderDB) AllGlobalFilesPrefix(prefix string) (iter.Seq[db.FileMetadata
 	})
 }
 
-func (s *folderDB) AllNeededGlobalFiles(device protocol.DeviceID, order config.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error) {
+func (s *folderDB) AllNeededGlobalFiles(device protocol.DeviceID, order configv1.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error) {
 	var selectOpts string
 	switch order {
-	case config.PullOrderRandom:
+	case configv1.PullOrderRandom:
 		selectOpts = "ORDER BY RANDOM()"
-	case config.PullOrderAlphabetic:
+	case configv1.PullOrderAlphabetic:
 		selectOpts = "ORDER BY g.name ASC"
-	case config.PullOrderSmallestFirst:
+	case configv1.PullOrderSmallestFirst:
 		selectOpts = "ORDER BY g.size ASC"
-	case config.PullOrderLargestFirst:
+	case configv1.PullOrderLargestFirst:
 		selectOpts = "ORDER BY g.size DESC"
-	case config.PullOrderOldestFirst:
+	case configv1.PullOrderOldestFirst:
 		selectOpts = "ORDER BY g.modified ASC"
-	case config.PullOrderNewestFirst:
+	case configv1.PullOrderNewestFirst:
 		selectOpts = "ORDER BY g.modified DESC"
 	}
 

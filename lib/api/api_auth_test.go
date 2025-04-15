@@ -10,12 +10,13 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/db/sqlite"
-	"github.com/syncthing/syncthing/lib/config"
 )
 
-var guiCfg config.GUIConfiguration
+var guiCfg configv1.GUIConfiguration
 
 func init() {
 	guiCfg.User = "user"

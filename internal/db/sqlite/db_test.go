@@ -17,10 +17,11 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
 	"github.com/syncthing/syncthing/internal/timeutil"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -151,34 +152,34 @@ func TestBasics(t *testing.T) {
 	t.Run("AllNeededNamesLocal", func(t *testing.T) {
 		t.Parallel()
 
-		need := fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0)))
+		need := fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0)))
 		if len(need) != 3 || need[0] != "test1" {
 			t.Log(need)
 			t.Error("expected three files, ordered alphabetically")
 		}
 
-		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 1, 0)))
+		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 1, 0)))
 		if len(need) != 1 || need[0] != "test1" {
 			t.Log(need)
 			t.Error("expected one file, limited, ordered alphabetically")
 		}
-		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderLargestFirst, 0, 0)))
+		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderLargestFirst, 0, 0)))
 		if len(need) != 3 || need[0] != "test1" { // largest
 			t.Log(need)
 			t.Error("expected three files, ordered largest to smallest")
 		}
-		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderSmallestFirst, 0, 0)))
+		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderSmallestFirst, 0, 0)))
 		if len(need) != 3 || need[0] != "test3" { // smallest
 			t.Log(need)
 			t.Error("expected three files, ordered smallest to largest")
 		}
 
-		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderNewestFirst, 0, 0)))
+		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderNewestFirst, 0, 0)))
 		if len(need) != 3 || need[0] != "test1" { // newest
 			t.Log(need)
 			t.Error("expected three files, ordered newest to oldest")
 		}
-		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderOldestFirst, 0, 0)))
+		need = fiNames(mustCollect[protocol.FileInfo](t)(sdb.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderOldestFirst, 0, 0)))
 		if len(need) != 3 || need[0] != "test3" { // oldest
 			t.Log(need)
 			t.Error("expected three files, ordered oldest to newest")
@@ -902,7 +903,7 @@ func TestConcurrentUpdateSelect(t *testing.T) {
 	// This is similar to a pattern we have in other places and should
 	// work.
 	handled := 0
-	it, errFn := db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0)
+	it, errFn := db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0)
 	for glob := range it {
 		glob.Version = glob.Version.Update(1)
 		if err := db.Update(folderID, protocol.LocalDeviceID, []protocol.FileInfo{glob}); err != nil {

@@ -22,10 +22,11 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/lib/api"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections"
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/discover"
@@ -62,7 +63,7 @@ type Options struct {
 type App struct {
 	myID              protocol.DeviceID
 	mainService       *suture.Supervisor
-	cfg               config.Wrapper
+	cfg               configv1.Wrapper
 	sdb               db.DB
 	evLogger          events.Logger
 	cert              tls.Certificate
@@ -77,7 +78,7 @@ type App struct {
 	Internals *Internals
 }
 
-func New(cfg config.Wrapper, sdb db.DB, evLogger events.Logger, cert tls.Certificate, opts Options) (*App, error) {
+func New(cfg configv1.Wrapper, sdb db.DB, evLogger events.Logger, cert tls.Certificate, opts Options) (*App, error) {
 	a := &App{
 		cfg:      cfg,
 		sdb:      sdb,
@@ -280,7 +281,7 @@ func (a *App) startup() error {
 	a.mainService.Add(discoveryManager)
 	a.mainService.Add(connectionsService)
 
-	a.cfg.Modify(func(cfg *config.Configuration) {
+	a.cfg.Modify(func(cfg *configv1.Configuration) {
 		// Candidate builds always run with usage reporting.
 		if build.IsCandidate {
 			l.Infoln("Anonymous usage reporting is always enabled for candidate releases.")
@@ -424,7 +425,7 @@ func (a *App) setupGUI(m model.Model, defaultSub, diskSub events.BufferedSubscri
 // checkShortIDs verifies that the configuration won't result in duplicate
 // short ID:s; that is, that the devices in the cluster all have unique
 // initial 64 bits.
-func checkShortIDs(cfg config.Wrapper) error {
+func checkShortIDs(cfg configv1.Wrapper) error {
 	exists := make(map[protocol.ShortID]protocol.DeviceID)
 	for deviceID := range cfg.Devices() {
 		shortID := deviceID.Short()

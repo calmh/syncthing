@@ -18,7 +18,8 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -41,7 +42,7 @@ type Manager interface {
 type manager struct {
 	*suture.Supervisor
 	myID          protocol.DeviceID
-	cfg           config.Wrapper
+	cfg           configv1.Wrapper
 	cert          tls.Certificate
 	evLogger      events.Logger
 	addressLister AddressLister
@@ -51,7 +52,7 @@ type manager struct {
 	mut     sync.RWMutex
 }
 
-func NewManager(myID protocol.DeviceID, cfg config.Wrapper, cert tls.Certificate, evLogger events.Logger, lister AddressLister, registry *registry.Registry) Manager {
+func NewManager(myID protocol.DeviceID, cfg configv1.Wrapper, cert tls.Certificate, evLogger events.Logger, lister AddressLister, registry *registry.Registry) Manager {
 	m := &manager{
 		Supervisor:    suture.New("discover.Manager", svcutil.SpecWithDebugLogger(l)),
 		myID:          myID,
@@ -70,7 +71,7 @@ func NewManager(myID protocol.DeviceID, cfg config.Wrapper, cert tls.Certificate
 
 func (m *manager) serve(ctx context.Context) error {
 	m.cfg.Subscribe(m)
-	m.CommitConfiguration(config.Configuration{}, m.cfg.RawCopy())
+	m.CommitConfiguration(configv1.Configuration{}, m.cfg.RawCopy())
 	<-ctx.Done()
 	m.cfg.Unsubscribe(m)
 	return nil
@@ -230,7 +231,7 @@ func (m *manager) Cache() map[protocol.DeviceID]CacheEntry {
 	return res
 }
 
-func (m *manager) CommitConfiguration(_, to config.Configuration) (handled bool) {
+func (m *manager) CommitConfiguration(_, to configv1.Configuration) (handled bool) {
 	m.mut.Lock()
 	defer m.mut.Unlock()
 	toIdentities := make(map[string]struct{})

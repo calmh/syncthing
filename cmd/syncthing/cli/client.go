@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/locations"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -32,12 +32,12 @@ type APIClient interface {
 
 type apiClient struct {
 	http.Client
-	cfg    config.GUIConfiguration
+	cfg    configv1.GUIConfiguration
 	apikey string
 }
 
 type apiClientFactory struct {
-	cfg config.GUIConfiguration
+	cfg configv1.GUIConfiguration
 }
 
 func (f *apiClientFactory) getClient() (APIClient, error) {
@@ -70,32 +70,32 @@ func (f *apiClientFactory) getClient() (APIClient, error) {
 	}, nil
 }
 
-func loadGUIConfig() (config.GUIConfiguration, error) {
+func loadGUIConfig() (configv1.GUIConfiguration, error) {
 	// Load the certs and get the ID
 	cert, err := tls.LoadX509KeyPair(
 		locations.Get(locations.CertFile),
 		locations.Get(locations.KeyFile),
 	)
 	if err != nil {
-		return config.GUIConfiguration{}, fmt.Errorf("reading device ID: %w", err)
+		return configv1.GUIConfiguration{}, fmt.Errorf("reading device ID: %w", err)
 	}
 
 	myID := protocol.NewDeviceID(cert.Certificate[0])
 
 	// Load the config
-	cfg, _, err := config.Load(locations.Get(locations.ConfigFile), myID, events.NoopLogger)
+	cfg, _, err := configv1.Load(locations.Get(locations.ConfigFile), myID, events.NoopLogger)
 	if err != nil {
-		return config.GUIConfiguration{}, fmt.Errorf("loading config: %w", err)
+		return configv1.GUIConfiguration{}, fmt.Errorf("loading config: %w", err)
 	}
 
 	guiCfg := cfg.GUI()
 
 	if guiCfg.Address() == "" {
-		return config.GUIConfiguration{}, errors.New("Could not find GUI Address")
+		return configv1.GUIConfiguration{}, errors.New("Could not find GUI Address")
 	}
 
 	if guiCfg.APIKey == "" {
-		return config.GUIConfiguration{}, errors.New("Could not find GUI API key")
+		return configv1.GUIConfiguration{}, errors.New("Could not find GUI API key")
 	}
 
 	return guiCfg, nil

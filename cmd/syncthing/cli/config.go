@@ -14,12 +14,13 @@ import (
 
 	"github.com/AudriusButkevicius/recli"
 	"github.com/alecthomas/kong"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/urfave/cli"
+
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 type configHandler struct {
-	original, cfg config.Configuration
+	original, cfg configv1.Configuration
 	client        APIClient
 	err           error
 }

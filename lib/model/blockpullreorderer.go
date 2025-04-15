@@ -9,7 +9,8 @@ package model
 import (
 	"sort"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/rand"
 )
@@ -18,13 +19,13 @@ type blockPullReorderer interface {
 	Reorder(blocks []protocol.BlockInfo) []protocol.BlockInfo
 }
 
-func newBlockPullReorderer(order config.BlockPullOrder, id protocol.DeviceID, otherDevices []protocol.DeviceID) blockPullReorderer {
+func newBlockPullReorderer(order configv1.BlockPullOrder, id protocol.DeviceID, otherDevices []protocol.DeviceID) blockPullReorderer {
 	switch order {
-	case config.BlockPullOrderRandom:
+	case configv1.BlockPullOrderRandom:
 		return randomOrderBlockPullReorderer{}
-	case config.BlockPullOrderInOrder:
+	case configv1.BlockPullOrderInOrder:
 		return inOrderBlockPullReorderer{}
-	case config.BlockPullOrderStandard:
+	case configv1.BlockPullOrderStandard:
 		fallthrough
 	default:
 		return newStandardBlockPullReorderer(id, otherDevices)

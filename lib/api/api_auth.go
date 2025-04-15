@@ -16,7 +16,8 @@ import (
 	"time"
 
 	ldap "github.com/go-ldap/ldap/v3"
-	"github.com/syncthing/syncthing/lib/config"
+
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/rand"
 )
@@ -84,13 +85,13 @@ func isNoAuthPath(path string, metricsWithoutAuth bool) bool {
 
 type basicAuthAndSessionMiddleware struct {
 	tokenCookieManager *tokenCookieManager
-	guiCfg             config.GUIConfiguration
-	ldapCfg            config.LDAPConfiguration
+	guiCfg             configv1.GUIConfiguration
+	ldapCfg            configv1.LDAPConfiguration
 	next               http.Handler
 	evLogger           events.Logger
 }
 
-func newBasicAuthAndSessionMiddleware(tokenCookieManager *tokenCookieManager, guiCfg config.GUIConfiguration, ldapCfg config.LDAPConfiguration, next http.Handler, evLogger events.Logger) *basicAuthAndSessionMiddleware {
+func newBasicAuthAndSessionMiddleware(tokenCookieManager *tokenCookieManager, guiCfg configv1.GUIConfiguration, ldapCfg configv1.LDAPConfiguration, next http.Handler, evLogger events.Logger) *basicAuthAndSessionMiddleware {
 	return &basicAuthAndSessionMiddleware{
 		tokenCookieManager: tokenCookieManager,
 		guiCfg:             guiCfg,
@@ -157,7 +158,7 @@ func (m *basicAuthAndSessionMiddleware) passwordAuthHandler(w http.ResponseWrite
 	forbidden(w)
 }
 
-func attemptBasicAuth(r *http.Request, guiCfg config.GUIConfiguration, ldapCfg config.LDAPConfiguration, evLogger events.Logger) (string, bool) {
+func attemptBasicAuth(r *http.Request, guiCfg configv1.GUIConfiguration, ldapCfg configv1.LDAPConfiguration, evLogger events.Logger) (string, bool) {
 	username, password, ok := r.BasicAuth()
 	if !ok {
 		return "", false
@@ -185,26 +186,26 @@ func (m *basicAuthAndSessionMiddleware) handleLogout(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func auth(username string, password string, guiCfg config.GUIConfiguration, ldapCfg config.LDAPConfiguration) bool {
-	if guiCfg.AuthMode == config.AuthModeLDAP {
+func auth(username string, password string, guiCfg configv1.GUIConfiguration, ldapCfg configv1.LDAPConfiguration) bool {
+	if guiCfg.AuthMode == configv1.AuthModeLDAP {
 		return authLDAP(username, password, ldapCfg)
 	} else {
 		return authStatic(username, password, guiCfg)
 	}
 }
 
-func authStatic(username string, password string, guiCfg config.GUIConfiguration) bool {
+func authStatic(username string, password string, guiCfg configv1.GUIConfiguration) bool {
 	return guiCfg.CompareHashedPassword(password) == nil && username == guiCfg.User
 }
 
-func authLDAP(username string, password string, cfg config.LDAPConfiguration) bool {
+func authLDAP(username string, password string, cfg configv1.LDAPConfiguration) bool {
 	address := cfg.Address
 	hostname, _, err := net.SplitHostPort(address)
 	if err != nil {
 		hostname = address
 	}
 	var connection *ldap.Conn
-	if cfg.Transport == config.LDAPTransportTLS {
+	if cfg.Transport == configv1.LDAPTransportTLS {
 		connection, err = ldap.DialTLS("tcp", address, &tls.Config{
 			ServerName:         hostname,
 			InsecureSkipVerify: cfg.InsecureSkipVerify,
@@ -218,7 +219,7 @@ func authLDAP(username string, password string, cfg config.LDAPConfiguration) bo
 		return false
 	}
 
-	if cfg.Transport == config.LDAPTransportStartTLS {
+	if cfg.Transport == configv1.LDAPTransportStartTLS {
 		err = connection.StartTLS(&tls.Config{InsecureSkipVerify: cfg.InsecureSkipVerify})
 		if err != nil {
 			l.Warnln("LDAP Start TLS:", err)

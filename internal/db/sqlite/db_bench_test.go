@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/internal/timeutil"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/rand"
 )
@@ -166,7 +166,7 @@ func BenchmarkUpdate(b *testing.B) {
 		b.Run(fmt.Sprintf("RemoteNeed@%d", size), func(b *testing.B) {
 			count := 0
 			for range b.N {
-				it, errFn := db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, config.PullOrderAlphabetic, 0, 0)
+				it, errFn := db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, configv1.PullOrderAlphabetic, 0, 0)
 				for f := range it {
 					count++
 					globalFi = f
@@ -181,7 +181,7 @@ func BenchmarkUpdate(b *testing.B) {
 		b.Run(fmt.Sprintf("LocalNeed100Largest@%d", size), func(b *testing.B) {
 			count := 0
 			for range b.N {
-				it, errFn := db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderLargestFirst, 100, 0)
+				it, errFn := db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderLargestFirst, 100, 0)
 				for f := range it {
 					globalFi = f
 					count++

@@ -16,7 +16,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/stringutil"
@@ -258,11 +259,11 @@ func restoreFile(method fs.CopyRangeMethod, src, dst fs.Filesystem, filePath str
 	return err
 }
 
-func versionerFsFromFolderCfg(cfg config.FolderConfiguration) (versionsFs fs.Filesystem) {
+func versionerFsFromFolderCfg(cfg configv1.FolderConfiguration) (versionsFs fs.Filesystem) {
 	folderFs := cfg.Filesystem()
 	if cfg.Versioning.FSPath == "" {
 		versionsFs = fs.NewFilesystem(folderFs.Type(), filepath.Join(folderFs.URI(), DefaultPath))
-	} else if cfg.Versioning.FSType == config.FilesystemTypeBasic {
+	} else if cfg.Versioning.FSType == configv1.FilesystemTypeBasic {
 		// Expand any leading tildes for basic filesystems,
 		// before checking for absolute paths.
 		path, err := fs.ExpandTilde(cfg.Versioning.FSPath)

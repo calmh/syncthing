@@ -23,7 +23,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/model"
@@ -270,8 +271,8 @@ func (p *Process) ConfigInSync() (bool, error) {
 	return bytes.Contains(bs, []byte("true")), nil
 }
 
-func (p *Process) GetConfig() (config.Configuration, error) {
-	var cfg config.Configuration
+func (p *Process) GetConfig() (configv1.Configuration, error) {
+	var cfg configv1.Configuration
 	bs, err := p.Get("/rest/system/config")
 	if err != nil {
 		return cfg, err
@@ -281,7 +282,7 @@ func (p *Process) GetConfig() (config.Configuration, error) {
 	return cfg, err
 }
 
-func (p *Process) PostConfig(cfg config.Configuration) error {
+func (p *Process) PostConfig(cfg configv1.Configuration) error {
 	buf := new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(cfg); err != nil {
 		return err
@@ -499,7 +500,7 @@ func (p *Process) eventLoop() {
 				p.id = id
 
 				home := data["home"].(string)
-				w, _, err := config.Load(filepath.Join(home, "config.xml"), protocol.LocalDeviceID, events.NoopLogger)
+				w, _, err := configv1.Load(filepath.Join(home, "config.xml"), protocol.LocalDeviceID, events.NoopLogger)
 				if err != nil {
 					log.Println("eventLoop: Starting:", err)
 					continue

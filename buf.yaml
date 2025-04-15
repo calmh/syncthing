@@ -1,9 +1,9 @@
 version: v2
 modules:
+  - path: internalproto
+    name: github.com/syncthing/syncthing-internal
   - path: proto
-    name: github.com/syncthing/syncthing-v1
-  - path: protonew
-    name: github.com/syncthing/syncthing-v2
+    name: github.com/syncthing/syncthing
 deps:
   - buf.build/protocolbuffers/wellknowntypes:v30.2
 lint:

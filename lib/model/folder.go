@@ -15,9 +15,10 @@ import (
 	"sort"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
@@ -39,7 +40,7 @@ const kqueueItemCountThreshold = 10000
 
 type folder struct {
 	stateTracker
-	config.FolderConfiguration
+	configv1.FolderConfiguration
 	*stats.FolderStatisticsReference
 	ioLimiter *semaphore.Semaphore
 
@@ -97,7 +98,7 @@ type puller interface {
 	pull() (bool, error) // true when successful and should not be retried
 }
 
-func newFolder(model *model, ignores *ignore.Matcher, cfg config.FolderConfiguration, evLogger events.Logger, ioLimiter *semaphore.Semaphore, ver versioner.Versioner) folder {
+func newFolder(model *model, ignores *ignore.Matcher, cfg configv1.FolderConfiguration, evLogger events.Logger, ioLimiter *semaphore.Semaphore, ver versioner.Versioner) folder {
 	f := folder{
 		stateTracker:              newStateTracker(cfg.ID, evLogger),
 		FolderConfiguration:       cfg,
@@ -331,7 +332,7 @@ func (f *folder) getHealthErrorAndLoadIgnores() error {
 	if err := f.getHealthErrorWithoutIgnores(); err != nil {
 		return err
 	}
-	if f.Type != config.FolderTypeReceiveEncrypted {
+	if f.Type != configv1.FolderTypeReceiveEncrypted {
 		if err := f.ignores.Load(".stignore"); err != nil && !fs.IsNotExist(err) {
 			return fmt.Errorf("loading ignores: %w", err)
 		}
@@ -350,7 +351,7 @@ func (f *folder) getHealthErrorWithoutIgnores() error {
 	if minFree := f.model.cfg.Options().MinHomeDiskFree; minFree.Value > 0 {
 		dbPath := locations.Get(locations.Database)
 		if usage, err := fs.NewFilesystem(fs.FilesystemTypeBasic, dbPath).Usage("."); err == nil {
-			if err = config.CheckFreeSpace(minFree, usage); err != nil {
+			if err = configv1.CheckFreeSpace(minFree, usage); err != nil {
 				return fmt.Errorf("insufficient space on disk for database (%v): %w", dbPath, err)
 			}
 		}
@@ -402,7 +403,7 @@ func (f *folder) pull() (success bool, err error) {
 
 	// Send only folder doesn't do any io, it only checks for out-of-sync
 	// items that differ in metadata and updates those.
-	if f.Type != config.FolderTypeSendOnly {
+	if f.Type != configv1.FolderTypeSendOnly {
 		f.setState(FolderSyncWaiting)
 
 		if err := f.ioLimiter.TakeWithContext(f.ctx, 1); err != nil {
@@ -604,7 +605,7 @@ func (b *scanBatch) FlushIfFull() error {
 func (b *scanBatch) Update(fi protocol.FileInfo) (bool, error) {
 	// Check for a "virtual" parent directory of encrypted files. We don't track
 	// it, but check if anything still exists within and delete it otherwise.
-	if b.f.Type == config.FolderTypeReceiveEncrypted && fi.IsDirectory() && protocol.IsEncryptedParent(fs.PathComponents(fi.Name)) {
+	if b.f.Type == configv1.FolderTypeReceiveEncrypted && fi.IsDirectory() && protocol.IsEncryptedParent(fs.PathComponents(fi.Name)) {
 		if names, err := b.f.mtimefs.DirNames(fi.Name); err == nil && len(names) == 0 {
 			b.f.mtimefs.Remove(fi.Name)
 		}
@@ -624,7 +625,7 @@ func (b *scanBatch) Update(fi protocol.FileInfo) (bool, error) {
 			l.Debugf("%v scanning: deleting deleted receive-only local-changed file: %v", b.f, fi)
 			return true, nil
 		}
-	case (b.f.Type == config.FolderTypeReceiveOnly || b.f.Type == config.FolderTypeReceiveEncrypted) &&
+	case (b.f.Type == configv1.FolderTypeReceiveOnly || b.f.Type == configv1.FolderTypeReceiveEncrypted) &&
 		gf.IsEquivalentOptional(fi, protocol.FileInfoComparison{
 			ModTimeWindow:   b.f.modTimeWindow,
 			IgnorePerms:     b.f.IgnorePerms,
@@ -669,7 +670,7 @@ func (f *folder) scanSubdirsChangedAndNew(subDirs []string, batch *scanBatch) (i
 		XattrFilter:           f.XattrFilter,
 	}
 	var fchan chan scanner.ScanResult
-	if f.Type == config.FolderTypeReceiveEncrypted {
+	if f.Type == configv1.FolderTypeReceiveEncrypted {
 		fchan = scanner.WalkWithoutHashing(scanCtx, scanConfig)
 	} else {
 		fchan = scanner.Walk(scanCtx, scanConfig)
@@ -698,7 +699,7 @@ func (f *folder) scanSubdirsChangedAndNew(subDirs []string, batch *scanBatch) (i
 		}
 
 		switch f.Type {
-		case config.FolderTypeReceiveOnly, config.FolderTypeReceiveEncrypted:
+		case configv1.FolderTypeReceiveOnly, configv1.FolderTypeReceiveEncrypted:
 		default:
 			if nf, ok := f.findRename(res.File, alreadyUsedOrExisting); ok {
 				if ok, err := batch.Update(nf); err != nil {
@@ -812,7 +813,7 @@ outer:
 				}
 			case fi.IsDeleted() && fi.IsReceiveOnlyChanged():
 				switch f.Type {
-				case config.FolderTypeReceiveOnly, config.FolderTypeReceiveEncrypted:
+				case configv1.FolderTypeReceiveOnly, configv1.FolderTypeReceiveEncrypted:
 					switch gf, ok, err := f.db.GetGlobalFile(f.folderID, fi.Name); {
 					case err != nil:
 						return 0, err

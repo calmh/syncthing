@@ -19,8 +19,9 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
@@ -104,7 +105,7 @@ func createEmptyFileInfo(t *testing.T, name string, fs fs.Filesystem) protocol.F
 	writeFile(t, fs, name, nil)
 	fi, err := fs.Stat(name)
 	must(t, err)
-	file, err := scanner.CreateFileInfo(fi, name, fs, false, false, config.XattrFilter{})
+	file, err := scanner.CreateFileInfo(fi, name, fs, false, false, configv1.XattrFilter{})
 	must(t, err)
 	return file
 }
@@ -655,7 +656,7 @@ func TestDeleteIgnorePerms(t *testing.T) {
 
 	stat, err := file.Stat()
 	must(t, err)
-	fi, err := scanner.CreateFileInfo(stat, name, ffs, false, false, config.XattrFilter{})
+	fi, err := scanner.CreateFileInfo(stat, name, ffs, false, false, configv1.XattrFilter{})
 	must(t, err)
 	ffs.Chmod(name, 0o600)
 	if info, err := ffs.Stat(name); err == nil {
@@ -684,7 +685,7 @@ func TestCopyOwner(t *testing.T) {
 
 	m, f, wcfgCancel := setupSendReceiveFolder(t)
 	defer wcfgCancel()
-	f.folder.FolderConfiguration = newFolderConfiguration(m.cfg, f.ID, f.Label, config.FilesystemTypeFake, "/TestCopyOwner")
+	f.folder.FolderConfiguration = newFolderConfiguration(m.cfg, f.ID, f.Label, configv1.FilesystemTypeFake, "/TestCopyOwner")
 	f.folder.FolderConfiguration.CopyOwnershipFromParent = true
 
 	// Create a parent dir with a certain owner/group.

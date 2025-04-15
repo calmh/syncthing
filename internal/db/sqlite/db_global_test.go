@@ -10,7 +10,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -59,14 +59,14 @@ func TestNeed(t *testing.T) {
 	}
 
 	// A couple are needed locally
-	localNeed := fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0)))
+	localNeed := fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0)))
 	if !slices.Equal(localNeed, []string{"test2", "test4"}) {
 		t.Log(localNeed)
 		t.Fatal("bad local need")
 	}
 
 	// Another couple are needed remotely
-	remoteNeed := fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, config.PullOrderAlphabetic, 0, 0)))
+	remoteNeed := fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, configv1.PullOrderAlphabetic, 0, 0)))
 	if !slices.Equal(remoteNeed, []string{"test1", "test3"}) {
 		t.Log(remoteNeed)
 		t.Fatal("bad remote need")
@@ -261,7 +261,7 @@ func TestDontNeedIgnored(t *testing.T) {
 	}
 
 	// It shouldn't show up in the need list
-	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0))
+	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0))
 	if len(names) != 0 {
 		t.Log(names)
 		t.Error("need no files")
@@ -303,7 +303,7 @@ func TestRemoteDontNeedLocalIgnored(t *testing.T) {
 	}
 
 	// It shouldn't show up in their need list
-	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, config.PullOrderAlphabetic, 0, 0))
+	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, configv1.PullOrderAlphabetic, 0, 0))
 	if len(names) != 0 {
 		t.Log(names)
 		t.Error("need no files")
@@ -345,7 +345,7 @@ func TestLocalDontNeedDeletedMissing(t *testing.T) {
 	}
 
 	// It shouldn't show up in the need list
-	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0))
+	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0))
 	if len(names) != 0 {
 		t.Log(names)
 		t.Error("need no files")
@@ -387,7 +387,7 @@ func TestRemoteDontNeedDeletedMissing(t *testing.T) {
 	}
 
 	// It shouldn't show up in their need list
-	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, config.PullOrderAlphabetic, 0, 0))
+	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, configv1.PullOrderAlphabetic, 0, 0))
 	if len(names) != 0 {
 		t.Log(names)
 		t.Error("need no files")
@@ -413,7 +413,7 @@ func TestRemoteDontNeedDeletedMissing(t *testing.T) {
 	}
 
 	// It shouldn't show up in their need list
-	names = mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, config.PullOrderAlphabetic, 0, 0))
+	names = mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.DeviceID{42}, configv1.PullOrderAlphabetic, 0, 0))
 	if len(names) != 0 {
 		t.Log(names)
 		t.Error("need no files")
@@ -456,7 +456,7 @@ func TestNeedRemoteSymlinkAndDir(t *testing.T) {
 	}
 
 	// They should be in the need list
-	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 0, 0))
+	names := mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 0, 0))
 	if len(names) != 2 {
 		t.Log(names)
 		t.Error("bad need")
@@ -497,21 +497,21 @@ func TestNeedPagination(t *testing.T) {
 	}
 
 	// We should get the first two
-	names := fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 2, 0)))
+	names := fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 2, 0)))
 	if !slices.Equal(names, []string{"test0", "test1"}) {
 		t.Log(names)
 		t.Error("bad need")
 	}
 
 	// We should get the next three
-	names = fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 3, 2)))
+	names = fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 3, 2)))
 	if !slices.Equal(names, []string{"test2", "test3", "test4"}) {
 		t.Log(names)
 		t.Error("bad need")
 	}
 
 	// We should get the last five
-	names = fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, config.PullOrderAlphabetic, 5, 5)))
+	names = fiNames(mustCollect[protocol.FileInfo](t)(db.AllNeededGlobalFiles(folderID, protocol.LocalDeviceID, configv1.PullOrderAlphabetic, 5, 5)))
 	if !slices.Equal(names, []string{"test5", "test6", "test7", "test8", "test9"}) {
 		t.Log(names)
 		t.Error("bad need")

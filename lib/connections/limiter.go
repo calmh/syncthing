@@ -14,7 +14,8 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/sync"
 )
@@ -41,7 +42,7 @@ const (
 	limiterBurstSize = 4 * 128 << 10
 )
 
-func newLimiter(myId protocol.DeviceID, cfg config.Wrapper) *limiter {
+func newLimiter(myId protocol.DeviceID, cfg configv1.Wrapper) *limiter {
 	l := &limiter{
 		myID:                myId,
 		write:               rate.NewLimiter(rate.Inf, limiterBurstSize),
@@ -52,14 +53,14 @@ func newLimiter(myId protocol.DeviceID, cfg config.Wrapper) *limiter {
 	}
 
 	cfg.Subscribe(l)
-	prev := config.Configuration{Options: config.OptionsConfiguration{MaxRecvKbps: -1, MaxSendKbps: -1}}
+	prev := configv1.Configuration{Options: configv1.OptionsConfiguration{MaxRecvKbps: -1, MaxSendKbps: -1}}
 
 	l.CommitConfiguration(prev, cfg.RawCopy())
 	return l
 }
 
 // This function sets limiters according to corresponding DeviceConfiguration
-func (lim *limiter) setLimitsLocked(device config.DeviceConfiguration) bool {
+func (lim *limiter) setLimitsLocked(device configv1.DeviceConfiguration) bool {
 	readLimiter := lim.getReadLimiterLocked(device.DeviceID)
 	writeLimiter := lim.getWriteLimiterLocked(device.DeviceID)
 
@@ -86,7 +87,7 @@ func (lim *limiter) setLimitsLocked(device config.DeviceConfiguration) bool {
 }
 
 // This function handles removing, adding and updating of device limiters.
-func (lim *limiter) processDevicesConfigurationLocked(from, to config.Configuration) {
+func (lim *limiter) processDevicesConfigurationLocked(from, to configv1.Configuration) {
 	seen := make(map[protocol.DeviceID]struct{})
 
 	// Mark devices which should not be removed, create new limiters if needed and assign new limiter rate
@@ -122,7 +123,7 @@ func (lim *limiter) processDevicesConfigurationLocked(from, to config.Configurat
 	}
 }
 
-func (lim *limiter) CommitConfiguration(from, to config.Configuration) bool {
+func (lim *limiter) CommitConfiguration(from, to configv1.Configuration) bool {
 	// to ensure atomic update of configuration
 	lim.mu.Lock()
 	defer lim.mu.Unlock()

@@ -22,9 +22,10 @@ import (
 	"time"
 
 	"github.com/shirou/gopsutil/v4/process"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -46,14 +47,14 @@ type Model interface {
 }
 
 type Service struct {
-	cfg                config.Wrapper
+	cfg                configv1.Wrapper
 	model              Model
 	connectionsService connections.Service
 	noUpgrade          bool
 	forceRun           chan struct{}
 }
 
-func New(cfg config.Wrapper, m Model, connectionsService connections.Service, noUpgrade bool) *Service {
+func New(cfg configv1.Wrapper, m Model, connectionsService connections.Service, noUpgrade bool) *Service {
 	return &Service{
 		cfg:                cfg,
 		model:              m,
@@ -129,11 +130,11 @@ func (s *Service) reportData(ctx context.Context, urVersion int, preview bool) (
 		report.RescanIntvs = append(report.RescanIntvs, cfg.RescanIntervalS)
 
 		switch cfg.Type {
-		case config.FolderTypeSendOnly:
+		case configv1.FolderTypeSendOnly:
 			report.FolderUses.SendOnly++
-		case config.FolderTypeSendReceive:
+		case configv1.FolderTypeSendReceive:
 			report.FolderUses.SendReceive++
-		case config.FolderTypeReceiveOnly:
+		case configv1.FolderTypeReceiveOnly:
 			report.FolderUses.ReceiveOnly++
 		}
 		if cfg.IgnorePerms {
@@ -170,11 +171,11 @@ func (s *Service) reportData(ctx context.Context, urVersion int, preview bool) (
 			report.DeviceUses.CustomCertName++
 		}
 		switch cfg.Compression {
-		case config.CompressionAlways:
+		case configv1.CompressionAlways:
 			report.DeviceUses.CompressAlways++
-		case config.CompressionMetadata:
+		case configv1.CompressionMetadata:
 			report.DeviceUses.CompressMetadata++
-		case config.CompressionNever:
+		case configv1.CompressionNever:
 			report.DeviceUses.CompressNever++
 		default:
 			l.Warnf("Unhandled versioning type for usage reports: %s", cfg.Compression)
@@ -256,7 +257,7 @@ func (s *Service) reportData(ctx context.Context, urVersion int, preview bool) (
 			report.FolderUsesV3.PullOrder[cfg.Order.String()]++
 			report.FolderUsesV3.FilesystemType[cfg.FilesystemType.String()]++
 			report.FolderUsesV3.FsWatcherDelays = append(report.FolderUsesV3.FsWatcherDelays, int(cfg.FSWatcherDelayS))
-			if cfg.MarkerName != config.DefaultMarkerName {
+			if cfg.MarkerName != configv1.DefaultMarkerName {
 				report.FolderUsesV3.CustomMarkerName++
 			}
 			if cfg.CopyOwnershipFromParent {
@@ -272,7 +273,7 @@ func (s *Service) reportData(ctx context.Context, urVersion int, preview bool) (
 			if cfg.CaseSensitiveFS {
 				report.FolderUsesV3.CaseSensitiveFS++
 			}
-			if cfg.Type == config.FolderTypeReceiveEncrypted {
+			if cfg.Type == configv1.FolderTypeReceiveEncrypted {
 				report.FolderUsesV3.ReceiveEncrypted++
 			}
 			if cfg.SendXattrs {
@@ -414,7 +415,7 @@ func (s *Service) Serve(ctx context.Context) error {
 	}
 }
 
-func (s *Service) CommitConfiguration(from, to config.Configuration) bool {
+func (s *Service) CommitConfiguration(from, to configv1.Configuration) bool {
 	if from.Options.URAccepted != to.Options.URAccepted || from.Options.URUniqueID != to.Options.URUniqueID || from.Options.URURL != to.Options.URURL {
 		select {
 		case s.forceRun <- struct{}{}:

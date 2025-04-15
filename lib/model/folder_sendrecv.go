@@ -19,9 +19,10 @@ import (
 	"strings"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/itererr"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
@@ -39,7 +40,7 @@ var (
 )
 
 func init() {
-	folderFactories[config.FolderTypeSendReceive] = newSendReceiveFolder
+	folderFactories[configv1.FolderTypeSendReceive] = newSendReceiveFolder
 }
 
 // A pullBlockState is passed to the puller routine for each block that needs
@@ -129,7 +130,7 @@ type sendReceiveFolder struct {
 	tempPullErrors map[string]string // pull errors that might be just transient
 }
 
-func newSendReceiveFolder(model *model, ignores *ignore.Matcher, cfg config.FolderConfiguration, ver versioner.Versioner, evLogger events.Logger, ioLimiter *semaphore.Semaphore) service {
+func newSendReceiveFolder(model *model, ignores *ignore.Matcher, cfg configv1.FolderConfiguration, ver versioner.Versioner, evLogger events.Logger, ioLimiter *semaphore.Semaphore) service {
 	f := &sendReceiveFolder{
 		folder:             newFolder(model, ignores, cfg, evLogger, ioLimiter, ver),
 		queue:              newJobQueue(),
@@ -702,7 +703,7 @@ func (f *sendReceiveFolder) checkParent(file string, scanChan chan<- string) boo
 		f.newPullError(file, fmt.Errorf("creating parent dir: %w", err))
 		return false
 	}
-	if f.Type != config.FolderTypeReceiveEncrypted {
+	if f.Type != configv1.FolderTypeReceiveEncrypted {
 		scanChan <- parent
 	}
 	return true
@@ -1107,7 +1108,7 @@ func (f *sendReceiveFolder) handleFile(file protocol.FileInfo, copyChan chan<- c
 	blocks := append([]protocol.BlockInfo{}, file.Blocks...)
 	reused := make([]int, 0, len(file.Blocks))
 
-	if f.Type != config.FolderTypeReceiveEncrypted {
+	if f.Type != configv1.FolderTypeReceiveEncrypted {
 		blocks, reused = f.reuseBlocks(blocks, reused, file, tempName)
 	}
 
@@ -1257,7 +1258,7 @@ func (f *sendReceiveFolder) shortcutFile(file protocol.FileInfo, dbUpdateChan ch
 	}
 
 	// Still need to re-write the trailer with the new encrypted fileinfo.
-	if f.Type == config.FolderTypeReceiveEncrypted {
+	if f.Type == configv1.FolderTypeReceiveEncrypted {
 		err = inWritableDir(func(path string) error {
 			fd, err := f.mtimefs.OpenFile(path, fs.OptReadWrite, 0o666)
 			if err != nil {
@@ -1316,7 +1317,7 @@ func (f *sendReceiveFolder) copierRoutine(in <-chan copyBlocksState, pullChan ch
 			continue
 		}
 
-		if f.Type != config.FolderTypeReceiveEncrypted {
+		if f.Type != configv1.FolderTypeReceiveEncrypted {
 			f.model.progressEmitter.Register(state.sharedPullerState)
 		}
 
@@ -1369,14 +1370,14 @@ func (f *sendReceiveFolder) copierRoutine(in <-chan copyBlocksState, pullChan ch
 						// Hash is not SHA256 as it's an encrypted hash token. In that
 						// case we can't verify the block integrity so we'll take it on
 						// trust. (The other side can and will verify.)
-						if f.Type != config.FolderTypeReceiveEncrypted {
+						if f.Type != configv1.FolderTypeReceiveEncrypted {
 							if err := f.verifyBuffer(buf, block); err != nil {
 								l.Debugln("Finder failed to verify buffer", err)
 								continue
 							}
 						}
 
-						if f.CopyRangeMethod != config.CopyRangeMethodStandard {
+						if f.CopyRangeMethod != configv1.CopyRangeMethodStandard {
 							err = f.withLimiter(func() error {
 								dstFd.mut.Lock()
 								defer dstFd.mut.Unlock()
@@ -1534,7 +1535,7 @@ loop:
 		// encrypted hash token. In that case we can't verify the block
 		// integrity so we'll take it on trust. (The other side can and
 		// will verify.)
-		if f.Type != config.FolderTypeReceiveEncrypted {
+		if f.Type != configv1.FolderTypeReceiveEncrypted {
 			lastError = f.verifyBuffer(buf, state.block)
 		}
 		if lastError != nil {
@@ -1635,7 +1636,7 @@ func (f *sendReceiveFolder) finisherRoutine(in <-chan *sharedPullerState, dbUpda
 				blockStatsMut.Unlock()
 			}
 
-			if f.Type != config.FolderTypeReceiveEncrypted {
+			if f.Type != configv1.FolderTypeReceiveEncrypted {
 				f.model.progressEmitter.Deregister(state)
 			}
 
@@ -1942,7 +1943,7 @@ func (f *sendReceiveFolder) deleteDirOnDiskHandleChildren(dir string, scanChan c
 			scanChan <- path
 			hasToBeScanned = true
 			return nil
-		case ok && f.Type == config.FolderTypeReceiveOnly && cf.IsReceiveOnlyChanged():
+		case ok && f.Type == configv1.FolderTypeReceiveOnly && cf.IsReceiveOnlyChanged():
 			hasReceiveOnlyChanged = true
 			return nil
 		}

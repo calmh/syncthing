@@ -16,7 +16,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 func responseToBArray(response *http.Response) ([]byte, error) {
@@ -95,8 +95,8 @@ func saveToFile(url string, apiClientFactory *apiClientFactory) error {
 	return nil
 }
 
-func getConfig(c APIClient) (config.Configuration, error) {
-	cfg := config.Configuration{}
+func getConfig(c APIClient) (configv1.Configuration, error) {
+	cfg := configv1.Configuration{}
 	response, err := c.Get("system/config")
 	if err != nil {
 		return cfg, err
@@ -107,7 +107,7 @@ func getConfig(c APIClient) (config.Configuration, error) {
 	}
 	err = json.Unmarshal(bytes, &cfg)
 	if err != nil {
-		return config.Configuration{}, err
+		return configv1.Configuration{}, err
 	}
 	return cfg, nil
 }

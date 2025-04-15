@@ -12,7 +12,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -71,7 +72,7 @@ func (d *relayDialer) Priority(_ string) int {
 
 type relayDialerFactory struct{}
 
-func (relayDialerFactory) New(opts config.OptionsConfiguration, tlsCfg *tls.Config, _ *registry.Registry, _ *lanChecker) genericDialer {
+func (relayDialerFactory) New(opts configv1.OptionsConfiguration, tlsCfg *tls.Config, _ *registry.Registry, _ *lanChecker) genericDialer {
 	return &relayDialer{commonDialer{
 		trafficClass:      opts.TrafficClass,
 		reconnectInterval: time.Duration(opts.RelayReconnectIntervalM) * time.Minute,
@@ -85,7 +86,7 @@ func (relayDialerFactory) AlwaysWAN() bool {
 	return true
 }
 
-func (relayDialerFactory) Valid(cfg config.Configuration) error {
+func (relayDialerFactory) Valid(cfg configv1.Configuration) error {
 	if !cfg.Options.RelaysEnabled {
 		return errDisabled
 	}

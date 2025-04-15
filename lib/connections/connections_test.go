@@ -22,7 +22,8 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/nat"
@@ -162,7 +163,7 @@ func TestGetDialer(t *testing.T) {
 		{mustParseURI("bananas!"), false, false, false},            // wat
 	}
 
-	cfg := config.New(protocol.LocalDeviceID)
+	cfg := configv1.New(protocol.LocalDeviceID)
 	cfg.Options.RelaysEnabled = false
 
 	for _, tc := range cases {
@@ -423,12 +424,12 @@ func withConnectionPair(b interface{ Fatal(...interface{}) }, connUri string, h 
 	defer cancel()
 	supervisor.ServeBackground(ctx)
 
-	cfg := config.Configuration{
-		Options: config.OptionsConfiguration{
+	cfg := configv1.Configuration{
+		Options: configv1.OptionsConfiguration{
 			RelaysEnabled: true,
 		},
 	}
-	wcfg := config.Wrap("", cfg, deviceId, events.NoopLogger)
+	wcfg := configv1.Wrap("", cfg, deviceId, events.NoopLogger)
 	uri, err := url.Parse(connUri)
 	if err != nil {
 		b.Fatal(err)

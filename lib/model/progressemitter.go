@@ -11,14 +11,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/sync"
 )
 
 type ProgressEmitter struct {
-	cfg                config.Wrapper
+	cfg                configv1.Wrapper
 	registry           map[string]map[string]*sharedPullerState // folder: name: puller
 	interval           time.Duration
 	minBlocks          int
@@ -44,7 +45,7 @@ func (p progressUpdate) send(ctx context.Context) {
 
 // NewProgressEmitter creates a new progress emitter which emits
 // DownloadProgress events every interval.
-func NewProgressEmitter(cfg config.Wrapper, evLogger events.Logger) *ProgressEmitter {
+func NewProgressEmitter(cfg configv1.Wrapper, evLogger events.Logger) *ProgressEmitter {
 	t := &ProgressEmitter{
 		cfg:                cfg,
 		registry:           make(map[string]map[string]*sharedPullerState),
@@ -56,7 +57,7 @@ func NewProgressEmitter(cfg config.Wrapper, evLogger events.Logger) *ProgressEmi
 		mut:                sync.NewMutex(),
 	}
 
-	t.CommitConfiguration(config.Configuration{}, cfg.RawCopy())
+	t.CommitConfiguration(configv1.Configuration{}, cfg.RawCopy())
 
 	return t
 }
@@ -210,7 +211,7 @@ func (t *ProgressEmitter) computeProgressUpdates() []progressUpdate {
 }
 
 // CommitConfiguration implements the config.Committer interface
-func (t *ProgressEmitter) CommitConfiguration(_, to config.Configuration) bool {
+func (t *ProgressEmitter) CommitConfiguration(_, to configv1.Configuration) bool {
 	t.mut.Lock()
 	defer t.mut.Unlock()
 

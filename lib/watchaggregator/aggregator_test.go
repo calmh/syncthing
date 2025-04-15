@@ -14,8 +14,9 @@ import (
 	"testing"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -41,13 +42,13 @@ const (
 
 var (
 	folderRoot       = filepath.Clean("/home/someuser/syncthing")
-	defaultFolderCfg = config.FolderConfiguration{
-		FilesystemType:  config.FilesystemTypeBasic,
+	defaultFolderCfg = configv1.FolderConfiguration{
+		FilesystemType:  configv1.FilesystemTypeBasic,
 		Path:            folderRoot,
 		FSWatcherDelayS: testNotifyDelayS,
 	}
-	defaultCfg = config.Wrap("", config.Configuration{
-		Folders: []config.FolderConfiguration{defaultFolderCfg},
+	defaultCfg = configv1.Wrap("", configv1.Configuration{
+		Folders: []configv1.FolderConfiguration{defaultFolderCfg},
 	}, protocol.LocalDeviceID, events.NoopLogger)
 )
 

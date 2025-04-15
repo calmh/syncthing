@@ -14,9 +14,10 @@ import (
 	"strings"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/api/auto"
 	"github.com/syncthing/syncthing/lib/assets"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/sync"
 )
 
@@ -115,12 +116,12 @@ func (s *staticsServer) serveAsset(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check for an overridden default asset.
-	if s.serveFromAssetDir(file, config.DefaultTheme, w, r) {
+	if s.serveFromAssetDir(file, configv1.DefaultTheme, w, r) {
 		return
 	}
 
 	// Check for a compiled in default asset.
-	if s.serveFromAssets(file, config.DefaultTheme, modificationTime, w, r) {
+	if s.serveFromAssets(file, configv1.DefaultTheme, modificationTime, w, r) {
 		return
 	}
 

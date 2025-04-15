@@ -36,10 +36,10 @@ import (
 	"github.com/syncthing/syncthing/cmd/syncthing/cli"
 	"github.com/syncthing/syncthing/cmd/syncthing/decrypt"
 	"github.com/syncthing/syncthing/cmd/syncthing/generate"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/internal/db"
 	_ "github.com/syncthing/syncthing/lib/automaxprocs"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
@@ -475,7 +475,7 @@ func (c *serveCmd) syncthingMain() {
 	// environment variable is set.
 
 	if build.IsCandidate && !upgrade.DisabledByCompilation && !c.NoUpgrade {
-		cfgWrapper.Modify(func(cfg *config.Configuration) {
+		cfgWrapper.Modify(func(cfg *configv1.Configuration) {
 			l.Infoln("Automatic upgrade is always enabled for candidate releases.")
 			if cfg.Options.AutoUpgradeIntervalH == 0 || cfg.Options.AutoUpgradeIntervalH > 24 {
 				cfg.Options.AutoUpgradeIntervalH = 12
@@ -614,12 +614,12 @@ func setupSignalHandling(app *syncthing.App) {
 
 // loadOrDefaultConfig creates a temporary, minimal configuration wrapper if no file
 // exists.  As it disregards some command-line options, that should never be persisted.
-func loadOrDefaultConfig() (config.Wrapper, error) {
+func loadOrDefaultConfig() (configv1.Wrapper, error) {
 	cfgFile := locations.Get(locations.ConfigFile)
-	cfg, _, err := config.Load(cfgFile, protocol.EmptyDeviceID, events.NoopLogger)
+	cfg, _, err := configv1.Load(cfgFile, protocol.EmptyDeviceID, events.NoopLogger)
 	if err != nil {
-		newCfg := config.New(protocol.EmptyDeviceID)
-		return config.Wrap(cfgFile, newCfg, protocol.EmptyDeviceID, events.NoopLogger), nil
+		newCfg := configv1.New(protocol.EmptyDeviceID)
+		return configv1.Wrap(cfgFile, newCfg, protocol.EmptyDeviceID, events.NoopLogger), nil
 	}
 
 	return cfg, err
@@ -668,7 +668,7 @@ func (c *serveCmd) autoUpgradePossible() bool {
 	return true
 }
 
-func autoUpgrade(cfg config.Wrapper, app *syncthing.App, evLogger events.Logger) {
+func autoUpgrade(cfg configv1.Wrapper, app *syncthing.App, evLogger events.Logger) {
 	timer := time.NewTimer(upgradeCheckInterval)
 	sub := evLogger.Subscribe(events.DeviceConnected)
 	for {
@@ -793,8 +793,8 @@ func cleanConfigDirectory() {
 	}
 }
 
-func setPauseState(cfgWrapper config.Wrapper, paused bool) {
-	_, err := cfgWrapper.Modify(func(cfg *config.Configuration) {
+func setPauseState(cfgWrapper configv1.Wrapper, paused bool) {
+	_, err := cfgWrapper.Modify(func(cfg *configv1.Configuration) {
 		for i := range cfg.Devices {
 			cfg.Devices[i].Paused = paused
 		}

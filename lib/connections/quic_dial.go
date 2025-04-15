@@ -19,7 +19,8 @@ import (
 
 	"github.com/quic-go/quic-go"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
@@ -43,7 +44,7 @@ type quicDialer struct {
 }
 
 func (d *quicDialer) Dial(ctx context.Context, _ protocol.DeviceID, uri *url.URL) (internalConn, error) {
-	uri = fixupPort(uri, config.DefaultQUICPort)
+	uri = fixupPort(uri, configv1.DefaultQUICPort)
 
 	network := quicNetwork(uri)
 
@@ -97,7 +98,7 @@ func (d *quicDialer) Dial(ctx context.Context, _ protocol.DeviceID, uri *url.URL
 
 type quicDialerFactory struct{}
 
-func (quicDialerFactory) New(opts config.OptionsConfiguration, tlsCfg *tls.Config, registry *registry.Registry, lanChecker *lanChecker) genericDialer {
+func (quicDialerFactory) New(opts configv1.OptionsConfiguration, tlsCfg *tls.Config, registry *registry.Registry, lanChecker *lanChecker) genericDialer {
 	// So the idea is that we should probably try dialing every 20 seconds.
 	// However it would still be nice if this was adjustable/proportional to ReconnectIntervalS
 	// But prevent something silly like 1/3 = 0 etc.
@@ -122,7 +123,7 @@ func (quicDialerFactory) AlwaysWAN() bool {
 	return false
 }
 
-func (quicDialerFactory) Valid(_ config.Configuration) error {
+func (quicDialerFactory) Valid(_ configv1.Configuration) error {
 	// Always valid
 	return nil
 }

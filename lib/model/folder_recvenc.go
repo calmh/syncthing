@@ -10,8 +10,9 @@ import (
 	"fmt"
 	"sort"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/itererr"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/ignore"
@@ -21,14 +22,14 @@ import (
 )
 
 func init() {
-	folderFactories[config.FolderTypeReceiveEncrypted] = newReceiveEncryptedFolder
+	folderFactories[configv1.FolderTypeReceiveEncrypted] = newReceiveEncryptedFolder
 }
 
 type receiveEncryptedFolder struct {
 	*sendReceiveFolder
 }
 
-func newReceiveEncryptedFolder(model *model, ignores *ignore.Matcher, cfg config.FolderConfiguration, ver versioner.Versioner, evLogger events.Logger, ioLimiter *semaphore.Semaphore) service {
+func newReceiveEncryptedFolder(model *model, ignores *ignore.Matcher, cfg configv1.FolderConfiguration, ver versioner.Versioner, evLogger events.Logger, ioLimiter *semaphore.Semaphore) service {
 	f := &receiveEncryptedFolder{newSendReceiveFolder(model, ignores, cfg, ver, evLogger, ioLimiter).(*sendReceiveFolder)}
 	f.localFlags = protocol.FlagLocalReceiveOnly // gets propagated to the scanner, and set on locally changed files
 	return f

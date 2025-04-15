@@ -10,7 +10,7 @@ import (
 	"iter"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/thejerf/suture/v4"
 )
@@ -40,7 +40,7 @@ type DB interface {
 	AllLocalFilesBySequence(folder string, device protocol.DeviceID, startSeq int64, limit int) (iter.Seq[protocol.FileInfo], func() error)
 	AllLocalFilesWithPrefix(folder string, device protocol.DeviceID, prefix string) (iter.Seq[protocol.FileInfo], func() error)
 	AllLocalFilesWithBlocksHash(folder string, h []byte) (iter.Seq[FileMetadata], func() error)
-	AllNeededGlobalFiles(folder string, device protocol.DeviceID, order config.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error)
+	AllNeededGlobalFiles(folder string, device protocol.DeviceID, order configv1.PullOrder, limit, offset int) (iter.Seq[protocol.FileInfo], func() error)
 	AllLocalBlocksWithHash(hash []byte) ([]BlockMapEntry, error)
 	AllLocalFilesWithBlocksHashAnyFolder(hash []byte) (map[string][]FileMetadata, error)
 

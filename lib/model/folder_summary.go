@@ -17,8 +17,9 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/svcutil"
@@ -35,7 +36,7 @@ type FolderSummaryService interface {
 type folderSummaryService struct {
 	*suture.Supervisor
 
-	cfg       config.Wrapper
+	cfg       configv1.Wrapper
 	model     Model
 	id        protocol.DeviceID
 	evLogger  events.Logger
@@ -46,7 +47,7 @@ type folderSummaryService struct {
 	folders    map[string]struct{}
 }
 
-func NewFolderSummaryService(cfg config.Wrapper, m Model, id protocol.DeviceID, evLogger events.Logger) FolderSummaryService {
+func NewFolderSummaryService(cfg configv1.Wrapper, m Model, id protocol.DeviceID, evLogger events.Logger) FolderSummaryService {
 	service := &folderSummaryService{
 		Supervisor: suture.New("folderSummaryService", svcutil.SpecWithDebugLogger(l)),
 		cfg:        cfg,
@@ -164,7 +165,7 @@ func (c *folderSummaryService) Summary(folder string) (*FolderSummary, error) {
 	}
 	res.NeedFiles, res.NeedDirectories, res.NeedSymlinks, res.NeedDeletes, res.NeedBytes, res.NeedTotalItems = need.Files, need.Directories, need.Symlinks, need.Deleted, need.Bytes, need.TotalItems()
 
-	if haveFcfg && (fcfg.Type == config.FolderTypeReceiveOnly || fcfg.Type == config.FolderTypeReceiveEncrypted) {
+	if haveFcfg && (fcfg.Type == configv1.FolderTypeReceiveOnly || fcfg.Type == configv1.FolderTypeReceiveEncrypted) {
 		// Add statistics for things that have changed locally in a receive
 		// only or receive encrypted folder.
 		res.ReceiveOnlyChangedFiles = ro.Files

@@ -1,6 +1,8 @@
 package config
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"io"
 	"sync"
 
@@ -15,17 +17,23 @@ type Manager struct {
 	current *configv2.Configuration
 }
 
-func (m *Manager) Current() *configv2.Configuration {
+func (m *Manager) Current() (*configv2.Configuration, string) {
 	m.mut.Lock()
-	defer m.mut.Unlock()
-	return proto.Clone(m.current).(*configv2.Configuration)
+	cur := proto.Clone(m.current).(*configv2.Configuration)
+	m.mut.Unlock()
+	return cur, etag(cur)
 }
 
-func (m *Manager) Modify(fn func(*configv2.Configuration) error) error {
+func etag(cfg *configv2.Configuration) string {
+	bs, _ := proto.Marshal(cfg)
+	return fmt.Sprintf(`"%x"`, sha256.Sum256(bs))
+}
+
+func (m *Manager) Modify(fn func(cfg *configv2.Configuration, etag string) error) error {
 	m.mut.Lock()
 	defer m.mut.Unlock()
 	tmp := proto.Clone(m.current).(*configv2.Configuration)
-	if err := fn(tmp); err != nil {
+	if err := fn(tmp, etag(tmp)); err != nil {
 		return err
 	}
 	m.current = tmp

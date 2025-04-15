@@ -16,8 +16,8 @@ import (
 	"os"
 	"time"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	_ "github.com/syncthing/syncthing/lib/automaxprocs"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/discover"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -47,7 +47,7 @@ func main() {
 	if server != "" {
 		checkServers(id, server)
 	} else {
-		checkServers(id, config.DefaultDiscoveryServers...)
+		checkServers(id, configv1.DefaultDiscoveryServers...)
 	}
 }
 

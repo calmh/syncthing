@@ -15,7 +15,8 @@ import (
 
 	"github.com/ccding/go-stun/stun"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/svcutil"
 )
 
@@ -49,7 +50,7 @@ type Subscriber interface {
 
 type Service struct {
 	name       string
-	cfg        config.Wrapper
+	cfg        configv1.Wrapper
 	subscriber Subscriber
 	client     *stun.Client
 
@@ -63,7 +64,7 @@ type LastWriter interface {
 	LastWrite() time.Time
 }
 
-func New(cfg config.Wrapper, subscriber Subscriber, conn net.PacketConn, lastWriter LastWriter) *Service {
+func New(cfg configv1.Wrapper, subscriber Subscriber, conn net.PacketConn, lastWriter LastWriter) *Service {
 	// Construct the client to use the stun conn
 	client := stun.NewClientWithConnection(conn)
 	client.SetSoftwareName("") // Explicitly unset this, seems to freak some servers out.

@@ -11,7 +11,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
@@ -63,7 +64,7 @@ func TestMappingClearAddresses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	w := config.Wrap(tmpFile.Name(), config.Configuration{}, protocol.LocalDeviceID, events.NoopLogger)
+	w := configv1.Wrap(tmpFile.Name(), configv1.Configuration{}, protocol.LocalDeviceID, events.NoopLogger)
 	defer os.RemoveAll(tmpFile.Name())
 	tmpFile.Close()
 

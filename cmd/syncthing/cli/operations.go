@@ -13,8 +13,9 @@ import (
 	"path/filepath"
 
 	"github.com/alecthomas/kong"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/fs"
+
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 type folderOverrideCommand struct {
@@ -103,6 +104,6 @@ func (d *defaultIgnoresCommand) Run(ctx Context) error {
 		return err
 	}
 
-	_, err = client.PutJSON("config/defaults/ignores", config.Ignores{Lines: lines})
+	_, err = client.PutJSON("config/defaults/ignores", configv1.Ignores{Lines: lines})
 	return err
 }

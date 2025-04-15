@@ -14,7 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
 	"github.com/syncthing/syncthing/lib/nat"
@@ -33,7 +34,7 @@ type tcpListener struct {
 	onAddressesChangedNotifier
 
 	uri        *url.URL
-	cfg        config.Wrapper
+	cfg        configv1.Wrapper
 	tlsCfg     *tls.Config
 	conns      chan internalConn
 	factory    listenerFactory
@@ -228,9 +229,9 @@ func (*tcpListener) NATType() string {
 
 type tcpListenerFactory struct{}
 
-func (f *tcpListenerFactory) New(uri *url.URL, cfg config.Wrapper, tlsCfg *tls.Config, conns chan internalConn, natService *nat.Service, registry *registry.Registry, lanChecker *lanChecker) genericListener {
+func (f *tcpListenerFactory) New(uri *url.URL, cfg configv1.Wrapper, tlsCfg *tls.Config, conns chan internalConn, natService *nat.Service, registry *registry.Registry, lanChecker *lanChecker) genericListener {
 	l := &tcpListener{
-		uri:        fixupPort(uri, config.DefaultTCPPort),
+		uri:        fixupPort(uri, configv1.DefaultTCPPort),
 		cfg:        cfg,
 		tlsCfg:     tlsCfg,
 		conns:      conns,
@@ -243,7 +244,7 @@ func (f *tcpListenerFactory) New(uri *url.URL, cfg config.Wrapper, tlsCfg *tls.C
 	return l
 }
 
-func (tcpListenerFactory) Valid(_ config.Configuration) error {
+func (tcpListenerFactory) Valid(_ configv1.Configuration) error {
 	// Always valid
 	return nil
 }

@@ -27,11 +27,12 @@ import (
 	"github.com/d4l3k/messagediff"
 	"github.com/thejerf/suture/v4"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/db/sqlite"
 	"github.com/syncthing/syncthing/lib/assets"
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	connmocks "github.com/syncthing/syncthing/lib/connections/mocks"
 	discovermocks "github.com/syncthing/syncthing/lib/discover/mocks"
 	"github.com/syncthing/syncthing/lib/events"
@@ -59,7 +60,7 @@ var (
 
 func init() {
 	dev1, _ = protocol.DeviceIDFromString("AIR6LPZ-7K4PTTV-UXQSMUU-CPQ5YWH-OEDFIIQ-JUG777G-2YQXXR5-YD6AWQR")
-	apiCfg.GUIReturns(config.GUIConfiguration{APIKey: testAPIKey, RawAddress: "127.0.0.1:0"})
+	apiCfg.GUIReturns(configv1.GUIConfiguration{APIKey: testAPIKey, RawAddress: "127.0.0.1:0"})
 }
 
 func TestMain(m *testing.M) {
@@ -76,13 +77,13 @@ func TestMain(m *testing.M) {
 func TestStopAfterBrokenConfig(t *testing.T) {
 	t.Parallel()
 
-	cfg := config.Configuration{
-		GUI: config.GUIConfiguration{
+	cfg := configv1.Configuration{
+		GUI: configv1.GUIConfiguration{
 			RawAddress: "127.0.0.1:0",
 			RawUseTLS:  false,
 		},
 	}
-	w := config.Wrap("/dev/null", cfg, protocol.LocalDeviceID, events.NoopLogger)
+	w := configv1.Wrap("/dev/null", cfg, protocol.LocalDeviceID, events.NoopLogger)
 
 	mdb, err := sqlite.OpenTemp()
 	if err != nil {
@@ -107,8 +108,8 @@ func TestStopAfterBrokenConfig(t *testing.T) {
 	// request a config change to a completely invalid listen address. The
 	// commit will fail and the service will be in a broken state.
 
-	newCfg := config.Configuration{
-		GUI: config.GUIConfiguration{
+	newCfg := configv1.Configuration{
+		GUI: configv1.GUIConfiguration{
 			RawAddress: "totally not a valid address",
 			RawUseTLS:  false,
 		},
@@ -593,7 +594,7 @@ func TestHTTPLogin(t *testing.T) {
 
 	testWith := func(sendBasicAuthPrompt bool, expectedOkStatus int, expectedFailStatus int, path string) {
 		cfg := newMockedConfig()
-		cfg.GUIReturns(config.GUIConfiguration{
+		cfg.GUIReturns(configv1.GUIConfiguration{
 			User:                "üser",
 			Password:            "$2a$10$IdIZTxTg/dCNuNEGlmLynOjqg4B1FvDKuIV5e0BB3pnWVHNb8.GSq", // bcrypt of "räksmörgås" in UTF-8
 			RawAddress:          "127.0.0.1:0",
@@ -757,8 +758,8 @@ func TestHTTPLogin(t *testing.T) {
 		// config changes when running on GitHub Actions
 		shutdownTimeout := time.Second
 
-		initConfig := func(password string, t *testing.T) config.Wrapper {
-			gui := config.GUIConfiguration{
+		initConfig := func(password string, t *testing.T) configv1.Wrapper {
+			gui := configv1.GUIConfiguration{
 				RawAddress: "127.0.0.1:0",
 				APIKey:     testAPIKey,
 				User:       "user",
@@ -766,7 +767,7 @@ func TestHTTPLogin(t *testing.T) {
 			if err := gui.SetPassword(password); err != nil {
 				t.Fatal(err, "Failed to set initial password")
 			}
-			cfg := config.Configuration{
+			cfg := configv1.Configuration{
 				GUI: gui,
 			}
 
@@ -774,7 +775,7 @@ func TestHTTPLogin(t *testing.T) {
 			if err != nil {
 				t.Fatal(err, "Failed to create tmpfile for test")
 			}
-			w := config.Wrap(tmpFile.Name(), cfg, protocol.LocalDeviceID, events.NoopLogger)
+			w := configv1.Wrap(tmpFile.Name(), cfg, protocol.LocalDeviceID, events.NoopLogger)
 			tmpFile.Close()
 			cfgCtx, cfgCancel := context.WithCancel(context.Background())
 			go w.Serve(cfgCtx)
@@ -862,7 +863,7 @@ func TestHtmlFormLogin(t *testing.T) {
 	t.Parallel()
 
 	cfg := newMockedConfig()
-	cfg.GUIReturns(config.GUIConfiguration{
+	cfg.GUIReturns(configv1.GUIConfiguration{
 		User:                "üser",
 		Password:            "$2a$10$IdIZTxTg/dCNuNEGlmLynOjqg4B1FvDKuIV5e0BB3pnWVHNb8.GSq", // bcrypt of "räksmörgås" in UTF-8
 		SendBasicAuthPrompt: false,
@@ -1004,7 +1005,7 @@ func TestApiCache(t *testing.T) {
 	t.Parallel()
 
 	cfg := newMockedConfig()
-	cfg.GUIReturns(config.GUIConfiguration{
+	cfg.GUIReturns(configv1.GUIConfiguration{
 		RawAddress: "127.0.0.1:0",
 		APIKey:     testAPIKey,
 	})
@@ -1033,11 +1034,11 @@ func TestApiCache(t *testing.T) {
 	})
 }
 
-func startHTTP(t *testing.T, cfg config.Wrapper) string {
+func startHTTP(t *testing.T, cfg configv1.Wrapper) string {
 	return startHTTPWithShutdownTimeout(t, cfg, 0)
 }
 
-func startHTTPWithShutdownTimeout(t *testing.T, cfg config.Wrapper, shutdownTimeout time.Duration) string {
+func startHTTPWithShutdownTimeout(t *testing.T, cfg configv1.Wrapper, shutdownTimeout time.Duration) string {
 	m := new(modelmocks.Model)
 	assetDir := "../../gui"
 	eventSub := new(eventmocks.BufferedSubscription)
@@ -1325,7 +1326,7 @@ func TestHostCheck(t *testing.T) {
 	// An API service bound to localhost should reject non-localhost host Headers
 
 	cfg := newMockedConfig()
-	cfg.GUIReturns(config.GUIConfiguration{RawAddress: "127.0.0.1:0"})
+	cfg.GUIReturns(configv1.GUIConfiguration{RawAddress: "127.0.0.1:0"})
 	baseURL := startHTTP(t, cfg)
 
 	// A normal HTTP get to the localhost-bound service should succeed
@@ -1381,7 +1382,7 @@ func TestHostCheck(t *testing.T) {
 	// A server with InsecureSkipHostCheck set behaves differently
 
 	cfg = newMockedConfig()
-	cfg.GUIReturns(config.GUIConfiguration{
+	cfg.GUIReturns(configv1.GUIConfiguration{
 		RawAddress:            "127.0.0.1:0",
 		InsecureSkipHostCheck: true,
 	})
@@ -1404,7 +1405,7 @@ func TestHostCheck(t *testing.T) {
 		// A server bound to a wildcard address also doesn't do the check
 
 		cfg = newMockedConfig()
-		cfg.GUIReturns(config.GUIConfiguration{
+		cfg.GUIReturns(configv1.GUIConfiguration{
 			RawAddress: "0.0.0.0:0",
 		})
 		baseURL = startHTTP(t, cfg)
@@ -1431,7 +1432,7 @@ func TestHostCheck(t *testing.T) {
 	}
 
 	cfg = newMockedConfig()
-	cfg.GUIReturns(config.GUIConfiguration{
+	cfg.GUIReturns(configv1.GUIConfiguration{
 		RawAddress: "[::1]:0",
 	})
 	baseURL = startHTTP(t, cfg)
@@ -1715,8 +1716,8 @@ func TestConfigChanges(t *testing.T) {
 	t.Parallel()
 
 	const testAPIKey = "foobarbaz"
-	cfg := config.Configuration{
-		GUI: config.GUIConfiguration{
+	cfg := configv1.Configuration{
+		GUI: configv1.GUIConfiguration{
 			RawAddress: "127.0.0.1:0",
 			RawUseTLS:  false,
 			APIKey:     testAPIKey,
@@ -1727,7 +1728,7 @@ func TestConfigChanges(t *testing.T) {
 		panic(err)
 	}
 	defer os.Remove(tmpFile.Name())
-	w := config.Wrap(tmpFile.Name(), cfg, protocol.LocalDeviceID, events.NoopLogger)
+	w := configv1.Wrap(tmpFile.Name(), cfg, protocol.LocalDeviceID, events.NoopLogger)
 	tmpFile.Close()
 	cfgCtx, cfgCancel := context.WithCancel(context.Background())
 	go w.Serve(cfgCtx)
@@ -1770,7 +1771,7 @@ func TestConfigChanges(t *testing.T) {
 	dev1Path := "/rest/config/devices/" + dev1.String()
 
 	// Create device
-	mod(http.MethodPut, "/rest/config/devices", []config.DeviceConfiguration{{DeviceID: dev1}})
+	mod(http.MethodPut, "/rest/config/devices", []configv1.DeviceConfiguration{{DeviceID: dev1}})
 
 	// Check its there
 	get(dev1Path).Body.Close()
@@ -1780,7 +1781,7 @@ func TestConfigChanges(t *testing.T) {
 
 	// Check that attribute
 	resp := get(dev1Path)
-	var dev config.DeviceConfiguration
+	var dev configv1.DeviceConfiguration
 	if err := unmarshalTo(resp.Body, &dev); err != nil {
 		t.Fatal(err)
 	}
@@ -1791,8 +1792,8 @@ func TestConfigChanges(t *testing.T) {
 	folder2Path := "/rest/config/folders/folder2"
 
 	// Create a folder and add another
-	mod(http.MethodPut, "/rest/config/folders", []config.FolderConfiguration{{ID: "folder1", Path: "folder1"}})
-	mod(http.MethodPut, folder2Path, config.FolderConfiguration{ID: "folder2", Path: "folder2"})
+	mod(http.MethodPut, "/rest/config/folders", []configv1.FolderConfiguration{{ID: "folder1", Path: "folder1"}})
+	mod(http.MethodPut, folder2Path, configv1.FolderConfiguration{ID: "folder2", Path: "folder2"})
 
 	// Check they are there
 	get("/rest/config/folders/folder1").Body.Close()
@@ -1803,7 +1804,7 @@ func TestConfigChanges(t *testing.T) {
 
 	// Check that attribute
 	resp = get(folder2Path)
-	var folder config.FolderConfiguration
+	var folder configv1.FolderConfiguration
 	if err := unmarshalTo(resp.Body, &folder); err != nil {
 		t.Fatal(err)
 	}
@@ -1822,7 +1823,7 @@ func TestConfigChanges(t *testing.T) {
 
 	mod(http.MethodPatch, "/rest/config/options", map[string]int{"maxSendKbps": 50})
 	resp = get("/rest/config/options")
-	var opts config.OptionsConfiguration
+	var opts configv1.OptionsConfiguration
 	if err := unmarshalTo(resp.Body, &opts); err != nil {
 		t.Fatal(err)
 	}

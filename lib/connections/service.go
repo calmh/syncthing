@@ -31,8 +31,9 @@ import (
 	"github.com/thejerf/suture/v4"
 	"golang.org/x/time/rate"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+
 	"github.com/syncthing/syncthing/lib/build"
-	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/discover"
 	"github.com/syncthing/syncthing/lib/events"
@@ -160,7 +161,7 @@ type service struct {
 	connectionStatusHandler
 	deviceConnectionTracker
 
-	cfg                  config.Wrapper
+	cfg                  configv1.Wrapper
 	myID                 protocol.DeviceID
 	model                Model
 	tlsCfg               *tls.Config
@@ -185,7 +186,7 @@ type service struct {
 	listenerTokens map[string]suture.ServiceToken
 }
 
-func NewService(cfg config.Wrapper, myID protocol.DeviceID, mdl Model, tlsCfg *tls.Config, discoverer discover.Finder, bepProtocolName string, tlsDefaultCommonName string, evLogger events.Logger, registry *registry.Registry, keyGen *protocol.KeyGenerator) Service {
+func NewService(cfg configv1.Wrapper, myID protocol.DeviceID, mdl Model, tlsCfg *tls.Config, discoverer discover.Finder, bepProtocolName string, tlsDefaultCommonName string, evLogger events.Logger, registry *registry.Registry, keyGen *protocol.KeyGenerator) Service {
 	spec := svcutil.SpecWithInfoLogger(l)
 	service := &service{
 		Supervisor:              suture.New("connections.Service", spec),
@@ -530,7 +531,7 @@ func (s *service) connect(ctx context.Context) error {
 	}
 }
 
-func (s *service) bestDialerPriority(cfg config.Configuration) int {
+func (s *service) bestDialerPriority(cfg configv1.Configuration) int {
 	bestDialerPriority := worstDialerPriority
 	for _, df := range dialers {
 		if df.Valid(cfg) != nil {
@@ -544,7 +545,7 @@ func (s *service) bestDialerPriority(cfg config.Configuration) int {
 	return bestDialerPriority
 }
 
-func (s *service) dialDevices(ctx context.Context, now time.Time, cfg config.Configuration, bestDialerPriority int, nextDialAt nextDialRegistry, initial bool) {
+func (s *service) dialDevices(ctx context.Context, now time.Time, cfg configv1.Configuration, bestDialerPriority int, nextDialAt nextDialRegistry, initial bool) {
 	// Figure out current connection limits up front to see if there's any
 	// point in resolving devices and such at all.
 	allowAdditional := 0 // no limit
@@ -654,7 +655,7 @@ func (s *service) dialDevices(ctx context.Context, now time.Time, cfg config.Con
 	}
 }
 
-func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg config.Configuration, deviceCfg config.DeviceConfiguration, nextDialAt nextDialRegistry, initial bool, priorityCutoff int) []dialTarget {
+func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg configv1.Configuration, deviceCfg configv1.DeviceConfiguration, nextDialAt nextDialRegistry, initial bool, priorityCutoff int) []dialTarget {
 	deviceID := deviceCfg.DeviceID
 
 	addrs := s.resolveDeviceAddrs(ctx, deviceCfg)
@@ -730,7 +731,7 @@ func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg con
 	return dialTargets
 }
 
-func (s *service) resolveDeviceAddrs(ctx context.Context, cfg config.DeviceConfiguration) []string {
+func (s *service) resolveDeviceAddrs(ctx context.Context, cfg configv1.DeviceConfiguration) []string {
 	var addrs []string
 	for _, addr := range cfg.Addresses {
 		if addr == "dynamic" {
@@ -747,7 +748,7 @@ func (s *service) resolveDeviceAddrs(ctx context.Context, cfg config.DeviceConfi
 }
 
 type lanChecker struct {
-	cfg config.Wrapper
+	cfg configv1.Wrapper
 }
 
 func (s *lanChecker) isLANHost(host string) bool {
@@ -846,7 +847,7 @@ func (s *service) logListenAddressesChangedEvent(l ListenerAddresses) {
 	})
 }
 
-func (s *service) CommitConfiguration(from, to config.Configuration) bool {
+func (s *service) CommitConfiguration(from, to configv1.Configuration) bool {
 	newDevices := make(map[protocol.DeviceID]bool, len(to.Devices))
 	for _, dev := range to.Devices {
 		newDevices[dev.DeviceID] = true
@@ -922,7 +923,7 @@ func (s *service) CommitConfiguration(from, to config.Configuration) bool {
 	return true
 }
 
-func (s *service) checkAndSignalConnectLoopOnUpdatedDevices(from, to config.Configuration) {
+func (s *service) checkAndSignalConnectLoopOnUpdatedDevices(from, to configv1.Configuration) {
 	oldDevices := from.DeviceMap()
 	dial := false
 	s.dialNowDevicesMut.Lock()
@@ -1051,7 +1052,7 @@ func (s *service) NATType() string {
 	return "unknown"
 }
 
-func getDialerFactory(cfg config.Configuration, uri *url.URL) (dialerFactory, error) {
+func getDialerFactory(cfg configv1.Configuration, uri *url.URL) (dialerFactory, error) {
 	dialerFactory, ok := dialers[uri.Scheme]
 	if !ok {
 		return nil, fmt.Errorf("unknown address scheme %q", uri.Scheme)
@@ -1063,7 +1064,7 @@ func getDialerFactory(cfg config.Configuration, uri *url.URL) (dialerFactory, er
 	return dialerFactory, nil
 }
 
-func getListenerFactory(cfg config.Configuration, uri *url.URL) (listenerFactory, error) {
+func getListenerFactory(cfg configv1.Configuration, uri *url.URL) (listenerFactory, error) {
 	listenerFactory, ok := listeners[uri.Scheme]
 	if !ok {
 		return nil, fmt.Errorf("unknown address scheme %q", uri.Scheme)

@@ -14,7 +14,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/kballard/go-shellquote"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 )
 
 type CLI struct {
@@ -35,7 +35,7 @@ type Context struct {
 
 func (cli CLI) AfterApply(kongCtx *kong.Context) error {
 	clientFactory := &apiClientFactory{
-		cfg: config.GUIConfiguration{
+		cfg: configv1.GUIConfiguration{
 			RawAddress: cli.GUIAddress,
 			APIKey:     cli.GUIAPIKey,
 		},

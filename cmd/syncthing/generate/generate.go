@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/syncthing/syncthing/lib/config"
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/locations"
@@ -73,7 +73,7 @@ func Generate(l logger.Logger, confDir, guiUser, guiPassword string, noDefaultFo
 	l.Infoln("Device ID:", myID)
 
 	cfgFile := locations.Get(locations.ConfigFile)
-	cfg, _, err := config.Load(cfgFile, myID, events.NoopLogger)
+	cfg, _, err := configv1.Load(cfgFile, myID, events.NoopLogger)
 	if fs.IsNotExist(err) {
 		if cfg, err = syncthing.DefaultConfig(cfgFile, myID, events.NoopLogger, noDefaultFolder, skipPortProbing); err != nil {
 			return fmt.Errorf("create config: %w", err)
@@ -87,7 +87,7 @@ func Generate(l logger.Logger, confDir, guiUser, guiPassword string, noDefaultFo
 	defer cancel()
 
 	var updateErr error
-	waiter, err := cfg.Modify(func(cfg *config.Configuration) {
+	waiter, err := cfg.Modify(func(cfg *configv1.Configuration) {
 		updateErr = updateGUIAuthentication(l, &cfg.GUI, guiUser, guiPassword)
 	})
 	if err != nil {
@@ -104,7 +104,7 @@ func Generate(l logger.Logger, confDir, guiUser, guiPassword string, noDefaultFo
 	return nil
 }
 
-func updateGUIAuthentication(l logger.Logger, guiCfg *config.GUIConfiguration, guiUser, guiPassword string) error {
+func updateGUIAuthentication(l logger.Logger, guiCfg *configv1.GUIConfiguration, guiUser, guiPassword string) error {
 	if guiUser != "" && guiCfg.User != guiUser {
 		guiCfg.User = guiUser
 		l.Infoln("Updated GUI authentication user name:", guiUser)
