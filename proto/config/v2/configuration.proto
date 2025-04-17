@@ -38,7 +38,7 @@ message FolderConfiguration {
 
   message Filesystem {
     string path = 1;
-    FilesystemType fs_type = 2;
+    FilesystemType fs_type = 2 [default = FILESYSTEM_TYPE_BASIC];
     bool case_sensitive_fs = 3;
     bool junctions_as_dirs = 4;
   }
@@ -97,6 +97,7 @@ enum FolderType {
 
 enum FilesystemType {
   FILESYSTEM_TYPE_UNSPECIFIED = 0;
+  FILESYSTEM_TYPE_BASIC = 1;
 }
 
 message Size {}

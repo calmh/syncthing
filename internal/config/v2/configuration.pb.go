@@ -66,15 +66,18 @@ type FilesystemType int32
 
 const (
 	FilesystemType_FILESYSTEM_TYPE_UNSPECIFIED FilesystemType = 0
+	FilesystemType_FILESYSTEM_TYPE_BASIC       FilesystemType = 1
 )
 
 // Enum value maps for FilesystemType.
 var (
 	FilesystemType_name = map[int32]string{
 		0: "FILESYSTEM_TYPE_UNSPECIFIED",
+		1: "FILESYSTEM_TYPE_BASIC",
 	}
 	FilesystemType_value = map[string]int32{
 		"FILESYSTEM_TYPE_UNSPECIFIED": 0,
+		"FILESYSTEM_TYPE_BASIC":       1,
 	}
 )
 
@@ -1162,7 +1165,7 @@ func (b0 OptionsConfiguration_NAT_builder) Build() *OptionsConfiguration_NAT {
 type FolderConfiguration_Filesystem struct {
 	state                      protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Path            *string                `protobuf:"bytes,1,opt,name=path"`
-	xxx_hidden_FsType          FilesystemType         `protobuf:"varint,2,opt,name=fs_type,json=fsType,enum=syncthing.config.v2.FilesystemType"`
+	xxx_hidden_FsType          FilesystemType         `protobuf:"varint,2,opt,name=fs_type,json=fsType,enum=syncthing.config.v2.FilesystemType,def=1"`
 	xxx_hidden_CaseSensitiveFs bool                   `protobuf:"varint,3,opt,name=case_sensitive_fs,json=caseSensitiveFs"`
 	xxx_hidden_JunctionsAsDirs bool                   `protobuf:"varint,4,opt,name=junctions_as_dirs,json=junctionsAsDirs"`
 	XXX_raceDetectHookData     protoimpl.RaceDetectHookData
@@ -1170,6 +1173,11 @@ type FolderConfiguration_Filesystem struct {
 	unknownFields              protoimpl.UnknownFields
 	sizeCache                  protoimpl.SizeCache
 }
+
+// Default values for FolderConfiguration_Filesystem fields.
+const (
+	Default_FolderConfiguration_Filesystem_FsType = FilesystemType_FILESYSTEM_TYPE_BASIC
+)
 
 func (x *FolderConfiguration_Filesystem) Reset() {
 	*x = FolderConfiguration_Filesystem{}
@@ -1212,7 +1220,7 @@ func (x *FolderConfiguration_Filesystem) GetFsType() FilesystemType {
 			return x.xxx_hidden_FsType
 		}
 	}
-	return FilesystemType_FILESYSTEM_TYPE_UNSPECIFIED
+	return Default_FolderConfiguration_Filesystem_FsType
 }
 
 func (x *FolderConfiguration_Filesystem) GetCaseSensitiveFs() bool {
@@ -1284,7 +1292,6 @@ func (x *FolderConfiguration_Filesystem) ClearPath() {
 
 func (x *FolderConfiguration_Filesystem) ClearFsType() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_FsType = FilesystemType_FILESYSTEM_TYPE_UNSPECIFIED
 }
 
 func (x *FolderConfiguration_Filesystem) ClearCaseSensitiveFs() {
@@ -2444,7 +2451,7 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12(\n" +
 	"\x10lease_interval_s\x18\x02 \x01(\x05R\x0eleaseIntervalS\x12,\n" +
 	"\x12renewal_interval_s\x18\x03 \x01(\x05R\x10renewalIntervalS\x12,\n" +
-	"\x12timeout_interval_s\x18\x04 \x01(\x05R\x10timeoutIntervalS\"\xc0\x10\n" +
+	"\x12timeout_interval_s\x18\x04 \x01(\x05R\x10timeoutIntervalS\"\xd7\x10\n" +
 	"\x13FolderConfiguration\x12M\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x1f.syncthing.config.v2.FolderType:\x18FOLDER_TYPE_SEND_RECEIVER\x04type\x12\x0e\n" +
 	"\x02id\x18\x02 \x01(\tR\x02id\x12\x14\n" +
@@ -2459,11 +2466,11 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"\asyncing\x18\r \x01(\v20.syncthing.config.v2.FolderConfiguration.SyncingR\asyncing\x12S\n" +
 	"\n" +
 	"versioning\x18\x0e \x01(\v23.syncthing.config.v2.FolderConfiguration.VersioningR\n" +
-	"versioning\x1a\xb6\x01\n" +
+	"versioning\x1a\xcd\x01\n" +
 	"\n" +
 	"Filesystem\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12<\n" +
-	"\afs_type\x18\x02 \x01(\x0e2#.syncthing.config.v2.FilesystemTypeR\x06fsType\x12*\n" +
+	"\x04path\x18\x01 \x01(\tR\x04path\x12S\n" +
+	"\afs_type\x18\x02 \x01(\x0e2#.syncthing.config.v2.FilesystemType:\x15FILESYSTEM_TYPE_BASICR\x06fsType\x12*\n" +
 	"\x11case_sensitive_fs\x18\x03 \x01(\bR\x0fcaseSensitiveFs\x12*\n" +
 	"\x11junctions_as_dirs\x18\x04 \x01(\bR\x0fjunctionsAsDirs\x1a\b\n" +
 	"\x06Device\x1a\xd4\x04\n" +
@@ -2511,9 +2518,10 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"\n" +
 	"FolderType\x12\x1b\n" +
 	"\x17FOLDER_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
-	"\x18FOLDER_TYPE_SEND_RECEIVE\x10\x01*1\n" +
+	"\x18FOLDER_TYPE_SEND_RECEIVE\x10\x01*L\n" +
 	"\x0eFilesystemType\x12\x1f\n" +
-	"\x1bFILESYSTEM_TYPE_UNSPECIFIED\x10\x00*'\n" +
+	"\x1bFILESYSTEM_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
+	"\x15FILESYSTEM_TYPE_BASIC\x10\x01*'\n" +
 	"\tPullOrder\x12\x1a\n" +
 	"\x16PULL_ORDER_UNSPECIFIED\x10\x00*2\n" +
 	"\x0eBlockPullOrder\x12 \n" +

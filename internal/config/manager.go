@@ -17,6 +17,10 @@ type Manager struct {
 	current *configv2.Configuration
 }
 
+func NewManager(cfg *configv2.Configuration) *Manager {
+	return &Manager{current: cfg}
+}
+
 func (m *Manager) Current() (*configv2.Configuration, string) {
 	m.mut.Lock()
 	cur := proto.Clone(m.current).(*configv2.Configuration)
