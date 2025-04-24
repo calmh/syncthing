@@ -66,7 +66,7 @@ func GenerateCertificate(certFile, keyFile string) (tls.Certificate, error) {
 	return tlsutil.NewCertificate(certFile, keyFile, tlsDefaultCommonName, deviceCertLifetimeDays)
 }
 
-func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, noDefaultFolder, skipPortProbing bool) (configv1.Wrapper, error) {
+func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, skipPortProbing bool) (configv1.Wrapper, error) {
 	newCfg := configv1.New(myID)
 
 	if skipPortProbing {
@@ -77,18 +77,6 @@ func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, 
 		return nil, err
 	}
 
-	if noDefaultFolder {
-		l.Infoln("We will skip creation of a default folder on first start")
-		return configv1.Wrap(path, newCfg, myID, evLogger), nil
-	}
-
-	fcfg := newCfg.Defaults.Folder.Copy()
-	fcfg.ID = "default"
-	fcfg.Label = "Default Folder"
-	fcfg.FilesystemType = configv1.FilesystemTypeBasic
-	fcfg.Path = locations.Get(locations.DefFolder)
-	newCfg.Folders = append(newCfg.Folders, fcfg)
-	l.Infoln("Default folder created and/or linked to new config")
 	return configv1.Wrap(path, newCfg, myID, evLogger), nil
 }
 
@@ -96,11 +84,11 @@ func DefaultConfig(path string, myID protocol.DeviceID, evLogger events.Logger, 
 // creates a default one, without the default folder if noDefaultFolder is true.
 // Otherwise it checks the version, and archives and upgrades the config if
 // necessary or returns an error, if the version isn't compatible.
-func LoadConfigAtStartup(path string, cert tls.Certificate, evLogger events.Logger, allowNewerConfig, noDefaultFolder, skipPortProbing bool) (configv1.Wrapper, error) {
+func LoadConfigAtStartup(path string, cert tls.Certificate, evLogger events.Logger, allowNewerConfig, skipPortProbing bool) (configv1.Wrapper, error) {
 	myID := protocol.NewDeviceID(cert.Certificate[0])
 	cfg, originalVersion, err := configv1.Load(path, myID, evLogger)
 	if fs.IsNotExist(err) {
-		cfg, err = DefaultConfig(path, myID, evLogger, noDefaultFolder, skipPortProbing)
+		cfg, err = DefaultConfig(path, myID, evLogger, skipPortProbing)
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate default config: %w", err)
 		}

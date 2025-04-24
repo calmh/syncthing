@@ -19,6 +19,7 @@ import (
 
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	"github.com/syncthing/syncthing/lib/events"
+	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/rand"
 )
 
@@ -28,15 +29,54 @@ const (
 	randomTokenLength  = 64
 )
 
-func emitLoginAttempt(success bool, username, address string, evLogger events.Logger) {
-	evLogger.Log(events.LoginAttempt, map[string]interface{}{
+func emitLoginAttempt(success bool, username string, r *http.Request, evLogger events.Logger) {
+	remoteAddress, proxy := remoteAddress(r)
+	evData := map[string]any{
 		"success":       success,
 		"username":      username,
-		"remoteAddress": address,
-	})
-	if !success {
-		l.Infof("Wrong credentials supplied during API authorization from %s", address)
+		"remoteAddress": remoteAddress,
 	}
+	if proxy != "" {
+		evData["proxy"] = proxy
+	}
+	evLogger.Log(events.LoginAttempt, evData)
+
+	if success {
+		return
+	}
+	if proxy != "" {
+		l.Infof("Wrong credentials supplied during API authorization from %s proxied by %s", remoteAddress, proxy)
+	} else {
+		l.Infof("Wrong credentials supplied during API authorization from %s", remoteAddress)
+	}
+}
+
+func remoteAddress(r *http.Request) (remoteAddr, proxy string) {
+	remoteAddr = r.RemoteAddr
+	remoteIP := osutil.IPFromString(r.RemoteAddr)
+
+	// parse X-Forwarded-For only if the proxy connects via unix socket, localhost or a LAN IP
+	var localProxy bool
+	if remoteIP != nil {
+		remoteAddr = remoteIP.String()
+		localProxy = remoteIP.IsLoopback() || remoteIP.IsPrivate() || remoteIP.IsLinkLocalUnicast()
+	} else if remoteAddr == "@" {
+		localProxy = true
+	}
+
+	if !localProxy {
+		return
+	}
+
+	forwardedAddr, _, _ := strings.Cut(r.Header.Get("X-Forwarded-For"), ",")
+	forwardedAddr = strings.TrimSpace(forwardedAddr)
+	forwardedIP := osutil.IPFromString(forwardedAddr)
+
+	if forwardedIP != nil {
+		proxy = remoteAddr
+		remoteAddr = forwardedIP.String()
+	}
+	return
 }
 
 func antiBruteForceSleep() {
@@ -153,7 +193,7 @@ func (m *basicAuthAndSessionMiddleware) passwordAuthHandler(w http.ResponseWrite
 		return
 	}
 
-	emitLoginAttempt(false, req.Username, r.RemoteAddr, m.evLogger)
+	emitLoginAttempt(false, req.Username, r, m.evLogger)
 	antiBruteForceSleep()
 	forbidden(w)
 }
@@ -176,7 +216,7 @@ func attemptBasicAuth(r *http.Request, guiCfg configv1.GUIConfiguration, ldapCfg
 		return usernameFromIso, true
 	}
 
-	emitLoginAttempt(false, username, r.RemoteAddr, evLogger)
+	emitLoginAttempt(false, username, r, evLogger)
 	antiBruteForceSleep()
 	return "", false
 }
