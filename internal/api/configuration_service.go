@@ -33,6 +33,7 @@ func (s *ConfigurationService) AddDevice(ctx context.Context, req *connect.Reque
 		if err := checkEtag(req, etag); err != nil {
 			return err
 		}
+
 		devs := cfg.GetDevices()
 		for _, dev := range devs {
 			if dev.GetId() == newID {
@@ -44,6 +45,7 @@ func (s *ConfigurationService) AddDevice(ctx context.Context, req *connect.Reque
 			return cmp.Compare(a.GetId(), b.GetId())
 		})
 		cfg.SetDevices(devs)
+
 		return nil
 	})
 	if err != nil {
@@ -58,6 +60,7 @@ func (s *ConfigurationService) RemoveDevice(ctx context.Context, req *connect.Re
 		if err := checkEtag(req, etag); err != nil {
 			return err
 		}
+
 		devs := cfg.GetDevices()
 		idx := slices.IndexFunc(devs, func(i *configv2.DeviceConfiguration) bool { return i.GetId() == devID })
 		if idx < 0 {
@@ -65,6 +68,7 @@ func (s *ConfigurationService) RemoveDevice(ctx context.Context, req *connect.Re
 		}
 		devs = append(devs[:idx], devs[idx+1:]...)
 		cfg.SetDevices(devs)
+
 		return nil
 	})
 	if err != nil {
@@ -79,19 +83,27 @@ func (s *ConfigurationService) UpdateDevice(ctx context.Context, req *connect.Re
 		if err := checkEtag(req, etag); err != nil {
 			return err
 		}
+
 		devs := cfg.GetDevices()
 		idx := slices.IndexFunc(devs, func(i *configv2.DeviceConfiguration) bool { return i.GetId() == devID })
 		if idx < 0 {
 			return connect.NewError(connect.CodeNotFound, fmt.Errorf("device %v does not exist", devID))
 		}
 
-		mask, err := fieldmask.MaskFromProtoFieldMask(req.Msg.GetUpdateMask(), camelCase)
-		if err != nil {
-			return connect.NewError(connect.CodeInvalidArgument, err)
+		if mask := req.Msg.GetUpdateMask(); mask != nil {
+			// Update the device using the given object and field mask
+			mask, err := fieldmask.MaskFromProtoFieldMask(mask, camelCase)
+			if err != nil {
+				return connect.NewError(connect.CodeInvalidArgument, err)
+			}
+			if err := fieldmask.StructToStruct(mask, req.Msg.GetDevice(), devs[idx]); err != nil {
+				return connect.NewError(connect.CodeInvalidArgument, err)
+			}
+		} else {
+			// There is no field mask so the update becomes a full replace
+			devs[idx] = req.Msg.GetDevice()
 		}
-		if err := fieldmask.StructToStruct(mask, req.Msg.GetDevice(), devs[idx]); err != nil {
-			return connect.NewError(connect.CodeInvalidArgument, err)
-		}
+
 		return nil
 	})
 	if err != nil {
