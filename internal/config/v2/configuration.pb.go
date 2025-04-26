@@ -24,8 +24,11 @@ const (
 type FolderType int32
 
 const (
-	FolderType_FOLDER_TYPE_UNSPECIFIED  FolderType = 0
-	FolderType_FOLDER_TYPE_SEND_RECEIVE FolderType = 1
+	FolderType_FOLDER_TYPE_UNSPECIFIED       FolderType = 0
+	FolderType_FOLDER_TYPE_SEND_RECEIVE      FolderType = 1
+	FolderType_FOLDER_TYPE_SEND_ONLY         FolderType = 2
+	FolderType_FOLDER_TYPE_RECEIVE_ONLY      FolderType = 3
+	FolderType_FOLDER_TYPE_RECEIVE_ENCRYPTED FolderType = 4
 )
 
 // Enum value maps for FolderType.
@@ -33,10 +36,16 @@ var (
 	FolderType_name = map[int32]string{
 		0: "FOLDER_TYPE_UNSPECIFIED",
 		1: "FOLDER_TYPE_SEND_RECEIVE",
+		2: "FOLDER_TYPE_SEND_ONLY",
+		3: "FOLDER_TYPE_RECEIVE_ONLY",
+		4: "FOLDER_TYPE_RECEIVE_ENCRYPTED",
 	}
 	FolderType_value = map[string]int32{
-		"FOLDER_TYPE_UNSPECIFIED":  0,
-		"FOLDER_TYPE_SEND_RECEIVE": 1,
+		"FOLDER_TYPE_UNSPECIFIED":       0,
+		"FOLDER_TYPE_SEND_RECEIVE":      1,
+		"FOLDER_TYPE_SEND_ONLY":         2,
+		"FOLDER_TYPE_RECEIVE_ONLY":      3,
+		"FOLDER_TYPE_RECEIVE_ENCRYPTED": 4,
 	}
 )
 
@@ -67,6 +76,7 @@ type FilesystemType int32
 const (
 	FilesystemType_FILESYSTEM_TYPE_UNSPECIFIED FilesystemType = 0
 	FilesystemType_FILESYSTEM_TYPE_BASIC       FilesystemType = 1
+	FilesystemType_FILESYSTEM_TYPE_FAKE        FilesystemType = 2
 )
 
 // Enum value maps for FilesystemType.
@@ -74,10 +84,12 @@ var (
 	FilesystemType_name = map[int32]string{
 		0: "FILESYSTEM_TYPE_UNSPECIFIED",
 		1: "FILESYSTEM_TYPE_BASIC",
+		2: "FILESYSTEM_TYPE_FAKE",
 	}
 	FilesystemType_value = map[string]int32{
 		"FILESYSTEM_TYPE_UNSPECIFIED": 0,
 		"FILESYSTEM_TYPE_BASIC":       1,
+		"FILESYSTEM_TYPE_FAKE":        2,
 	}
 )
 
@@ -108,7 +120,7 @@ type SizeUnit int32
 const (
 	SizeUnit_SIZE_UNIT_UNSPECIFIED SizeUnit = 0
 	SizeUnit_SIZE_UNIT_PERCENT     SizeUnit = 1
-	SizeUnit_SIZE_UNIT_MIB         SizeUnit = 2
+	SizeUnit_SIZE_UNIT_BYTES       SizeUnit = 2
 )
 
 // Enum value maps for SizeUnit.
@@ -116,12 +128,12 @@ var (
 	SizeUnit_name = map[int32]string{
 		0: "SIZE_UNIT_UNSPECIFIED",
 		1: "SIZE_UNIT_PERCENT",
-		2: "SIZE_UNIT_MIB",
+		2: "SIZE_UNIT_BYTES",
 	}
 	SizeUnit_value = map[string]int32{
 		"SIZE_UNIT_UNSPECIFIED": 0,
 		"SIZE_UNIT_PERCENT":     1,
-		"SIZE_UNIT_MIB":         2,
+		"SIZE_UNIT_BYTES":       2,
 	}
 )
 
@@ -4092,18 +4104,22 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"\x04unit\x18\x02 \x01(\x0e2\x1d.syncthing.config.v2.SizeUnitR\x04unit\"\r\n" +
 	"\vXattrFilter\"%\n" +
 	"\x13DeviceConfiguration\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id*G\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id*\xa3\x01\n" +
 	"\n" +
 	"FolderType\x12\x1b\n" +
 	"\x17FOLDER_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
-	"\x18FOLDER_TYPE_SEND_RECEIVE\x10\x01*L\n" +
+	"\x18FOLDER_TYPE_SEND_RECEIVE\x10\x01\x12\x19\n" +
+	"\x15FOLDER_TYPE_SEND_ONLY\x10\x02\x12\x1c\n" +
+	"\x18FOLDER_TYPE_RECEIVE_ONLY\x10\x03\x12!\n" +
+	"\x1dFOLDER_TYPE_RECEIVE_ENCRYPTED\x10\x04*f\n" +
 	"\x0eFilesystemType\x12\x1f\n" +
 	"\x1bFILESYSTEM_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
-	"\x15FILESYSTEM_TYPE_BASIC\x10\x01*O\n" +
+	"\x15FILESYSTEM_TYPE_BASIC\x10\x01\x12\x18\n" +
+	"\x14FILESYSTEM_TYPE_FAKE\x10\x02*Q\n" +
 	"\bSizeUnit\x12\x19\n" +
 	"\x15SIZE_UNIT_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11SIZE_UNIT_PERCENT\x10\x01\x12\x11\n" +
-	"\rSIZE_UNIT_MIB\x10\x02*'\n" +
+	"\x11SIZE_UNIT_PERCENT\x10\x01\x12\x13\n" +
+	"\x0fSIZE_UNIT_BYTES\x10\x02*'\n" +
 	"\tPullOrder\x12\x1a\n" +
 	"\x16PULL_ORDER_UNSPECIFIED\x10\x00*2\n" +
 	"\x0eBlockPullOrder\x12 \n" +

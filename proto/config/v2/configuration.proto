@@ -157,11 +157,15 @@ message FolderConfiguration {
 enum FolderType {
   FOLDER_TYPE_UNSPECIFIED = 0;
   FOLDER_TYPE_SEND_RECEIVE = 1;
+  FOLDER_TYPE_SEND_ONLY = 2;
+  FOLDER_TYPE_RECEIVE_ONLY = 3;
+  FOLDER_TYPE_RECEIVE_ENCRYPTED = 4;
 }
 
 enum FilesystemType {
   FILESYSTEM_TYPE_UNSPECIFIED = 0;
   FILESYSTEM_TYPE_BASIC = 1;
+  FILESYSTEM_TYPE_FAKE = 2;
 }
 
 message Size {
@@ -172,7 +176,7 @@ message Size {
 enum SizeUnit {
   SIZE_UNIT_UNSPECIFIED = 0;
   SIZE_UNIT_PERCENT = 1;
-  SIZE_UNIT_MIB = 2;
+  SIZE_UNIT_BYTES = 2;
 }
 
 enum PullOrder {
