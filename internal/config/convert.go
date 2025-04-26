@@ -7,6 +7,9 @@ import (
 
 func FromV1(v1 *configv1.Configuration) *configv2.Configuration {
 	folders := make([]*configv2.FolderConfiguration, len(v1.Folders))
+	zeroFS := &configv2.FolderConfiguration_Filesystem{}
+	zeroSc := &configv2.FolderConfiguration_Scanning{}
+	zeroW := &configv2.FolderConfiguration_Scanning_Watcher{}
 	for i, fld := range v1.Folders {
 		bld := configv2.FolderConfiguration_builder{
 			Type:   v1FolderType(fld.Type),
@@ -16,24 +19,24 @@ func FromV1(v1 *configv1.Configuration) *configv2.Configuration {
 			Filesystem: configv2.FolderConfiguration_Filesystem_builder{
 				Path:            ptr(fld.Path),
 				FsType:          v1FSType(fld.FilesystemType),
-				CaseSensitiveFs: nondefPtr(fld.CaseSensitiveFS, false),
-				JunctionsAsDirs: nondefPtr(fld.JunctionsAsDirs, false),
+				CaseSensitiveFs: nondefPtr(fld.CaseSensitiveFS, zeroFS.GetCaseSensitiveFs()),
+				JunctionsAsDirs: nondefPtr(fld.JunctionsAsDirs, zeroFS.GetJunctionsAsDirs()),
 				MinDiskFree:     v1Size(fld.MinDiskFree),
 			}.Build(),
 			Scanning: configv2.FolderConfiguration_Scanning_builder{
 				Watcher: configv2.FolderConfiguration_Scanning_Watcher_builder{
-					Enabled:  nondefPtr(fld.FSWatcherEnabled, true),
-					DelayS:   nondefPtr(fld.FSWatcherDelayS, 0),
-					TimeoutS: nondefPtr(fld.FSWatcherTimeoutS, 0),
+					Enabled:  nondefPtr(fld.FSWatcherEnabled, zeroW.GetEnabled()),
+					DelayS:   nondefPtr(fld.FSWatcherDelayS, zeroW.GetDelayS()),
+					TimeoutS: nondefPtr(fld.FSWatcherTimeoutS, zeroW.GetTimeoutS()),
 				}.Build(),
-				AutoNormalize:     nondefPtr(fld.AutoNormalize, true),
-				Ownership:         nondefPtr(fld.SendOwnership, false),
-				Xattrs:            nondefPtr(fld.SendXattrs, false),
-				Hashers:           nondefPtr(int32(fld.Hashers), 0),
-				ModTimeWindowS:    nondefPtr(int32(fld.RawModTimeWindowS), 0),
-				ProgressIntervalS: nondefPtr(int32(fld.ScanProgressIntervalS), 0),
-				RescanIntervalS:   nondefPtr(int32(fld.RescanIntervalS), 0),
-				MarkerName:        nondefPtr(fld.MarkerName, ".stfolder"),
+				AutoNormalize:     nondefPtr(fld.AutoNormalize, zeroSc.GetAutoNormalize()),
+				Ownership:         nondefPtr(fld.SendOwnership, zeroSc.GetOwnership()),
+				Xattrs:            nondefPtr(fld.SendXattrs, zeroSc.GetXattrs()),
+				Hashers:           nondefPtr(int32(fld.Hashers), zeroSc.GetHashers()),
+				ModTimeWindowS:    nondefPtr(int32(fld.RawModTimeWindowS), zeroSc.GetModTimeWindowS()),
+				ProgressIntervalS: nondefPtr(int32(fld.ScanProgressIntervalS), zeroSc.GetProgressIntervalS()),
+				RescanIntervalS:   nondefPtr(int32(fld.RescanIntervalS), zeroSc.GetRescanIntervalS()),
+				MarkerName:        nondefPtr(fld.MarkerName, zeroSc.GetMarkerName()),
 				XattrFilter:       configv2.XattrFilter_builder{}.Build(),
 			}.Build(),
 		}
