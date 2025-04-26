@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -42,4 +43,6 @@ folders:
 	if fld.GetFilesystem().GetFsType() != configv2.FilesystemType_FILESYSTEM_TYPE_BASIC {
 		t.Error("bad filesystem type", fld.GetFilesystem(), fld.GetType())
 	}
+
+	m.WriteYAML(os.Stdout)
 }

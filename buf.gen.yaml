@@ -1,3 +1,6 @@
+# go install github.com/bufbuild/buf/cmd/buf@latest
+# go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+# go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
 version: v2
 managed:
   enabled: true
@@ -17,8 +20,6 @@ plugins:
   - local: protoc-gen-connect-go
     out: .
     opt: module=github.com/syncthing/syncthing
-  # - remote: buf.build/bufbuild/es:v2.2.5
-    # out: gui/default/proto
 inputs:
   - directory: internalproto
   - directory: proto
