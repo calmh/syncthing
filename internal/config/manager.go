@@ -62,7 +62,7 @@ func (m *Manager) ReadYAML(r io.Reader) error {
 func (m *Manager) WriteYAML(w io.Writer) error {
 	m.mut.Lock()
 	defer m.mut.Unlock()
-	bs, err := protoyaml.MarshalOptions{Indent: 2}.Marshal(m.current)
+	bs, err := protoyaml.MarshalOptions{Indent: 2, EmitUnpopulated: true}.Marshal(m.current)
 	if err != nil {
 		return err
 	}

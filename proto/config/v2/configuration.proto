@@ -9,10 +9,19 @@ option features.(pb.go).api_level = API_OPAQUE;
 message Configuration {
   repeated FolderConfiguration folders = 1;
   repeated DeviceConfiguration devices = 2;
+  OptionsConfiguration options = 3;
+}
+
+// URLs is a list of URLs, but when used as a type instead of a raw repeated
+// string field it gives us field presence detection; that is, the ability
+// to explicitly specify an empty list as distinct from an unset/default
+// value.
+message URLs {
+  repeated string urls = 1;
 }
 
 message OptionsConfiguration {
-  repeated string listen_addresses = 1;
+  URLs listen = 1;
   bool start_browser = 2 [default = true];
 
   message Network {
@@ -58,7 +67,7 @@ message OptionsConfiguration {
 
     message Global {
       bool enabled = 1 [default = true];
-      repeated string servers = 2;
+      URLs servers = 2;
     }
     Global global = 2;
   }
@@ -96,6 +105,7 @@ message FolderConfiguration {
     FilesystemType fs_type = 2 [default = FILESYSTEM_TYPE_BASIC];
     bool case_sensitive_fs = 3;
     bool junctions_as_dirs = 4;
+    Size min_disk_free = 13;
   }
   Filesystem filesystem = 10;
 
@@ -111,8 +121,8 @@ message FolderConfiguration {
     Watcher watcher = 1;
 
     bool auto_normalize = 12 [default = true];
-    bool send_ownership = 34;
-    bool send_xattrs = 36;
+    bool ownership = 34;
+    bool xattrs = 36;
     int32 hashers = 3;
     int32 mod_time_window_s = 26;
     int32 progress_interval_s = 19;
@@ -124,7 +134,6 @@ message FolderConfiguration {
 
   message Syncing {
     bool ignore_perms = 11;
-    Size min_disk_free = 13;
     int32 copiers = 15 [default = 2];
     int32 puller_max_pending_kib = 16 [default = 32768];
     PullOrder order = 18;
@@ -136,8 +145,8 @@ message FolderConfiguration {
     bool fsync = 28 [default = true];
     BlockPullOrder block_pull_order = 29;
     CopyRangeMethod copy_range_method = 30;
-    bool sync_ownership = 33;
-    bool sync_xattrs = 35;
+    bool ownership = 33;
+    bool xattrs = 35;
   }
   Syncing syncing = 13;
 
@@ -155,7 +164,16 @@ enum FilesystemType {
   FILESYSTEM_TYPE_BASIC = 1;
 }
 
-message Size {}
+message Size {
+  double value = 1;
+  SizeUnit unit = 2;
+}
+
+enum SizeUnit {
+  SIZE_UNIT_UNSPECIFIED = 0;
+  SIZE_UNIT_PERCENT = 1;
+  SIZE_UNIT_MIB = 2;
+}
 
 enum PullOrder {
   PULL_ORDER_UNSPECIFIED = 0;
