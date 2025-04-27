@@ -14,7 +14,9 @@ import (
 
 	"golang.org/x/time/rate"
 
+	"github.com/syncthing/syncthing/internal/config"
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/sync"
@@ -30,6 +32,8 @@ type limiter struct {
 	limitsLAN           atomic.Bool
 	deviceReadLimiters  map[protocol.DeviceID]*rate.Limiter
 	deviceWriteLimiters map[protocol.DeviceID]*rate.Limiter
+	cfg                 *config.Manager
+	cfgSubToken         config.SubscriptionToken
 }
 
 type waiter interface {
@@ -42,7 +46,7 @@ const (
 	limiterBurstSize = 4 * 128 << 10
 )
 
-func newLimiter(myId protocol.DeviceID, cfg configv1.Wrapper) *limiter {
+func newLimiter(myId protocol.DeviceID, cfg *config.Manager) *limiter {
 	l := &limiter{
 		myID:                myId,
 		write:               rate.NewLimiter(rate.Inf, limiterBurstSize),
@@ -50,13 +54,17 @@ func newLimiter(myId protocol.DeviceID, cfg configv1.Wrapper) *limiter {
 		mu:                  sync.NewMutex(),
 		deviceReadLimiters:  make(map[protocol.DeviceID]*rate.Limiter),
 		deviceWriteLimiters: make(map[protocol.DeviceID]*rate.Limiter),
+		cfg:                 cfg,
 	}
 
-	cfg.Subscribe(l)
-	prev := configv1.Configuration{Options: configv1.OptionsConfiguration{MaxRecvKbps: -1, MaxSendKbps: -1}}
+	l.cfgSubToken = cfg.Subscribe(l.CommitConfiguration)
+	l.CommitConfiguration(nil, cfg.Current())
 
-	l.CommitConfiguration(prev, cfg.RawCopy())
 	return l
+}
+
+func (l *limiter) close() {
+	l.cfg.Unsubscribe(l.cfgSubToken)
 }
 
 // This function sets limiters according to corresponding DeviceConfiguration
@@ -123,7 +131,7 @@ func (lim *limiter) processDevicesConfigurationLocked(from, to configv1.Configur
 	}
 }
 
-func (lim *limiter) CommitConfiguration(from, to configv1.Configuration) bool {
+func (lim *limiter) CommitConfiguration(from, to *configv2.Configuration) {
 	// to ensure atomic update of configuration
 	lim.mu.Lock()
 	defer lim.mu.Unlock()

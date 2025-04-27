@@ -8,23 +8,26 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	configv2 "github.com/syncthing/syncthing/internal/config/v2"
+	"github.com/syncthing/syncthing/internal/timeutil"
 )
 
 type (
-	ChangeFunc func(oldCfg, newCfg *configv2.Configuration)
-	ModifyFunc func(cur *configv2.Configuration) error
+	ChangeFunc        func(oldCfg, newCfg *configv2.Configuration)
+	ModifyFunc        func(cur *configv2.Configuration) error
+	SubscriptionToken int64
 )
 
 type Manager struct {
 	current   *configv2.Configuration
 	tasks     chan (func())
-	listeners []ChangeFunc
+	listeners map[SubscriptionToken]ChangeFunc
 }
 
 func NewManager(cfg *configv2.Configuration) *Manager {
 	return &Manager{
-		current: cfg,
-		tasks:   make(chan func(), 1),
+		current:   cfg,
+		tasks:     make(chan func(), 1),
+		listeners: make(map[SubscriptionToken]ChangeFunc),
 	}
 }
 
@@ -39,9 +42,17 @@ func (m *Manager) Serve(ctx context.Context) error {
 	}
 }
 
-func (m *Manager) Listen(l ChangeFunc) {
+func (m *Manager) Subscribe(l ChangeFunc) SubscriptionToken {
+	token := SubscriptionToken(timeutil.StrictlyMonotonicNanos())
 	m.tasks <- func() {
-		m.listeners = append(m.listeners, l)
+		m.listeners[token] = l
+	}
+	return token
+}
+
+func (m *Manager) Unsubscribe(t SubscriptionToken) {
+	m.tasks <- func() {
+		delete(m.listeners, t)
 	}
 }
 

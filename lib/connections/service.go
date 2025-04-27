@@ -31,7 +31,9 @@ import (
 	"github.com/thejerf/suture/v4"
 	"golang.org/x/time/rate"
 
+	"github.com/syncthing/syncthing/internal/config"
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/connections/registry"
@@ -161,7 +163,7 @@ type service struct {
 	connectionStatusHandler
 	deviceConnectionTracker
 
-	cfg                  configv1.Wrapper
+	cfg                  *config.Manager
 	myID                 protocol.DeviceID
 	model                Model
 	tlsCfg               *tls.Config
@@ -186,7 +188,7 @@ type service struct {
 	listenerTokens map[string]suture.ServiceToken
 }
 
-func NewService(cfg configv1.Wrapper, myID protocol.DeviceID, mdl Model, tlsCfg *tls.Config, discoverer discover.Finder, bepProtocolName string, tlsDefaultCommonName string, evLogger events.Logger, registry *registry.Registry, keyGen *protocol.KeyGenerator) Service {
+func NewService(cfg *config.Manager, myID protocol.DeviceID, mdl Model, tlsCfg *tls.Config, discoverer discover.Finder, bepProtocolName string, tlsDefaultCommonName string, evLogger events.Logger, registry *registry.Registry, keyGen *protocol.KeyGenerator) Service {
 	spec := svcutil.SpecWithInfoLogger(l)
 	service := &service{
 		Supervisor:              suture.New("connections.Service", spec),
@@ -216,13 +218,13 @@ func NewService(cfg configv1.Wrapper, myID protocol.DeviceID, mdl Model, tlsCfg 
 		listeners:      make(map[string]genericListener),
 		listenerTokens: make(map[string]suture.ServiceToken),
 	}
-	cfg.Subscribe(service)
 
-	raw := cfg.RawCopy()
+	tok := cfg.Subscribe(service.CommitConfiguration)
+
 	// Actually starts the listeners and NAT service
 	// Need to start this before service.connect so that any dials that
 	// try punch through already have a listener to cling on.
-	service.CommitConfiguration(raw, raw)
+	service.CommitConfiguration(nil, cfg.Current())
 
 	// There are several moving parts here; one routine per listening address
 	// (handled in configuration changing) to handle incoming connections,
@@ -236,8 +238,8 @@ func NewService(cfg configv1.Wrapper, myID protocol.DeviceID, mdl Model, tlsCfg 
 	service.Add(service.natService)
 
 	svcutil.OnSupervisorDone(service.Supervisor, func() {
-		service.cfg.Unsubscribe(service.limiter)
-		service.cfg.Unsubscribe(service)
+		service.limiter.close()
+		service.cfg.Unsubscribe(tok)
 	})
 
 	return service
@@ -315,13 +317,12 @@ func (s *service) helloForDevice(remoteID protocol.DeviceID) protocol.Hello {
 		ClientVersion: build.Version,
 		Timestamp:     time.Now().UnixNano(),
 	}
-	if cfg, ok := s.cfg.Device(remoteID); ok {
-		hello.NumConnections = cfg.NumConnections()
+	cur := s.cfg.Current()
+	if cfg, ok := cur.GetDevice(remoteID); ok {
+		hello.NumConnections = int(cfg.GetNumConnections())
 		// Set our name (from the config of our device ID) only if we
 		// already know about the other side device ID.
-		if myCfg, ok := s.cfg.Device(s.myID); ok {
-			hello.DeviceName = myCfg.Name
-		}
+		hello.DeviceName = cur.GetOptions().GetGeneral().GetMyName()
 	}
 	return hello
 }
@@ -414,7 +415,7 @@ func (s *service) handleHellos(ctx context.Context) error {
 			continue
 		}
 
-		deviceCfg, ok := s.cfg.Device(remoteID)
+		deviceCfg, ok := s.cfg.Current().GetDevice(remoteID)
 		if !ok {
 			l.Infof("Device %s removed from config during connection attempt at %s", remoteID, c)
 			c.Close()
@@ -424,10 +425,7 @@ func (s *service) handleHellos(ctx context.Context) error {
 		// Verify the name on the certificate. By default we set it to
 		// "syncthing" when generating, but the user may have replaced
 		// the certificate and used another name.
-		certName := deviceCfg.CertName
-		if certName == "" {
-			certName = s.tlsDefaultCommonName
-		}
+		certName := deviceCfg.GetCertificateCommonName()
 		if remoteCert.Subject.CommonName == certName {
 			// All good. We do this check because our old style certificates
 			// have "syncthing" in the CommonName field and no SANs, which
@@ -446,7 +444,7 @@ func (s *service) handleHellos(ctx context.Context) error {
 		// connections are limited.
 		rd, wr := s.limiter.getLimiters(remoteID, c, c.IsLocal())
 
-		protoConn := protocol.NewConnection(remoteID, rd, wr, c, s.model, c, deviceCfg.Compression.ToProtocol(), s.cfg.FolderPasswords(remoteID), s.keyGen)
+		protoConn := protocol.NewConnection(remoteID, rd, wr, c, s.model, c, deviceCfg.GetCompression().ToProtocol(), s.cfg.FolderPasswords(remoteID), s.keyGen)
 		s.accountAddedConnection(protoConn, hello, s.cfg.Options().ConnectionPriorityUpgradeThreshold)
 		go func() {
 			<-protoConn.Closed()
@@ -847,19 +845,19 @@ func (s *service) logListenAddressesChangedEvent(l ListenerAddresses) {
 	})
 }
 
-func (s *service) CommitConfiguration(from, to configv1.Configuration) bool {
-	newDevices := make(map[protocol.DeviceID]bool, len(to.Devices))
-	for _, dev := range to.Devices {
-		newDevices[dev.DeviceID] = true
-		registerDeviceMetrics(dev.DeviceID.String())
+func (s *service) CommitConfiguration(from, to *configv2.Configuration) {
+	newDevices := make(map[string]bool, len(to.GetDevices()))
+	for _, dev := range to.GetDevices() {
+		newDevices[dev.GetDeviceId()] = true
+		registerDeviceMetrics(dev.GetDeviceId())
 	}
 
-	for _, dev := range from.Devices {
-		if !newDevices[dev.DeviceID] {
+	for _, dev := range from.GetDevices() {
+		if !newDevices[dev.GetDeviceId()] {
 			warningLimitersMut.Lock()
-			delete(warningLimiters, dev.DeviceID)
+			delete(warningLimiters, dev.GetDeviceId())
 			warningLimitersMut.Unlock()
-			metricDeviceActiveConnections.DeleteLabelValues(dev.DeviceID.String())
+			metricDeviceActiveConnections.DeleteLabelValues(dev.GetDeviceId())
 		}
 	}
 
@@ -919,22 +917,23 @@ func (s *service) CommitConfiguration(from, to configv1.Configuration) bool {
 		}
 	}
 	s.listenersMut.Unlock()
-
-	return true
 }
 
-func (s *service) checkAndSignalConnectLoopOnUpdatedDevices(from, to configv1.Configuration) {
-	oldDevices := from.DeviceMap()
+func (s *service) checkAndSignalConnectLoopOnUpdatedDevices(from, to *configv2.Configuration) {
+	oldDevices := make(map[string]*configv2.DeviceConfiguration)
+	for _, dev := range from.GetDevices() {
+		oldDevices[dev.GetDeviceId()] = dev
+	}
 	dial := false
 	s.dialNowDevicesMut.Lock()
-	for _, dev := range to.Devices {
-		if dev.Paused {
+	for _, dev := range to.GetDevices() {
+		if !dev.GetEnabled() {
 			continue
 		}
-		if oldDev, ok := oldDevices[dev.DeviceID]; !ok || oldDev.Paused {
-			s.dialNowDevices[dev.DeviceID] = struct{}{}
+		if oldDev, ok := oldDevices[dev.GetDeviceId()]; !ok || !oldDev.GetEnabled() {
+			s.dialNowDevices[dev.GetDeviceId()] = struct{}{}
 			dial = true
-		} else if !slices.Equal(oldDev.Addresses, dev.Addresses) {
+		} else if !slices.Equal(oldDev.GetAddresses().GetUrls(), dev.GetAddresses().GetUrls()) {
 			dial = true
 		}
 	}
@@ -968,7 +967,7 @@ func (s *service) AllAddresses() []string {
 }
 
 func (s *service) ExternalAddresses() []string {
-	if s.cfg.Options().AnnounceLANAddresses {
+	if s.cfg.Current().GetOptions().GetNetwork().GetDiscovery().GetAnnounceLanAddresses() {
 		return s.AllAddresses()
 	}
 	s.listenersMut.RLock()
@@ -1331,14 +1330,14 @@ func (r nextDialRegistry) sleepDurationAndCleanup(now time.Time) time.Duration {
 }
 
 func (s *service) desiredConnectionsToDevice(deviceID protocol.DeviceID) int {
-	cfg, ok := s.cfg.Device(deviceID)
+	cfg, ok := s.cfg.Current().GetDevice(deviceID)
 	if !ok {
 		// We want no connections to an unknown device.
 		return 0
 	}
 
 	otherSide := s.wantConnectionsForDevice(deviceID)
-	thisSide := cfg.NumConnections()
+	thisSide := int(cfg.GetNumConnections())
 	switch {
 	case otherSide <= 0:
 		// The other side doesn't support multiple connections, or we
