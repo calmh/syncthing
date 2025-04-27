@@ -6,25 +6,35 @@ import "google/protobuf/go_features.proto";
 
 option features.(pb.go).api_level = API_OPAQUE;
 
-// URLs is a list of URLs, but when used as a type instead of a raw repeated
-// string field it gives us field presence detection; that is, the ability
-// to explicitly specify an empty list as distinct from an unset/default
-// value.
-message URLs {
-  repeated string urls = 1;
-}
-
 message OptionsConfiguration {
   URLs listen = 1;
   bool start_browser = 2 [default = true];
+  int32 keep_temporaries_s = 3 [default = 86400];
+  bool cache_ignored_files = 4;
+  bool overwrite_remote_names = 5;
+  repeated string unacked_notifications = 6;
+  bool set_low_priority = 7 [default = true];
+  int32 max_folder_concurrency = 8;
 
+  Network network = 9;
   message Network {
+    bool rate_limit_lan_connections = 1;
+    int32 reconnect_interval_s = 2 [default = 60];
+    repeated string always_local_networks = 3;
+    int32 traffic_class = 4;
+    int32 max_concurrent_incoming_request_kib = 5 [default = 262144];
+    int32 progress_update_interval_s = 6 [default = 5];
+    int32 temp_index_min_blocks = 7 [default = 10];
+
+    RateLimits rate_limits = 8;
+
+    ConnectionLimits connection_limits = 9;
     message ConnectionLimits {
       int32 enough = 1;
       int32 max = 2;
     }
-    ConnectionLimits connection_limits = 1;
 
+    ConnectionPriorities connection_priorities = 10;
     message ConnectionPriorities {
       int32 tcp_lan = 1 [default = 10];
       int32 quic_lan = 2 [default = 20];
@@ -33,59 +43,72 @@ message OptionsConfiguration {
       int32 relays = 5 [default = 50];
       int32 upgrade_threshold = 6;
     }
-    ConnectionPriorities connection_priorities = 2;
 
-    RateLimits rate_limits = 3;
-    bool rate_limit_lan_connections = 4;
-  }
-  Network network = 3;
-
-  message NAT {
-    bool enabled = 1 [default = true];
-    int32 lease_interval_s = 2 [default = 3600];
-    int32 renewal_interval_s = 3 [default = 1800];
-    int32 timeout_interval_s = 4 [default = 10];
-  }
-  NAT nat = 4;
-
-  message Discovery {
-    message Local {
+    NAT nat = 11;
+    message NAT {
       bool enabled = 1 [default = true];
-      int32 ipv4_port = 2 [default = 21027];
-      string ipv6_multicast_address = 3 [default = "[ff12::8384]:21027"];
+      int32 lease_interval_s = 2 [default = 3600];
+      int32 renewal_interval_s = 3 [default = 1800];
+      int32 timeout_interval_s = 4 [default = 10];
+      int32 stun_keepalive_start_s = 5 [default = 180];
+      int32 stun_keepalive_min_s = 6 [default = 20];
+      URLs stun_servers = 7;
     }
-    Local local = 1;
 
-    message Global {
+    Discovery discovery = 12;
+    message Discovery {
+      bool announce_lan_addresses = 1;
+
+      Local local = 2;
+      message Local {
+        bool enabled = 1 [default = true];
+        int32 ipv4_port = 2 [default = 21027];
+        string ipv6_multicast_address = 3 [default = "[ff12::8384]:21027"];
+      }
+
+      Global global = 3;
+      message Global {
+        bool enabled = 1 [default = true];
+        URLs servers = 2;
+      }
+    }
+
+    Relays relays = 13;
+    message Relays {
       bool enabled = 1 [default = true];
-      URLs servers = 2;
+      int32 reconnect_interval_s = 2 [default = 600];
     }
-    Global global = 2;
   }
-  Discovery discovery = 5;
 
-  message Relays {
-    bool enabled = 1 [default = true];
-    int32 reconnect_interval_s = 2 [default = 600];
-  }
-  Relays relays = 6;
-
+  UsageReporting usage_reporting = 10;
   message UsageReporting {
     bool enabled = 1 [default = true];
     string unique_id = 2;
+    string url = 3 [default = "https://data.syncthing.net/newdata"];
+    int32 initial_delay_s = 4 [default = 1800];
+    bool tls_insecure = 5;
   }
-  UsageReporting usage_reporting = 7;
 
+  AutoUpgrade auto_upgrade = 11;
   message AutoUpgrade {
     bool enabled = 1 [default = true];
     int32 check_interval_s = 2 [default = 43200];
     bool release_candidates = 3;
     string server_url = 4 [default = "https://upgrades.syncthing.net/meta.json"];
   }
-  AutoUpgrade auto_upgrade = 8;
+
+  Audit audit = 12;
+  message Audit {
+    bool enabled = 1;
+    string file = 2;
+  }
 }
 
 message RateLimits {
   int32 max_send_kbps = 1;
   int32 max_recv_kbps = 2;
+}
+
+message URLs {
+  repeated string urls = 1;
 }
