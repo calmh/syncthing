@@ -1053,7 +1053,7 @@ var File_api_v2_config_service_proto protoreflect.FileDescriptor
 
 const file_api_v2_config_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1bapi/v2/config_service.proto\x12\x10syncthing.api.v2\x1a\x1dconfig/v2/configuration.proto\x1a$config/v2/folder_configuration.proto\x1a google/protobuf/field_mask.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
+	"\x1bapi/v2/config_service.proto\x12\x10syncthing.api.v2\x1a\x1dconfig/v2/configuration.proto\x1a$config/v2/device_configuration.proto\x1a$config/v2/folder_configuration.proto\x1a%config/v2/options_configuration.proto\x1a google/protobuf/field_mask.proto\x1a!google/protobuf/go_features.proto\"\x19\n" +
 	"\x17GetConfigurationRequest\"\x1b\n" +
 	"\x19WatchConfigurationRequest\"V\n" +
 	"\x18GetConfigurationResponse\x12:\n" +

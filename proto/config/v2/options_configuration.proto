@@ -1,0 +1,91 @@
+edition = "2023";
+
+package syncthing.config.v2;
+
+import "google/protobuf/go_features.proto";
+
+option features.(pb.go).api_level = API_OPAQUE;
+
+// URLs is a list of URLs, but when used as a type instead of a raw repeated
+// string field it gives us field presence detection; that is, the ability
+// to explicitly specify an empty list as distinct from an unset/default
+// value.
+message URLs {
+  repeated string urls = 1;
+}
+
+message OptionsConfiguration {
+  URLs listen = 1;
+  bool start_browser = 2 [default = true];
+
+  message Network {
+    message ConnectionLimits {
+      int32 enough = 1;
+      int32 max = 2;
+    }
+    ConnectionLimits connection_limits = 1;
+
+    message ConnectionPriorities {
+      int32 tcp_lan = 1 [default = 10];
+      int32 quic_lan = 2 [default = 20];
+      int32 tcp_wan = 3 [default = 30];
+      int32 quic_wan = 4 [default = 40];
+      int32 relays = 5 [default = 50];
+      int32 upgrade_threshold = 6;
+    }
+    ConnectionPriorities connection_priorities = 2;
+
+    RateLimits rate_limits = 3;
+    bool rate_limit_lan_connections = 4;
+  }
+  Network network = 3;
+
+  message NAT {
+    bool enabled = 1 [default = true];
+    int32 lease_interval_s = 2 [default = 3600];
+    int32 renewal_interval_s = 3 [default = 1800];
+    int32 timeout_interval_s = 4 [default = 10];
+  }
+  NAT nat = 4;
+
+  message Discovery {
+    message Local {
+      bool enabled = 1 [default = true];
+      int32 ipv4_port = 2 [default = 21027];
+      string ipv6_multicast_address = 3 [default = "[ff12::8384]:21027"];
+    }
+    Local local = 1;
+
+    message Global {
+      bool enabled = 1 [default = true];
+      URLs servers = 2;
+    }
+    Global global = 2;
+  }
+  Discovery discovery = 5;
+
+  message Relays {
+    bool enabled = 1 [default = true];
+    int32 reconnect_interval_s = 2 [default = 600];
+  }
+  Relays relays = 6;
+
+  message UsageReporting {
+    bool enabled = 1 [default = true];
+    string unique_id = 2;
+  }
+  UsageReporting usage_reporting = 7;
+
+  message AutoUpgrade {
+    bool enabled = 1 [default = true];
+    int32 check_interval_s = 2 [default = 43200];
+    bool release_candidates = 3;
+    string server_url = 4 [default = "https://upgrades.syncthing.net/meta.json"];
+  }
+  AutoUpgrade auto_upgrade = 8;
+}
+
+message RateLimits {
+  int32 max_send_kbps = 1;
+  int32 max_recv_kbps = 2;
+}

@@ -16,9 +16,7 @@ func FromV1(v1 *configv1.Configuration) *configv2.Configuration {
 
 	devices := make([]*configv2.DeviceConfiguration, len(v1.Devices))
 	for i, dev := range v1.Devices {
-		devices[i] = configv2.DeviceConfiguration_builder{
-			Id: ptr(dev.DeviceID.String()),
-		}.Build()
+		devices[i] = v2Device(dev)
 	}
 
 	return configv2.Configuration_builder{
@@ -219,6 +217,48 @@ func v2VersioningType(v1 string) *configv2.VersioningType {
 		return configv2.VersioningType_VERSIONING_TYPE_STAGGERED.Enum()
 	case "external":
 		return configv2.VersioningType_VERSIONING_TYPE_EXTERNAL.Enum()
+	default:
+		return nil
+	}
+}
+
+func v2Device(v1 configv1.DeviceConfiguration) *configv2.DeviceConfiguration {
+	zd := (*configv2.DeviceConfiguration)(nil)
+	zr := (*configv2.RateLimits)(nil)
+
+	bld := configv2.DeviceConfiguration_builder{
+		DeviceId:                 ptr(v1.DeviceID.String()),
+		Enabled:                  nondefPtr(!v1.Paused, zd.GetEnabled()),
+		Name:                     nondefPtr(v1.Name, zd.GetName()),
+		Compression:              v2Compression(v1.Compression),
+		CertificateCommonName:    nondefPtr(v1.CertName, zd.GetCertificateCommonName(), ""),
+		Introducer:               nondefPtr(v1.Introducer, zd.GetIntroducer()),
+		SkipIntroductionRemovals: nondefPtr(v1.SkipIntroductionRemovals, zd.GetSkipIntroductionRemovals()),
+		IntroducedBy:             nondefPtr(v1.IntroducedBy.String(), zd.GetIntroducedBy()),
+		AutoAcceptFolders:        nondefPtr(v1.AutoAcceptFolders, zd.GetAutoAcceptFolders()),
+		MaxRequestKib:            nondefPtr(int32(v1.MaxRequestKiB), zd.GetMaxRequestKib(), 0),
+		Untrusted:                nondefPtr(v1.Untrusted, zd.GetUntrusted()),
+		RemoteGuiPort:            nondefPtr(int32(v1.RemoteGUIPort), zd.GetRemoteGuiPort()),
+		NumConnections:           nondefPtr(int32(v1.NumConnections()), zd.GetNumConnections(), 0),
+	}
+	if v1.MaxSendKbps != 0 || v1.MaxRecvKbps != 0 {
+		bld.RateLimits = configv2.RateLimits_builder{
+			MaxSendKbps: nondefPtr(int32(v1.MaxSendKbps), zr.GetMaxSendKbps()),
+			MaxRecvKbps: nondefPtr(int32(v1.MaxRecvKbps), zr.GetMaxRecvKbps()),
+		}.Build()
+	}
+
+	return bld.Build()
+}
+
+func v2Compression(v1 configv1.Compression) *configv2.Compression {
+	switch v1 {
+	case configv1.CompressionMetadata:
+		return nil
+	case configv1.CompressionNever:
+		return configv2.Compression_COMPRESSION_NEVER.Enum()
+	case configv1.CompressionAlways:
+		return configv2.Compression_COMPRESSION_ALWAYS.Enum()
 	default:
 		return nil
 	}
