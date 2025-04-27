@@ -22,13 +22,21 @@ const (
 )
 
 type Configuration struct {
-	state              protoimpl.MessageState  `protogen:"opaque.v1"`
-	xxx_hidden_Folders *[]*FolderConfiguration `protobuf:"bytes,1,rep,name=folders"`
-	xxx_hidden_Devices *[]*DeviceConfiguration `protobuf:"bytes,2,rep,name=devices"`
-	xxx_hidden_Options *OptionsConfiguration   `protobuf:"bytes,3,opt,name=options"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state                  protoimpl.MessageState  `protogen:"opaque.v1"`
+	xxx_hidden_Version     int32                   `protobuf:"varint,1,opt,name=version,def=2"`
+	xxx_hidden_Folders     *[]*FolderConfiguration `protobuf:"bytes,3,rep,name=folders"`
+	xxx_hidden_Devices     *[]*DeviceConfiguration `protobuf:"bytes,4,rep,name=devices"`
+	xxx_hidden_Options     *OptionsConfiguration   `protobuf:"bytes,5,opt,name=options"`
+	XXX_raceDetectHookData protoimpl.RaceDetectHookData
+	XXX_presence           [1]uint32
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
+
+// Default values for Configuration fields.
+const (
+	Default_Configuration_Version = int32(2)
+)
 
 func (x *Configuration) Reset() {
 	*x = Configuration{}
@@ -53,6 +61,15 @@ func (x *Configuration) ProtoReflect() protoreflect.Message {
 		return ms
 	}
 	return mi.MessageOf(x)
+}
+
+func (x *Configuration) GetVersion() int32 {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
+			return x.xxx_hidden_Version
+		}
+	}
+	return Default_Configuration_Version
 }
 
 func (x *Configuration) GetFolders() []*FolderConfiguration {
@@ -80,6 +97,11 @@ func (x *Configuration) GetOptions() *OptionsConfiguration {
 	return nil
 }
 
+func (x *Configuration) SetVersion(v int32) {
+	x.xxx_hidden_Version = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 4)
+}
+
 func (x *Configuration) SetFolders(v []*FolderConfiguration) {
 	x.xxx_hidden_Folders = &v
 }
@@ -92,11 +114,22 @@ func (x *Configuration) SetOptions(v *OptionsConfiguration) {
 	x.xxx_hidden_Options = v
 }
 
+func (x *Configuration) HasVersion() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
 func (x *Configuration) HasOptions() bool {
 	if x == nil {
 		return false
 	}
 	return x.xxx_hidden_Options != nil
+}
+
+func (x *Configuration) ClearVersion() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 }
 
 func (x *Configuration) ClearOptions() {
@@ -106,6 +139,7 @@ func (x *Configuration) ClearOptions() {
 type Configuration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Version *int32
 	Folders []*FolderConfiguration
 	Devices []*DeviceConfiguration
 	Options *OptionsConfiguration
@@ -115,6 +149,10 @@ func (b0 Configuration_builder) Build() *Configuration {
 	m0 := &Configuration{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.Version != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 4)
+		x.xxx_hidden_Version = *b.Version
+	}
 	x.xxx_hidden_Folders = &b.Folders
 	x.xxx_hidden_Devices = &b.Devices
 	x.xxx_hidden_Options = b.Options
@@ -125,11 +163,12 @@ var File_config_v2_configuration_proto protoreflect.FileDescriptor
 
 const file_config_v2_configuration_proto_rawDesc = "" +
 	"\n" +
-	"\x1dconfig/v2/configuration.proto\x12\x13syncthing.config.v2\x1a$config/v2/device_configuration.proto\x1a$config/v2/folder_configuration.proto\x1a%config/v2/options_configuration.proto\x1a!google/protobuf/go_features.proto\"\xdc\x01\n" +
-	"\rConfiguration\x12B\n" +
-	"\afolders\x18\x01 \x03(\v2(.syncthing.config.v2.FolderConfigurationR\afolders\x12B\n" +
-	"\adevices\x18\x02 \x03(\v2(.syncthing.config.v2.DeviceConfigurationR\adevices\x12C\n" +
-	"\aoptions\x18\x03 \x01(\v2).syncthing.config.v2.OptionsConfigurationR\aoptionsB\xdf\x01\n" +
+	"\x1dconfig/v2/configuration.proto\x12\x13syncthing.config.v2\x1a$config/v2/device_configuration.proto\x1a$config/v2/folder_configuration.proto\x1a%config/v2/options_configuration.proto\x1a!google/protobuf/go_features.proto\"\xf9\x01\n" +
+	"\rConfiguration\x12\x1b\n" +
+	"\aversion\x18\x01 \x01(\x05:\x012R\aversion\x12B\n" +
+	"\afolders\x18\x03 \x03(\v2(.syncthing.config.v2.FolderConfigurationR\afolders\x12B\n" +
+	"\adevices\x18\x04 \x03(\v2(.syncthing.config.v2.DeviceConfigurationR\adevices\x12C\n" +
+	"\aoptions\x18\x05 \x01(\v2).syncthing.config.v2.OptionsConfigurationR\aoptionsB\xdf\x01\n" +
 	"\x17com.syncthing.config.v2B\x12ConfigurationProtoP\x01Z:github.com/syncthing/syncthing/internal/config/v2;configv2\xa2\x02\x03SCX\xaa\x02\x13Syncthing.Config.V2\xca\x02\x13Syncthing\\Config\\V2\xe2\x02\x1fSyncthing\\Config\\V2\\GPBMetadata\xea\x02\x15Syncthing::Config::V2\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
 var file_config_v2_configuration_proto_msgTypes = make([]protoimpl.MessageInfo, 1)

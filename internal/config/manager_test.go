@@ -65,44 +65,59 @@ folders:
 }
 
 func TestDefaultListenAddresses(t *testing.T) {
+	// A nil/blank listen address object means to use the default. Explicitly
+	// setting an empty object or an empty list of addresses means to keep
+	// it empty.
+
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 
 	m := NewManager(nil)
 	go m.Serve(ctx)
-	if m.current.GetOptions().GetListen() != nil {
+	if m.current.GetOptions().GetNetwork().GetListen() != nil {
 		t.Error("expected nil listen")
+	}
+	if len(m.current.GetOptions().GetNetwork().GetListen().GetURLsDefault("foo")) != 1 {
+		t.Error("expected default value")
 	}
 
 	err := m.ReadYAML(strings.NewReader(`
 options:
-  listen:
-    urls: []
+  network:
+    listen:
+      urls: []
 `))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m.current.GetOptions().GetListen() == nil {
+	if m.current.GetOptions().GetNetwork().GetListen() == nil {
 		t.Error("expected non-nil listen")
 	}
-	if m.current.GetOptions().GetListen().GetUrls() != nil {
+	if m.current.GetOptions().GetNetwork().GetListen().GetUrls() != nil {
 		t.Error("expected nil listen urls")
+	}
+	if len(m.current.GetOptions().GetNetwork().GetListen().GetURLsDefault("foo")) != 0 {
+		t.Error("expected no default value")
 	}
 
 	m = NewManager(nil)
 	go m.Serve(ctx)
 	err = m.ReadYAML(strings.NewReader(`
 options:
-  listen: {}
+  network:
+    listen: {}
 `))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if m.current.GetOptions().GetListen() == nil {
+	if m.current.GetOptions().GetNetwork().GetListen() == nil {
 		t.Error("expected non-nil listen")
 	}
-	if m.current.GetOptions().GetListen().GetUrls() != nil {
+	if m.current.GetOptions().GetNetwork().GetListen().GetUrls() != nil {
 		t.Error("expected nil listen urls")
+	}
+	if len(m.current.GetOptions().GetNetwork().GetListen().GetURLsDefault("foo")) != 0 {
+		t.Error("expected no default value")
 	}
 }
 

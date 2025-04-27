@@ -266,7 +266,7 @@ func v2Compression(v1 configv1.Compression) *configv2.Compression {
 }
 
 func v2Options(v1 configv1.OptionsConfiguration) *configv2.OptionsConfiguration {
-	zo := (*configv2.OptionsConfiguration)(nil)
+	ze := (*configv2.OptionsConfiguration_General)(nil)
 	zn := (*configv2.OptionsConfiguration_Network)(nil)
 	zcp := (*configv2.OptionsConfiguration_Network_ConnectionPriorities)(nil)
 	zna := (*configv2.OptionsConfiguration_Network_NAT)(nil)
@@ -277,14 +277,16 @@ func v2Options(v1 configv1.OptionsConfiguration) *configv2.OptionsConfiguration 
 	zau := (*configv2.OptionsConfiguration_AutoUpgrade)(nil)
 
 	bld := configv2.OptionsConfiguration_builder{
-		// listen
-		StartBrowser:         ptr(v1.StartBrowser, zo.GetStartBrowser()),
-		KeepTemporariesS:     ptr(int32(v1.KeepTemporariesH*3600), zo.GetKeepTemporariesS(), 0),
-		CacheIgnoredFiles:    ptr(v1.CacheIgnoredFiles, zo.GetCacheIgnoredFiles()),
-		OverwriteRemoteNames: ptr(v1.OverwriteRemoteDevNames, zo.GetOverwriteRemoteNames()),
-		UnackedNotifications: v1.UnackedNotificationIDs,
-		SetLowPriority:       ptr(v1.SetLowPriority, zo.GetSetLowPriority()),
-		MaxFolderConcurrency: ptr(int32(v1.MaxFolderConcurrency()), zo.GetMaxFolderConcurrency()),
+		General: configv2.OptionsConfiguration_General_builder{
+			// listen
+			StartBrowser:         ptr(v1.StartBrowser, ze.GetStartBrowser()),
+			KeepTemporariesS:     ptr(int32(v1.KeepTemporariesH*3600), ze.GetKeepTemporariesS(), 0),
+			CacheIgnoredFiles:    ptr(v1.CacheIgnoredFiles, ze.GetCacheIgnoredFiles()),
+			OverwriteRemoteNames: ptr(v1.OverwriteRemoteDevNames, ze.GetOverwriteRemoteNames()),
+			UnackedNotifications: v1.UnackedNotificationIDs,
+			SetLowPriority:       ptr(v1.SetLowPriority, ze.GetSetLowPriority()),
+			MaxFolderConcurrency: ptr(int32(v1.MaxFolderConcurrency()), ze.GetMaxFolderConcurrency()),
+		}.Build(),
 
 		Network: configv2.OptionsConfiguration_Network_builder{
 			RateLimitLanConnections:         ptr(v1.LimitBandwidthInLan, zn.GetRateLimitLanConnections()),

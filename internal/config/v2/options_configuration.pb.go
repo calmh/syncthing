@@ -22,31 +22,15 @@ const (
 )
 
 type OptionsConfiguration struct {
-	state                           protoimpl.MessageState               `protogen:"opaque.v1"`
-	xxx_hidden_Listen               *URLs                                `protobuf:"bytes,1,opt,name=listen"`
-	xxx_hidden_StartBrowser         bool                                 `protobuf:"varint,2,opt,name=start_browser,json=startBrowser,def=1"`
-	xxx_hidden_KeepTemporariesS     int32                                `protobuf:"varint,3,opt,name=keep_temporaries_s,json=keepTemporariesS,def=86400"`
-	xxx_hidden_CacheIgnoredFiles    bool                                 `protobuf:"varint,4,opt,name=cache_ignored_files,json=cacheIgnoredFiles"`
-	xxx_hidden_OverwriteRemoteNames bool                                 `protobuf:"varint,5,opt,name=overwrite_remote_names,json=overwriteRemoteNames"`
-	xxx_hidden_UnackedNotifications []string                             `protobuf:"bytes,6,rep,name=unacked_notifications,json=unackedNotifications"`
-	xxx_hidden_SetLowPriority       bool                                 `protobuf:"varint,7,opt,name=set_low_priority,json=setLowPriority,def=1"`
-	xxx_hidden_MaxFolderConcurrency int32                                `protobuf:"varint,8,opt,name=max_folder_concurrency,json=maxFolderConcurrency"`
-	xxx_hidden_Network              *OptionsConfiguration_Network        `protobuf:"bytes,9,opt,name=network"`
-	xxx_hidden_UsageReporting       *OptionsConfiguration_UsageReporting `protobuf:"bytes,10,opt,name=usage_reporting,json=usageReporting"`
-	xxx_hidden_AutoUpgrade          *OptionsConfiguration_AutoUpgrade    `protobuf:"bytes,11,opt,name=auto_upgrade,json=autoUpgrade"`
-	xxx_hidden_Audit                *OptionsConfiguration_Audit          `protobuf:"bytes,12,opt,name=audit"`
-	XXX_raceDetectHookData          protoimpl.RaceDetectHookData
-	XXX_presence                    [1]uint32
-	unknownFields                   protoimpl.UnknownFields
-	sizeCache                       protoimpl.SizeCache
+	state                     protoimpl.MessageState               `protogen:"opaque.v1"`
+	xxx_hidden_General        *OptionsConfiguration_General        `protobuf:"bytes,1,opt,name=general"`
+	xxx_hidden_Network        *OptionsConfiguration_Network        `protobuf:"bytes,2,opt,name=network"`
+	xxx_hidden_AutoUpgrade    *OptionsConfiguration_AutoUpgrade    `protobuf:"bytes,3,opt,name=auto_upgrade,json=autoUpgrade"`
+	xxx_hidden_UsageReporting *OptionsConfiguration_UsageReporting `protobuf:"bytes,4,opt,name=usage_reporting,json=usageReporting"`
+	xxx_hidden_Audit          *OptionsConfiguration_Audit          `protobuf:"bytes,5,opt,name=audit"`
+	unknownFields             protoimpl.UnknownFields
+	sizeCache                 protoimpl.SizeCache
 }
-
-// Default values for OptionsConfiguration fields.
-const (
-	Default_OptionsConfiguration_StartBrowser     = bool(true)
-	Default_OptionsConfiguration_KeepTemporariesS = int32(86400)
-	Default_OptionsConfiguration_SetLowPriority   = bool(true)
-)
 
 func (x *OptionsConfiguration) Reset() {
 	*x = OptionsConfiguration{}
@@ -73,78 +57,16 @@ func (x *OptionsConfiguration) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *OptionsConfiguration) GetListen() *URLs {
+func (x *OptionsConfiguration) GetGeneral() *OptionsConfiguration_General {
 	if x != nil {
-		return x.xxx_hidden_Listen
+		return x.xxx_hidden_General
 	}
 	return nil
-}
-
-func (x *OptionsConfiguration) GetStartBrowser() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_StartBrowser
-		}
-	}
-	return Default_OptionsConfiguration_StartBrowser
-}
-
-func (x *OptionsConfiguration) GetKeepTemporariesS() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
-			return x.xxx_hidden_KeepTemporariesS
-		}
-	}
-	return Default_OptionsConfiguration_KeepTemporariesS
-}
-
-func (x *OptionsConfiguration) GetCacheIgnoredFiles() bool {
-	if x != nil {
-		return x.xxx_hidden_CacheIgnoredFiles
-	}
-	return false
-}
-
-func (x *OptionsConfiguration) GetOverwriteRemoteNames() bool {
-	if x != nil {
-		return x.xxx_hidden_OverwriteRemoteNames
-	}
-	return false
-}
-
-func (x *OptionsConfiguration) GetUnackedNotifications() []string {
-	if x != nil {
-		return x.xxx_hidden_UnackedNotifications
-	}
-	return nil
-}
-
-func (x *OptionsConfiguration) GetSetLowPriority() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 6) {
-			return x.xxx_hidden_SetLowPriority
-		}
-	}
-	return Default_OptionsConfiguration_SetLowPriority
-}
-
-func (x *OptionsConfiguration) GetMaxFolderConcurrency() int32 {
-	if x != nil {
-		return x.xxx_hidden_MaxFolderConcurrency
-	}
-	return 0
 }
 
 func (x *OptionsConfiguration) GetNetwork() *OptionsConfiguration_Network {
 	if x != nil {
 		return x.xxx_hidden_Network
-	}
-	return nil
-}
-
-func (x *OptionsConfiguration) GetUsageReporting() *OptionsConfiguration_UsageReporting {
-	if x != nil {
-		return x.xxx_hidden_UsageReporting
 	}
 	return nil
 }
@@ -156,6 +78,13 @@ func (x *OptionsConfiguration) GetAutoUpgrade() *OptionsConfiguration_AutoUpgrad
 	return nil
 }
 
+func (x *OptionsConfiguration) GetUsageReporting() *OptionsConfiguration_UsageReporting {
+	if x != nil {
+		return x.xxx_hidden_UsageReporting
+	}
+	return nil
+}
+
 func (x *OptionsConfiguration) GetAudit() *OptionsConfiguration_Audit {
 	if x != nil {
 		return x.xxx_hidden_Audit
@@ -163,107 +92,31 @@ func (x *OptionsConfiguration) GetAudit() *OptionsConfiguration_Audit {
 	return nil
 }
 
-func (x *OptionsConfiguration) SetListen(v *URLs) {
-	x.xxx_hidden_Listen = v
-}
-
-func (x *OptionsConfiguration) SetStartBrowser(v bool) {
-	x.xxx_hidden_StartBrowser = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 12)
-}
-
-func (x *OptionsConfiguration) SetKeepTemporariesS(v int32) {
-	x.xxx_hidden_KeepTemporariesS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 12)
-}
-
-func (x *OptionsConfiguration) SetCacheIgnoredFiles(v bool) {
-	x.xxx_hidden_CacheIgnoredFiles = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 12)
-}
-
-func (x *OptionsConfiguration) SetOverwriteRemoteNames(v bool) {
-	x.xxx_hidden_OverwriteRemoteNames = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 12)
-}
-
-func (x *OptionsConfiguration) SetUnackedNotifications(v []string) {
-	x.xxx_hidden_UnackedNotifications = v
-}
-
-func (x *OptionsConfiguration) SetSetLowPriority(v bool) {
-	x.xxx_hidden_SetLowPriority = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 12)
-}
-
-func (x *OptionsConfiguration) SetMaxFolderConcurrency(v int32) {
-	x.xxx_hidden_MaxFolderConcurrency = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 7, 12)
+func (x *OptionsConfiguration) SetGeneral(v *OptionsConfiguration_General) {
+	x.xxx_hidden_General = v
 }
 
 func (x *OptionsConfiguration) SetNetwork(v *OptionsConfiguration_Network) {
 	x.xxx_hidden_Network = v
 }
 
-func (x *OptionsConfiguration) SetUsageReporting(v *OptionsConfiguration_UsageReporting) {
-	x.xxx_hidden_UsageReporting = v
-}
-
 func (x *OptionsConfiguration) SetAutoUpgrade(v *OptionsConfiguration_AutoUpgrade) {
 	x.xxx_hidden_AutoUpgrade = v
+}
+
+func (x *OptionsConfiguration) SetUsageReporting(v *OptionsConfiguration_UsageReporting) {
+	x.xxx_hidden_UsageReporting = v
 }
 
 func (x *OptionsConfiguration) SetAudit(v *OptionsConfiguration_Audit) {
 	x.xxx_hidden_Audit = v
 }
 
-func (x *OptionsConfiguration) HasListen() bool {
+func (x *OptionsConfiguration) HasGeneral() bool {
 	if x == nil {
 		return false
 	}
-	return x.xxx_hidden_Listen != nil
-}
-
-func (x *OptionsConfiguration) HasStartBrowser() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *OptionsConfiguration) HasKeepTemporariesS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *OptionsConfiguration) HasCacheIgnoredFiles() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
-}
-
-func (x *OptionsConfiguration) HasOverwriteRemoteNames() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
-}
-
-func (x *OptionsConfiguration) HasSetLowPriority() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 6)
-}
-
-func (x *OptionsConfiguration) HasMaxFolderConcurrency() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 7)
+	return x.xxx_hidden_General != nil
 }
 
 func (x *OptionsConfiguration) HasNetwork() bool {
@@ -273,18 +126,18 @@ func (x *OptionsConfiguration) HasNetwork() bool {
 	return x.xxx_hidden_Network != nil
 }
 
-func (x *OptionsConfiguration) HasUsageReporting() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_UsageReporting != nil
-}
-
 func (x *OptionsConfiguration) HasAutoUpgrade() bool {
 	if x == nil {
 		return false
 	}
 	return x.xxx_hidden_AutoUpgrade != nil
+}
+
+func (x *OptionsConfiguration) HasUsageReporting() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_UsageReporting != nil
 }
 
 func (x *OptionsConfiguration) HasAudit() bool {
@@ -294,47 +147,20 @@ func (x *OptionsConfiguration) HasAudit() bool {
 	return x.xxx_hidden_Audit != nil
 }
 
-func (x *OptionsConfiguration) ClearListen() {
-	x.xxx_hidden_Listen = nil
-}
-
-func (x *OptionsConfiguration) ClearStartBrowser() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-}
-
-func (x *OptionsConfiguration) ClearKeepTemporariesS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-}
-
-func (x *OptionsConfiguration) ClearCacheIgnoredFiles() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-	x.xxx_hidden_CacheIgnoredFiles = false
-}
-
-func (x *OptionsConfiguration) ClearOverwriteRemoteNames() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
-	x.xxx_hidden_OverwriteRemoteNames = false
-}
-
-func (x *OptionsConfiguration) ClearSetLowPriority() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 6)
-}
-
-func (x *OptionsConfiguration) ClearMaxFolderConcurrency() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 7)
-	x.xxx_hidden_MaxFolderConcurrency = 0
+func (x *OptionsConfiguration) ClearGeneral() {
+	x.xxx_hidden_General = nil
 }
 
 func (x *OptionsConfiguration) ClearNetwork() {
 	x.xxx_hidden_Network = nil
 }
 
-func (x *OptionsConfiguration) ClearUsageReporting() {
-	x.xxx_hidden_UsageReporting = nil
-}
-
 func (x *OptionsConfiguration) ClearAutoUpgrade() {
 	x.xxx_hidden_AutoUpgrade = nil
+}
+
+func (x *OptionsConfiguration) ClearUsageReporting() {
+	x.xxx_hidden_UsageReporting = nil
 }
 
 func (x *OptionsConfiguration) ClearAudit() {
@@ -344,53 +170,21 @@ func (x *OptionsConfiguration) ClearAudit() {
 type OptionsConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Listen               *URLs
-	StartBrowser         *bool
-	KeepTemporariesS     *int32
-	CacheIgnoredFiles    *bool
-	OverwriteRemoteNames *bool
-	UnackedNotifications []string
-	SetLowPriority       *bool
-	MaxFolderConcurrency *int32
-	Network              *OptionsConfiguration_Network
-	UsageReporting       *OptionsConfiguration_UsageReporting
-	AutoUpgrade          *OptionsConfiguration_AutoUpgrade
-	Audit                *OptionsConfiguration_Audit
+	General        *OptionsConfiguration_General
+	Network        *OptionsConfiguration_Network
+	AutoUpgrade    *OptionsConfiguration_AutoUpgrade
+	UsageReporting *OptionsConfiguration_UsageReporting
+	Audit          *OptionsConfiguration_Audit
 }
 
 func (b0 OptionsConfiguration_builder) Build() *OptionsConfiguration {
 	m0 := &OptionsConfiguration{}
 	b, x := &b0, m0
 	_, _ = b, x
-	x.xxx_hidden_Listen = b.Listen
-	if b.StartBrowser != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 12)
-		x.xxx_hidden_StartBrowser = *b.StartBrowser
-	}
-	if b.KeepTemporariesS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 12)
-		x.xxx_hidden_KeepTemporariesS = *b.KeepTemporariesS
-	}
-	if b.CacheIgnoredFiles != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 12)
-		x.xxx_hidden_CacheIgnoredFiles = *b.CacheIgnoredFiles
-	}
-	if b.OverwriteRemoteNames != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 12)
-		x.xxx_hidden_OverwriteRemoteNames = *b.OverwriteRemoteNames
-	}
-	x.xxx_hidden_UnackedNotifications = b.UnackedNotifications
-	if b.SetLowPriority != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 12)
-		x.xxx_hidden_SetLowPriority = *b.SetLowPriority
-	}
-	if b.MaxFolderConcurrency != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 7, 12)
-		x.xxx_hidden_MaxFolderConcurrency = *b.MaxFolderConcurrency
-	}
+	x.xxx_hidden_General = b.General
 	x.xxx_hidden_Network = b.Network
-	x.xxx_hidden_UsageReporting = b.UsageReporting
 	x.xxx_hidden_AutoUpgrade = b.AutoUpgrade
+	x.xxx_hidden_UsageReporting = b.UsageReporting
 	x.xxx_hidden_Audit = b.Audit
 	return m0
 }
@@ -557,21 +351,304 @@ func (b0 URLs_builder) Build() *URLs {
 	return m0
 }
 
+type OptionsConfiguration_General struct {
+	state                           protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_MyName               *string                `protobuf:"bytes,1,opt,name=my_name,json=myName"`
+	xxx_hidden_StartBrowser         bool                   `protobuf:"varint,2,opt,name=start_browser,json=startBrowser,def=1"`
+	xxx_hidden_KeepTemporariesS     int32                  `protobuf:"varint,3,opt,name=keep_temporaries_s,json=keepTemporariesS,def=86400"`
+	xxx_hidden_CacheIgnoredFiles    bool                   `protobuf:"varint,4,opt,name=cache_ignored_files,json=cacheIgnoredFiles"`
+	xxx_hidden_OverwriteRemoteNames bool                   `protobuf:"varint,5,opt,name=overwrite_remote_names,json=overwriteRemoteNames"`
+	xxx_hidden_UnackedNotifications []string               `protobuf:"bytes,6,rep,name=unacked_notifications,json=unackedNotifications"`
+	xxx_hidden_SetLowPriority       bool                   `protobuf:"varint,7,opt,name=set_low_priority,json=setLowPriority,def=1"`
+	xxx_hidden_MaxFolderConcurrency int32                  `protobuf:"varint,8,opt,name=max_folder_concurrency,json=maxFolderConcurrency"`
+	XXX_raceDetectHookData          protoimpl.RaceDetectHookData
+	XXX_presence                    [1]uint32
+	unknownFields                   protoimpl.UnknownFields
+	sizeCache                       protoimpl.SizeCache
+}
+
+// Default values for OptionsConfiguration_General fields.
+const (
+	Default_OptionsConfiguration_General_StartBrowser     = bool(true)
+	Default_OptionsConfiguration_General_KeepTemporariesS = int32(86400)
+	Default_OptionsConfiguration_General_SetLowPriority   = bool(true)
+)
+
+func (x *OptionsConfiguration_General) Reset() {
+	*x = OptionsConfiguration_General{}
+	mi := &file_config_v2_options_configuration_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OptionsConfiguration_General) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OptionsConfiguration_General) ProtoMessage() {}
+
+func (x *OptionsConfiguration_General) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v2_options_configuration_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *OptionsConfiguration_General) GetMyName() string {
+	if x != nil {
+		if x.xxx_hidden_MyName != nil {
+			return *x.xxx_hidden_MyName
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *OptionsConfiguration_General) GetStartBrowser() bool {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
+			return x.xxx_hidden_StartBrowser
+		}
+	}
+	return Default_OptionsConfiguration_General_StartBrowser
+}
+
+func (x *OptionsConfiguration_General) GetKeepTemporariesS() int32 {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
+			return x.xxx_hidden_KeepTemporariesS
+		}
+	}
+	return Default_OptionsConfiguration_General_KeepTemporariesS
+}
+
+func (x *OptionsConfiguration_General) GetCacheIgnoredFiles() bool {
+	if x != nil {
+		return x.xxx_hidden_CacheIgnoredFiles
+	}
+	return false
+}
+
+func (x *OptionsConfiguration_General) GetOverwriteRemoteNames() bool {
+	if x != nil {
+		return x.xxx_hidden_OverwriteRemoteNames
+	}
+	return false
+}
+
+func (x *OptionsConfiguration_General) GetUnackedNotifications() []string {
+	if x != nil {
+		return x.xxx_hidden_UnackedNotifications
+	}
+	return nil
+}
+
+func (x *OptionsConfiguration_General) GetSetLowPriority() bool {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 6) {
+			return x.xxx_hidden_SetLowPriority
+		}
+	}
+	return Default_OptionsConfiguration_General_SetLowPriority
+}
+
+func (x *OptionsConfiguration_General) GetMaxFolderConcurrency() int32 {
+	if x != nil {
+		return x.xxx_hidden_MaxFolderConcurrency
+	}
+	return 0
+}
+
+func (x *OptionsConfiguration_General) SetMyName(v string) {
+	x.xxx_hidden_MyName = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 8)
+}
+
+func (x *OptionsConfiguration_General) SetStartBrowser(v bool) {
+	x.xxx_hidden_StartBrowser = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 8)
+}
+
+func (x *OptionsConfiguration_General) SetKeepTemporariesS(v int32) {
+	x.xxx_hidden_KeepTemporariesS = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 8)
+}
+
+func (x *OptionsConfiguration_General) SetCacheIgnoredFiles(v bool) {
+	x.xxx_hidden_CacheIgnoredFiles = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 8)
+}
+
+func (x *OptionsConfiguration_General) SetOverwriteRemoteNames(v bool) {
+	x.xxx_hidden_OverwriteRemoteNames = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 8)
+}
+
+func (x *OptionsConfiguration_General) SetUnackedNotifications(v []string) {
+	x.xxx_hidden_UnackedNotifications = v
+}
+
+func (x *OptionsConfiguration_General) SetSetLowPriority(v bool) {
+	x.xxx_hidden_SetLowPriority = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 8)
+}
+
+func (x *OptionsConfiguration_General) SetMaxFolderConcurrency(v int32) {
+	x.xxx_hidden_MaxFolderConcurrency = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 7, 8)
+}
+
+func (x *OptionsConfiguration_General) HasMyName() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *OptionsConfiguration_General) HasStartBrowser() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *OptionsConfiguration_General) HasKeepTemporariesS() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
+}
+
+func (x *OptionsConfiguration_General) HasCacheIgnoredFiles() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
+}
+
+func (x *OptionsConfiguration_General) HasOverwriteRemoteNames() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
+}
+
+func (x *OptionsConfiguration_General) HasSetLowPriority() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 6)
+}
+
+func (x *OptionsConfiguration_General) HasMaxFolderConcurrency() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 7)
+}
+
+func (x *OptionsConfiguration_General) ClearMyName() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_MyName = nil
+}
+
+func (x *OptionsConfiguration_General) ClearStartBrowser() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+}
+
+func (x *OptionsConfiguration_General) ClearKeepTemporariesS() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+}
+
+func (x *OptionsConfiguration_General) ClearCacheIgnoredFiles() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
+	x.xxx_hidden_CacheIgnoredFiles = false
+}
+
+func (x *OptionsConfiguration_General) ClearOverwriteRemoteNames() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
+	x.xxx_hidden_OverwriteRemoteNames = false
+}
+
+func (x *OptionsConfiguration_General) ClearSetLowPriority() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 6)
+}
+
+func (x *OptionsConfiguration_General) ClearMaxFolderConcurrency() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 7)
+	x.xxx_hidden_MaxFolderConcurrency = 0
+}
+
+type OptionsConfiguration_General_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	MyName               *string
+	StartBrowser         *bool
+	KeepTemporariesS     *int32
+	CacheIgnoredFiles    *bool
+	OverwriteRemoteNames *bool
+	UnackedNotifications []string
+	SetLowPriority       *bool
+	MaxFolderConcurrency *int32
+}
+
+func (b0 OptionsConfiguration_General_builder) Build() *OptionsConfiguration_General {
+	m0 := &OptionsConfiguration_General{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.MyName != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 8)
+		x.xxx_hidden_MyName = b.MyName
+	}
+	if b.StartBrowser != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 8)
+		x.xxx_hidden_StartBrowser = *b.StartBrowser
+	}
+	if b.KeepTemporariesS != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 8)
+		x.xxx_hidden_KeepTemporariesS = *b.KeepTemporariesS
+	}
+	if b.CacheIgnoredFiles != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 8)
+		x.xxx_hidden_CacheIgnoredFiles = *b.CacheIgnoredFiles
+	}
+	if b.OverwriteRemoteNames != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 8)
+		x.xxx_hidden_OverwriteRemoteNames = *b.OverwriteRemoteNames
+	}
+	x.xxx_hidden_UnackedNotifications = b.UnackedNotifications
+	if b.SetLowPriority != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 8)
+		x.xxx_hidden_SetLowPriority = *b.SetLowPriority
+	}
+	if b.MaxFolderConcurrency != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 7, 8)
+		x.xxx_hidden_MaxFolderConcurrency = *b.MaxFolderConcurrency
+	}
+	return m0
+}
+
 type OptionsConfiguration_Network struct {
 	state                                      protoimpl.MessageState                             `protogen:"opaque.v1"`
-	xxx_hidden_RateLimitLanConnections         bool                                               `protobuf:"varint,1,opt,name=rate_limit_lan_connections,json=rateLimitLanConnections"`
-	xxx_hidden_ReconnectIntervalS              int32                                              `protobuf:"varint,2,opt,name=reconnect_interval_s,json=reconnectIntervalS,def=60"`
-	xxx_hidden_AlwaysLocalNetworks             []string                                           `protobuf:"bytes,3,rep,name=always_local_networks,json=alwaysLocalNetworks"`
-	xxx_hidden_TrafficClass                    int32                                              `protobuf:"varint,4,opt,name=traffic_class,json=trafficClass"`
-	xxx_hidden_MaxConcurrentIncomingRequestKib int32                                              `protobuf:"varint,5,opt,name=max_concurrent_incoming_request_kib,json=maxConcurrentIncomingRequestKib,def=262144"`
-	xxx_hidden_ProgressUpdateIntervalS         int32                                              `protobuf:"varint,6,opt,name=progress_update_interval_s,json=progressUpdateIntervalS,def=5"`
-	xxx_hidden_TempIndexMinBlocks              int32                                              `protobuf:"varint,7,opt,name=temp_index_min_blocks,json=tempIndexMinBlocks,def=10"`
-	xxx_hidden_RateLimits                      *RateLimits                                        `protobuf:"bytes,8,opt,name=rate_limits,json=rateLimits"`
-	xxx_hidden_ConnectionLimits                *OptionsConfiguration_Network_ConnectionLimits     `protobuf:"bytes,9,opt,name=connection_limits,json=connectionLimits"`
-	xxx_hidden_ConnectionPriorities            *OptionsConfiguration_Network_ConnectionPriorities `protobuf:"bytes,10,opt,name=connection_priorities,json=connectionPriorities"`
-	xxx_hidden_Nat                             *OptionsConfiguration_Network_NAT                  `protobuf:"bytes,11,opt,name=nat"`
-	xxx_hidden_Discovery                       *OptionsConfiguration_Network_Discovery            `protobuf:"bytes,12,opt,name=discovery"`
-	xxx_hidden_Relays                          *OptionsConfiguration_Network_Relays               `protobuf:"bytes,13,opt,name=relays"`
+	xxx_hidden_Listen                          *URLs                                              `protobuf:"bytes,1,opt,name=listen"`
+	xxx_hidden_RateLimitLanConnections         bool                                               `protobuf:"varint,2,opt,name=rate_limit_lan_connections,json=rateLimitLanConnections"`
+	xxx_hidden_ReconnectIntervalS              int32                                              `protobuf:"varint,3,opt,name=reconnect_interval_s,json=reconnectIntervalS,def=60"`
+	xxx_hidden_AlwaysLocalNetworks             []string                                           `protobuf:"bytes,4,rep,name=always_local_networks,json=alwaysLocalNetworks"`
+	xxx_hidden_TrafficClass                    int32                                              `protobuf:"varint,5,opt,name=traffic_class,json=trafficClass"`
+	xxx_hidden_MaxConcurrentIncomingRequestKib int32                                              `protobuf:"varint,6,opt,name=max_concurrent_incoming_request_kib,json=maxConcurrentIncomingRequestKib,def=262144"`
+	xxx_hidden_ProgressUpdateIntervalS         int32                                              `protobuf:"varint,7,opt,name=progress_update_interval_s,json=progressUpdateIntervalS,def=5"`
+	xxx_hidden_TempIndexMinBlocks              int32                                              `protobuf:"varint,8,opt,name=temp_index_min_blocks,json=tempIndexMinBlocks,def=10"`
+	xxx_hidden_RateLimits                      *RateLimits                                        `protobuf:"bytes,9,opt,name=rate_limits,json=rateLimits"`
+	xxx_hidden_ConnectionLimits                *OptionsConfiguration_Network_ConnectionLimits     `protobuf:"bytes,10,opt,name=connection_limits,json=connectionLimits"`
+	xxx_hidden_ConnectionPriorities            *OptionsConfiguration_Network_ConnectionPriorities `protobuf:"bytes,11,opt,name=connection_priorities,json=connectionPriorities"`
+	xxx_hidden_Nat                             *OptionsConfiguration_Network_NAT                  `protobuf:"bytes,12,opt,name=nat"`
+	xxx_hidden_Discovery                       *OptionsConfiguration_Network_Discovery            `protobuf:"bytes,13,opt,name=discovery"`
+	xxx_hidden_Relays                          *OptionsConfiguration_Network_Relays               `protobuf:"bytes,14,opt,name=relays"`
 	XXX_raceDetectHookData                     protoimpl.RaceDetectHookData
 	XXX_presence                               [1]uint32
 	unknownFields                              protoimpl.UnknownFields
@@ -588,7 +665,7 @@ const (
 
 func (x *OptionsConfiguration_Network) Reset() {
 	*x = OptionsConfiguration_Network{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[3]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -600,7 +677,7 @@ func (x *OptionsConfiguration_Network) String() string {
 func (*OptionsConfiguration_Network) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[3]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -609,6 +686,13 @@ func (x *OptionsConfiguration_Network) ProtoReflect() protoreflect.Message {
 		return ms
 	}
 	return mi.MessageOf(x)
+}
+
+func (x *OptionsConfiguration_Network) GetListen() *URLs {
+	if x != nil {
+		return x.xxx_hidden_Listen
+	}
+	return nil
 }
 
 func (x *OptionsConfiguration_Network) GetRateLimitLanConnections() bool {
@@ -620,7 +704,7 @@ func (x *OptionsConfiguration_Network) GetRateLimitLanConnections() bool {
 
 func (x *OptionsConfiguration_Network) GetReconnectIntervalS() int32 {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
 			return x.xxx_hidden_ReconnectIntervalS
 		}
 	}
@@ -643,7 +727,7 @@ func (x *OptionsConfiguration_Network) GetTrafficClass() int32 {
 
 func (x *OptionsConfiguration_Network) GetMaxConcurrentIncomingRequestKib() int32 {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 4) {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 5) {
 			return x.xxx_hidden_MaxConcurrentIncomingRequestKib
 		}
 	}
@@ -652,7 +736,7 @@ func (x *OptionsConfiguration_Network) GetMaxConcurrentIncomingRequestKib() int3
 
 func (x *OptionsConfiguration_Network) GetProgressUpdateIntervalS() int32 {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 5) {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 6) {
 			return x.xxx_hidden_ProgressUpdateIntervalS
 		}
 	}
@@ -661,7 +745,7 @@ func (x *OptionsConfiguration_Network) GetProgressUpdateIntervalS() int32 {
 
 func (x *OptionsConfiguration_Network) GetTempIndexMinBlocks() int32 {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 6) {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 7) {
 			return x.xxx_hidden_TempIndexMinBlocks
 		}
 	}
@@ -710,14 +794,18 @@ func (x *OptionsConfiguration_Network) GetRelays() *OptionsConfiguration_Network
 	return nil
 }
 
+func (x *OptionsConfiguration_Network) SetListen(v *URLs) {
+	x.xxx_hidden_Listen = v
+}
+
 func (x *OptionsConfiguration_Network) SetRateLimitLanConnections(v bool) {
 	x.xxx_hidden_RateLimitLanConnections = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 13)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 14)
 }
 
 func (x *OptionsConfiguration_Network) SetReconnectIntervalS(v int32) {
 	x.xxx_hidden_ReconnectIntervalS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 13)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 14)
 }
 
 func (x *OptionsConfiguration_Network) SetAlwaysLocalNetworks(v []string) {
@@ -726,22 +814,22 @@ func (x *OptionsConfiguration_Network) SetAlwaysLocalNetworks(v []string) {
 
 func (x *OptionsConfiguration_Network) SetTrafficClass(v int32) {
 	x.xxx_hidden_TrafficClass = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 13)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 14)
 }
 
 func (x *OptionsConfiguration_Network) SetMaxConcurrentIncomingRequestKib(v int32) {
 	x.xxx_hidden_MaxConcurrentIncomingRequestKib = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 13)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 5, 14)
 }
 
 func (x *OptionsConfiguration_Network) SetProgressUpdateIntervalS(v int32) {
 	x.xxx_hidden_ProgressUpdateIntervalS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 5, 13)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 14)
 }
 
 func (x *OptionsConfiguration_Network) SetTempIndexMinBlocks(v int32) {
 	x.xxx_hidden_TempIndexMinBlocks = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 13)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 7, 14)
 }
 
 func (x *OptionsConfiguration_Network) SetRateLimits(v *RateLimits) {
@@ -768,46 +856,53 @@ func (x *OptionsConfiguration_Network) SetRelays(v *OptionsConfiguration_Network
 	x.xxx_hidden_Relays = v
 }
 
-func (x *OptionsConfiguration_Network) HasRateLimitLanConnections() bool {
+func (x *OptionsConfiguration_Network) HasListen() bool {
 	if x == nil {
 		return false
 	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+	return x.xxx_hidden_Listen != nil
 }
 
-func (x *OptionsConfiguration_Network) HasReconnectIntervalS() bool {
+func (x *OptionsConfiguration_Network) HasRateLimitLanConnections() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
 }
 
-func (x *OptionsConfiguration_Network) HasTrafficClass() bool {
+func (x *OptionsConfiguration_Network) HasReconnectIntervalS() bool {
 	if x == nil {
 		return false
 	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
 }
 
-func (x *OptionsConfiguration_Network) HasMaxConcurrentIncomingRequestKib() bool {
+func (x *OptionsConfiguration_Network) HasTrafficClass() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
 }
 
-func (x *OptionsConfiguration_Network) HasProgressUpdateIntervalS() bool {
+func (x *OptionsConfiguration_Network) HasMaxConcurrentIncomingRequestKib() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 5)
 }
 
-func (x *OptionsConfiguration_Network) HasTempIndexMinBlocks() bool {
+func (x *OptionsConfiguration_Network) HasProgressUpdateIntervalS() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 6)
+}
+
+func (x *OptionsConfiguration_Network) HasTempIndexMinBlocks() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 7)
 }
 
 func (x *OptionsConfiguration_Network) HasRateLimits() bool {
@@ -852,30 +947,34 @@ func (x *OptionsConfiguration_Network) HasRelays() bool {
 	return x.xxx_hidden_Relays != nil
 }
 
+func (x *OptionsConfiguration_Network) ClearListen() {
+	x.xxx_hidden_Listen = nil
+}
+
 func (x *OptionsConfiguration_Network) ClearRateLimitLanConnections() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
 	x.xxx_hidden_RateLimitLanConnections = false
 }
 
 func (x *OptionsConfiguration_Network) ClearReconnectIntervalS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
 }
 
 func (x *OptionsConfiguration_Network) ClearTrafficClass() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
 	x.xxx_hidden_TrafficClass = 0
 }
 
 func (x *OptionsConfiguration_Network) ClearMaxConcurrentIncomingRequestKib() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
-}
-
-func (x *OptionsConfiguration_Network) ClearProgressUpdateIntervalS() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 5)
 }
 
-func (x *OptionsConfiguration_Network) ClearTempIndexMinBlocks() {
+func (x *OptionsConfiguration_Network) ClearProgressUpdateIntervalS() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 6)
+}
+
+func (x *OptionsConfiguration_Network) ClearTempIndexMinBlocks() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 7)
 }
 
 func (x *OptionsConfiguration_Network) ClearRateLimits() {
@@ -905,6 +1004,7 @@ func (x *OptionsConfiguration_Network) ClearRelays() {
 type OptionsConfiguration_Network_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	Listen                          *URLs
 	RateLimitLanConnections         *bool
 	ReconnectIntervalS              *int32
 	AlwaysLocalNetworks             []string
@@ -924,29 +1024,30 @@ func (b0 OptionsConfiguration_Network_builder) Build() *OptionsConfiguration_Net
 	m0 := &OptionsConfiguration_Network{}
 	b, x := &b0, m0
 	_, _ = b, x
+	x.xxx_hidden_Listen = b.Listen
 	if b.RateLimitLanConnections != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 13)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 14)
 		x.xxx_hidden_RateLimitLanConnections = *b.RateLimitLanConnections
 	}
 	if b.ReconnectIntervalS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 13)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 14)
 		x.xxx_hidden_ReconnectIntervalS = *b.ReconnectIntervalS
 	}
 	x.xxx_hidden_AlwaysLocalNetworks = b.AlwaysLocalNetworks
 	if b.TrafficClass != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 13)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 14)
 		x.xxx_hidden_TrafficClass = *b.TrafficClass
 	}
 	if b.MaxConcurrentIncomingRequestKib != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 13)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 5, 14)
 		x.xxx_hidden_MaxConcurrentIncomingRequestKib = *b.MaxConcurrentIncomingRequestKib
 	}
 	if b.ProgressUpdateIntervalS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 5, 13)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 14)
 		x.xxx_hidden_ProgressUpdateIntervalS = *b.ProgressUpdateIntervalS
 	}
 	if b.TempIndexMinBlocks != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 13)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 7, 14)
 		x.xxx_hidden_TempIndexMinBlocks = *b.TempIndexMinBlocks
 	}
 	x.xxx_hidden_RateLimits = b.RateLimits
@@ -955,217 +1056,6 @@ func (b0 OptionsConfiguration_Network_builder) Build() *OptionsConfiguration_Net
 	x.xxx_hidden_Nat = b.Nat
 	x.xxx_hidden_Discovery = b.Discovery
 	x.xxx_hidden_Relays = b.Relays
-	return m0
-}
-
-type OptionsConfiguration_UsageReporting struct {
-	state                    protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,def=1"`
-	xxx_hidden_UniqueId      *string                `protobuf:"bytes,2,opt,name=unique_id,json=uniqueId"`
-	xxx_hidden_Url           *string                `protobuf:"bytes,3,opt,name=url,def=https://data.syncthing.net/newdata"`
-	xxx_hidden_InitialDelayS int32                  `protobuf:"varint,4,opt,name=initial_delay_s,json=initialDelayS,def=1800"`
-	xxx_hidden_TlsInsecure   bool                   `protobuf:"varint,5,opt,name=tls_insecure,json=tlsInsecure"`
-	XXX_raceDetectHookData   protoimpl.RaceDetectHookData
-	XXX_presence             [1]uint32
-	unknownFields            protoimpl.UnknownFields
-	sizeCache                protoimpl.SizeCache
-}
-
-// Default values for OptionsConfiguration_UsageReporting fields.
-const (
-	Default_OptionsConfiguration_UsageReporting_Enabled       = bool(true)
-	Default_OptionsConfiguration_UsageReporting_Url           = string("https://data.syncthing.net/newdata")
-	Default_OptionsConfiguration_UsageReporting_InitialDelayS = int32(1800)
-)
-
-func (x *OptionsConfiguration_UsageReporting) Reset() {
-	*x = OptionsConfiguration_UsageReporting{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *OptionsConfiguration_UsageReporting) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*OptionsConfiguration_UsageReporting) ProtoMessage() {}
-
-func (x *OptionsConfiguration_UsageReporting) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *OptionsConfiguration_UsageReporting) GetEnabled() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
-			return x.xxx_hidden_Enabled
-		}
-	}
-	return Default_OptionsConfiguration_UsageReporting_Enabled
-}
-
-func (x *OptionsConfiguration_UsageReporting) GetUniqueId() string {
-	if x != nil {
-		if x.xxx_hidden_UniqueId != nil {
-			return *x.xxx_hidden_UniqueId
-		}
-		return ""
-	}
-	return ""
-}
-
-func (x *OptionsConfiguration_UsageReporting) GetUrl() string {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
-			if x.xxx_hidden_Url != nil {
-				return *x.xxx_hidden_Url
-			}
-			return Default_OptionsConfiguration_UsageReporting_Url
-		}
-	}
-	return Default_OptionsConfiguration_UsageReporting_Url
-}
-
-func (x *OptionsConfiguration_UsageReporting) GetInitialDelayS() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 3) {
-			return x.xxx_hidden_InitialDelayS
-		}
-	}
-	return Default_OptionsConfiguration_UsageReporting_InitialDelayS
-}
-
-func (x *OptionsConfiguration_UsageReporting) GetTlsInsecure() bool {
-	if x != nil {
-		return x.xxx_hidden_TlsInsecure
-	}
-	return false
-}
-
-func (x *OptionsConfiguration_UsageReporting) SetEnabled(v bool) {
-	x.xxx_hidden_Enabled = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
-}
-
-func (x *OptionsConfiguration_UsageReporting) SetUniqueId(v string) {
-	x.xxx_hidden_UniqueId = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
-}
-
-func (x *OptionsConfiguration_UsageReporting) SetUrl(v string) {
-	x.xxx_hidden_Url = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
-}
-
-func (x *OptionsConfiguration_UsageReporting) SetInitialDelayS(v int32) {
-	x.xxx_hidden_InitialDelayS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 5)
-}
-
-func (x *OptionsConfiguration_UsageReporting) SetTlsInsecure(v bool) {
-	x.xxx_hidden_TlsInsecure = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 5)
-}
-
-func (x *OptionsConfiguration_UsageReporting) HasEnabled() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
-}
-
-func (x *OptionsConfiguration_UsageReporting) HasUniqueId() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *OptionsConfiguration_UsageReporting) HasUrl() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *OptionsConfiguration_UsageReporting) HasInitialDelayS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
-}
-
-func (x *OptionsConfiguration_UsageReporting) HasTlsInsecure() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
-}
-
-func (x *OptionsConfiguration_UsageReporting) ClearEnabled() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-}
-
-func (x *OptionsConfiguration_UsageReporting) ClearUniqueId() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_UniqueId = nil
-}
-
-func (x *OptionsConfiguration_UsageReporting) ClearUrl() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-}
-
-func (x *OptionsConfiguration_UsageReporting) ClearInitialDelayS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-}
-
-func (x *OptionsConfiguration_UsageReporting) ClearTlsInsecure() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
-	x.xxx_hidden_TlsInsecure = false
-}
-
-type OptionsConfiguration_UsageReporting_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Enabled       *bool
-	UniqueId      *string
-	Url           *string
-	InitialDelayS *int32
-	TlsInsecure   *bool
-}
-
-func (b0 OptionsConfiguration_UsageReporting_builder) Build() *OptionsConfiguration_UsageReporting {
-	m0 := &OptionsConfiguration_UsageReporting{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.Enabled != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 5)
-		x.xxx_hidden_Enabled = *b.Enabled
-	}
-	if b.UniqueId != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
-		x.xxx_hidden_UniqueId = b.UniqueId
-	}
-	if b.Url != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
-		x.xxx_hidden_Url = b.Url
-	}
-	if b.InitialDelayS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 5)
-		x.xxx_hidden_InitialDelayS = *b.InitialDelayS
-	}
-	if b.TlsInsecure != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 5)
-		x.xxx_hidden_TlsInsecure = *b.TlsInsecure
-	}
 	return m0
 }
 
@@ -1347,6 +1237,217 @@ func (b0 OptionsConfiguration_AutoUpgrade_builder) Build() *OptionsConfiguration
 	return m0
 }
 
+type OptionsConfiguration_UsageReporting struct {
+	state                    protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_Enabled       bool                   `protobuf:"varint,1,opt,name=enabled,def=1"`
+	xxx_hidden_UniqueId      *string                `protobuf:"bytes,2,opt,name=unique_id,json=uniqueId"`
+	xxx_hidden_Url           *string                `protobuf:"bytes,3,opt,name=url,def=https://data.syncthing.net/newdata"`
+	xxx_hidden_InitialDelayS int32                  `protobuf:"varint,4,opt,name=initial_delay_s,json=initialDelayS,def=1800"`
+	xxx_hidden_TlsInsecure   bool                   `protobuf:"varint,5,opt,name=tls_insecure,json=tlsInsecure"`
+	XXX_raceDetectHookData   protoimpl.RaceDetectHookData
+	XXX_presence             [1]uint32
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+// Default values for OptionsConfiguration_UsageReporting fields.
+const (
+	Default_OptionsConfiguration_UsageReporting_Enabled       = bool(true)
+	Default_OptionsConfiguration_UsageReporting_Url           = string("https://data.syncthing.net/newdata")
+	Default_OptionsConfiguration_UsageReporting_InitialDelayS = int32(1800)
+)
+
+func (x *OptionsConfiguration_UsageReporting) Reset() {
+	*x = OptionsConfiguration_UsageReporting{}
+	mi := &file_config_v2_options_configuration_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OptionsConfiguration_UsageReporting) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OptionsConfiguration_UsageReporting) ProtoMessage() {}
+
+func (x *OptionsConfiguration_UsageReporting) ProtoReflect() protoreflect.Message {
+	mi := &file_config_v2_options_configuration_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+func (x *OptionsConfiguration_UsageReporting) GetEnabled() bool {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
+			return x.xxx_hidden_Enabled
+		}
+	}
+	return Default_OptionsConfiguration_UsageReporting_Enabled
+}
+
+func (x *OptionsConfiguration_UsageReporting) GetUniqueId() string {
+	if x != nil {
+		if x.xxx_hidden_UniqueId != nil {
+			return *x.xxx_hidden_UniqueId
+		}
+		return ""
+	}
+	return ""
+}
+
+func (x *OptionsConfiguration_UsageReporting) GetUrl() string {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
+			if x.xxx_hidden_Url != nil {
+				return *x.xxx_hidden_Url
+			}
+			return Default_OptionsConfiguration_UsageReporting_Url
+		}
+	}
+	return Default_OptionsConfiguration_UsageReporting_Url
+}
+
+func (x *OptionsConfiguration_UsageReporting) GetInitialDelayS() int32 {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 3) {
+			return x.xxx_hidden_InitialDelayS
+		}
+	}
+	return Default_OptionsConfiguration_UsageReporting_InitialDelayS
+}
+
+func (x *OptionsConfiguration_UsageReporting) GetTlsInsecure() bool {
+	if x != nil {
+		return x.xxx_hidden_TlsInsecure
+	}
+	return false
+}
+
+func (x *OptionsConfiguration_UsageReporting) SetEnabled(v bool) {
+	x.xxx_hidden_Enabled = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
+}
+
+func (x *OptionsConfiguration_UsageReporting) SetUniqueId(v string) {
+	x.xxx_hidden_UniqueId = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
+}
+
+func (x *OptionsConfiguration_UsageReporting) SetUrl(v string) {
+	x.xxx_hidden_Url = &v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
+}
+
+func (x *OptionsConfiguration_UsageReporting) SetInitialDelayS(v int32) {
+	x.xxx_hidden_InitialDelayS = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 5)
+}
+
+func (x *OptionsConfiguration_UsageReporting) SetTlsInsecure(v bool) {
+	x.xxx_hidden_TlsInsecure = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 5)
+}
+
+func (x *OptionsConfiguration_UsageReporting) HasEnabled() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *OptionsConfiguration_UsageReporting) HasUniqueId() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *OptionsConfiguration_UsageReporting) HasUrl() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
+}
+
+func (x *OptionsConfiguration_UsageReporting) HasInitialDelayS() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
+}
+
+func (x *OptionsConfiguration_UsageReporting) HasTlsInsecure() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
+}
+
+func (x *OptionsConfiguration_UsageReporting) ClearEnabled() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+}
+
+func (x *OptionsConfiguration_UsageReporting) ClearUniqueId() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
+	x.xxx_hidden_UniqueId = nil
+}
+
+func (x *OptionsConfiguration_UsageReporting) ClearUrl() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+}
+
+func (x *OptionsConfiguration_UsageReporting) ClearInitialDelayS() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
+}
+
+func (x *OptionsConfiguration_UsageReporting) ClearTlsInsecure() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
+	x.xxx_hidden_TlsInsecure = false
+}
+
+type OptionsConfiguration_UsageReporting_builder struct {
+	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
+
+	Enabled       *bool
+	UniqueId      *string
+	Url           *string
+	InitialDelayS *int32
+	TlsInsecure   *bool
+}
+
+func (b0 OptionsConfiguration_UsageReporting_builder) Build() *OptionsConfiguration_UsageReporting {
+	m0 := &OptionsConfiguration_UsageReporting{}
+	b, x := &b0, m0
+	_, _ = b, x
+	if b.Enabled != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 5)
+		x.xxx_hidden_Enabled = *b.Enabled
+	}
+	if b.UniqueId != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
+		x.xxx_hidden_UniqueId = b.UniqueId
+	}
+	if b.Url != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
+		x.xxx_hidden_Url = b.Url
+	}
+	if b.InitialDelayS != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 5)
+		x.xxx_hidden_InitialDelayS = *b.InitialDelayS
+	}
+	if b.TlsInsecure != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 5)
+		x.xxx_hidden_TlsInsecure = *b.TlsInsecure
+	}
+	return m0
+}
+
 type OptionsConfiguration_Audit struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Enabled     bool                   `protobuf:"varint,1,opt,name=enabled"`
@@ -1359,7 +1460,7 @@ type OptionsConfiguration_Audit struct {
 
 func (x *OptionsConfiguration_Audit) Reset() {
 	*x = OptionsConfiguration_Audit{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[6]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1371,7 +1472,7 @@ func (x *OptionsConfiguration_Audit) String() string {
 func (*OptionsConfiguration_Audit) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Audit) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[6]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1467,7 +1568,7 @@ type OptionsConfiguration_Network_ConnectionLimits struct {
 
 func (x *OptionsConfiguration_Network_ConnectionLimits) Reset() {
 	*x = OptionsConfiguration_Network_ConnectionLimits{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[7]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1479,7 +1580,7 @@ func (x *OptionsConfiguration_Network_ConnectionLimits) String() string {
 func (*OptionsConfiguration_Network_ConnectionLimits) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_ConnectionLimits) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[7]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1585,7 +1686,7 @@ const (
 
 func (x *OptionsConfiguration_Network_ConnectionPriorities) Reset() {
 	*x = OptionsConfiguration_Network_ConnectionPriorities{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[8]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1597,7 +1698,7 @@ func (x *OptionsConfiguration_Network_ConnectionPriorities) String() string {
 func (*OptionsConfiguration_Network_ConnectionPriorities) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_ConnectionPriorities) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[8]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1826,7 +1927,7 @@ const (
 
 func (x *OptionsConfiguration_Network_NAT) Reset() {
 	*x = OptionsConfiguration_Network_NAT{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[9]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1838,7 +1939,7 @@ func (x *OptionsConfiguration_Network_NAT) String() string {
 func (*OptionsConfiguration_Network_NAT) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_NAT) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[9]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2078,7 +2179,7 @@ type OptionsConfiguration_Network_Discovery struct {
 
 func (x *OptionsConfiguration_Network_Discovery) Reset() {
 	*x = OptionsConfiguration_Network_Discovery{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[10]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2090,7 +2191,7 @@ func (x *OptionsConfiguration_Network_Discovery) String() string {
 func (*OptionsConfiguration_Network_Discovery) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_Discovery) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[10]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2208,7 +2309,7 @@ const (
 
 func (x *OptionsConfiguration_Network_Relays) Reset() {
 	*x = OptionsConfiguration_Network_Relays{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[11]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2220,7 +2321,7 @@ func (x *OptionsConfiguration_Network_Relays) String() string {
 func (*OptionsConfiguration_Network_Relays) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_Relays) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[11]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2323,7 +2424,7 @@ const (
 
 func (x *OptionsConfiguration_Network_Discovery_Local) Reset() {
 	*x = OptionsConfiguration_Network_Discovery_Local{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[12]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2335,7 +2436,7 @@ func (x *OptionsConfiguration_Network_Discovery_Local) String() string {
 func (*OptionsConfiguration_Network_Discovery_Local) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_Discovery_Local) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[12]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2468,7 +2569,7 @@ const (
 
 func (x *OptionsConfiguration_Network_Discovery_Global) Reset() {
 	*x = OptionsConfiguration_Network_Discovery_Global{}
-	mi := &file_config_v2_options_configuration_proto_msgTypes[13]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2480,7 +2581,7 @@ func (x *OptionsConfiguration_Network_Discovery_Global) String() string {
 func (*OptionsConfiguration_Network_Discovery_Global) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_Discovery_Global) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_options_configuration_proto_msgTypes[13]
+	mi := &file_config_v2_options_configuration_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2561,37 +2662,39 @@ var File_config_v2_options_configuration_proto protoreflect.FileDescriptor
 
 const file_config_v2_options_configuration_proto_rawDesc = "" +
 	"\n" +
-	"%config/v2/options_configuration.proto\x12\x13syncthing.config.v2\x1a!google/protobuf/go_features.proto\"\x81\x1b\n" +
-	"\x14OptionsConfiguration\x121\n" +
-	"\x06listen\x18\x01 \x01(\v2\x19.syncthing.config.v2.URLsR\x06listen\x12)\n" +
+	"%config/v2/options_configuration.proto\x12\x13syncthing.config.v2\x1a!google/protobuf/go_features.proto\"\xf3\x1b\n" +
+	"\x14OptionsConfiguration\x12K\n" +
+	"\ageneral\x18\x01 \x01(\v21.syncthing.config.v2.OptionsConfiguration.GeneralR\ageneral\x12K\n" +
+	"\anetwork\x18\x02 \x01(\v21.syncthing.config.v2.OptionsConfiguration.NetworkR\anetwork\x12X\n" +
+	"\fauto_upgrade\x18\x03 \x01(\v25.syncthing.config.v2.OptionsConfiguration.AutoUpgradeR\vautoUpgrade\x12a\n" +
+	"\x0fusage_reporting\x18\x04 \x01(\v28.syncthing.config.v2.OptionsConfiguration.UsageReportingR\x0eusageReporting\x12E\n" +
+	"\x05audit\x18\x05 \x01(\v2/.syncthing.config.v2.OptionsConfiguration.AuditR\x05audit\x1a\x83\x03\n" +
+	"\aGeneral\x12\x17\n" +
+	"\amy_name\x18\x01 \x01(\tR\x06myName\x12)\n" +
 	"\rstart_browser\x18\x02 \x01(\b:\x04trueR\fstartBrowser\x123\n" +
 	"\x12keep_temporaries_s\x18\x03 \x01(\x05:\x0586400R\x10keepTemporariesS\x12.\n" +
 	"\x13cache_ignored_files\x18\x04 \x01(\bR\x11cacheIgnoredFiles\x124\n" +
 	"\x16overwrite_remote_names\x18\x05 \x01(\bR\x14overwriteRemoteNames\x123\n" +
 	"\x15unacked_notifications\x18\x06 \x03(\tR\x14unackedNotifications\x12.\n" +
 	"\x10set_low_priority\x18\a \x01(\b:\x04trueR\x0esetLowPriority\x124\n" +
-	"\x16max_folder_concurrency\x18\b \x01(\x05R\x14maxFolderConcurrency\x12K\n" +
-	"\anetwork\x18\t \x01(\v21.syncthing.config.v2.OptionsConfiguration.NetworkR\anetwork\x12a\n" +
-	"\x0fusage_reporting\x18\n" +
-	" \x01(\v28.syncthing.config.v2.OptionsConfiguration.UsageReportingR\x0eusageReporting\x12X\n" +
-	"\fauto_upgrade\x18\v \x01(\v25.syncthing.config.v2.OptionsConfiguration.AutoUpgradeR\vautoUpgrade\x12E\n" +
-	"\x05audit\x18\f \x01(\v2/.syncthing.config.v2.OptionsConfiguration.AuditR\x05audit\x1a\x9c\x11\n" +
-	"\aNetwork\x12;\n" +
-	"\x1arate_limit_lan_connections\x18\x01 \x01(\bR\x17rateLimitLanConnections\x124\n" +
-	"\x14reconnect_interval_s\x18\x02 \x01(\x05:\x0260R\x12reconnectIntervalS\x122\n" +
-	"\x15always_local_networks\x18\x03 \x03(\tR\x13alwaysLocalNetworks\x12#\n" +
-	"\rtraffic_class\x18\x04 \x01(\x05R\ftrafficClass\x12T\n" +
-	"#max_concurrent_incoming_request_kib\x18\x05 \x01(\x05:\x06262144R\x1fmaxConcurrentIncomingRequestKib\x12>\n" +
-	"\x1aprogress_update_interval_s\x18\x06 \x01(\x05:\x015R\x17progressUpdateIntervalS\x125\n" +
-	"\x15temp_index_min_blocks\x18\a \x01(\x05:\x0210R\x12tempIndexMinBlocks\x12@\n" +
-	"\vrate_limits\x18\b \x01(\v2\x1f.syncthing.config.v2.RateLimitsR\n" +
+	"\x16max_folder_concurrency\x18\b \x01(\x05R\x14maxFolderConcurrency\x1a\xcf\x11\n" +
+	"\aNetwork\x121\n" +
+	"\x06listen\x18\x01 \x01(\v2\x19.syncthing.config.v2.URLsR\x06listen\x12;\n" +
+	"\x1arate_limit_lan_connections\x18\x02 \x01(\bR\x17rateLimitLanConnections\x124\n" +
+	"\x14reconnect_interval_s\x18\x03 \x01(\x05:\x0260R\x12reconnectIntervalS\x122\n" +
+	"\x15always_local_networks\x18\x04 \x03(\tR\x13alwaysLocalNetworks\x12#\n" +
+	"\rtraffic_class\x18\x05 \x01(\x05R\ftrafficClass\x12T\n" +
+	"#max_concurrent_incoming_request_kib\x18\x06 \x01(\x05:\x06262144R\x1fmaxConcurrentIncomingRequestKib\x12>\n" +
+	"\x1aprogress_update_interval_s\x18\a \x01(\x05:\x015R\x17progressUpdateIntervalS\x125\n" +
+	"\x15temp_index_min_blocks\x18\b \x01(\x05:\x0210R\x12tempIndexMinBlocks\x12@\n" +
+	"\vrate_limits\x18\t \x01(\v2\x1f.syncthing.config.v2.RateLimitsR\n" +
 	"rateLimits\x12o\n" +
-	"\x11connection_limits\x18\t \x01(\v2B.syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimitsR\x10connectionLimits\x12{\n" +
-	"\x15connection_priorities\x18\n" +
-	" \x01(\v2F.syncthing.config.v2.OptionsConfiguration.Network.ConnectionPrioritiesR\x14connectionPriorities\x12G\n" +
-	"\x03nat\x18\v \x01(\v25.syncthing.config.v2.OptionsConfiguration.Network.NATR\x03nat\x12Y\n" +
-	"\tdiscovery\x18\f \x01(\v2;.syncthing.config.v2.OptionsConfiguration.Network.DiscoveryR\tdiscovery\x12P\n" +
-	"\x06relays\x18\r \x01(\v28.syncthing.config.v2.OptionsConfiguration.Network.RelaysR\x06relays\x1a<\n" +
+	"\x11connection_limits\x18\n" +
+	" \x01(\v2B.syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimitsR\x10connectionLimits\x12{\n" +
+	"\x15connection_priorities\x18\v \x01(\v2F.syncthing.config.v2.OptionsConfiguration.Network.ConnectionPrioritiesR\x14connectionPriorities\x12G\n" +
+	"\x03nat\x18\f \x01(\v25.syncthing.config.v2.OptionsConfiguration.Network.NATR\x03nat\x12Y\n" +
+	"\tdiscovery\x18\r \x01(\v2;.syncthing.config.v2.OptionsConfiguration.Network.DiscoveryR\tdiscovery\x12P\n" +
+	"\x06relays\x18\x0e \x01(\v28.syncthing.config.v2.OptionsConfiguration.Network.RelaysR\x06relays\x1a<\n" +
 	"\x10ConnectionLimits\x12\x16\n" +
 	"\x06enough\x18\x01 \x01(\x05R\x06enough\x12\x10\n" +
 	"\x03max\x18\x02 \x01(\x05R\x03max\x1a\xd7\x01\n" +
@@ -2623,19 +2726,19 @@ const file_config_v2_options_configuration_proto_rawDesc = "" +
 	"\aservers\x18\x02 \x01(\v2\x19.syncthing.config.v2.URLsR\aservers\x1a_\n" +
 	"\x06Relays\x12\x1e\n" +
 	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x125\n" +
-	"\x14reconnect_interval_s\x18\x02 \x01(\x05:\x03600R\x12reconnectIntervalS\x1a\xd4\x01\n" +
-	"\x0eUsageReporting\x12\x1e\n" +
-	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12\x1b\n" +
-	"\tunique_id\x18\x02 \x01(\tR\buniqueId\x124\n" +
-	"\x03url\x18\x03 \x01(\t:\"https://data.syncthing.net/newdataR\x03url\x12,\n" +
-	"\x0finitial_delay_s\x18\x04 \x01(\x05:\x041800R\rinitialDelayS\x12!\n" +
-	"\ftls_insecure\x18\x05 \x01(\bR\vtlsInsecure\x1a\xd6\x01\n" +
+	"\x14reconnect_interval_s\x18\x02 \x01(\x05:\x03600R\x12reconnectIntervalS\x1a\xd6\x01\n" +
 	"\vAutoUpgrade\x12\x1e\n" +
 	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12/\n" +
 	"\x10check_interval_s\x18\x02 \x01(\x05:\x0543200R\x0echeckIntervalS\x12-\n" +
 	"\x12release_candidates\x18\x03 \x01(\bR\x11releaseCandidates\x12G\n" +
 	"\n" +
-	"server_url\x18\x04 \x01(\t:(https://upgrades.syncthing.net/meta.jsonR\tserverUrl\x1a5\n" +
+	"server_url\x18\x04 \x01(\t:(https://upgrades.syncthing.net/meta.jsonR\tserverUrl\x1a\xd4\x01\n" +
+	"\x0eUsageReporting\x12\x1e\n" +
+	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12\x1b\n" +
+	"\tunique_id\x18\x02 \x01(\tR\buniqueId\x124\n" +
+	"\x03url\x18\x03 \x01(\t:\"https://data.syncthing.net/newdataR\x03url\x12,\n" +
+	"\x0finitial_delay_s\x18\x04 \x01(\x05:\x041800R\rinitialDelayS\x12!\n" +
+	"\ftls_insecure\x18\x05 \x01(\bR\vtlsInsecure\x1a5\n" +
 	"\x05Audit\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x12\n" +
 	"\x04file\x18\x02 \x01(\tR\x04file\"T\n" +
@@ -2647,44 +2750,46 @@ const file_config_v2_options_configuration_proto_rawDesc = "" +
 	"\x04urls\x18\x01 \x03(\tR\x04urlsB\xe6\x01\n" +
 	"\x17com.syncthing.config.v2B\x19OptionsConfigurationProtoP\x01Z:github.com/syncthing/syncthing/internal/config/v2;configv2\xa2\x02\x03SCX\xaa\x02\x13Syncthing.Config.V2\xca\x02\x13Syncthing\\Config\\V2\xe2\x02\x1fSyncthing\\Config\\V2\\GPBMetadata\xea\x02\x15Syncthing::Config::V2\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
-var file_config_v2_options_configuration_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_config_v2_options_configuration_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_config_v2_options_configuration_proto_goTypes = []any{
 	(*OptionsConfiguration)(nil),                              // 0: syncthing.config.v2.OptionsConfiguration
 	(*RateLimits)(nil),                                        // 1: syncthing.config.v2.RateLimits
 	(*URLs)(nil),                                              // 2: syncthing.config.v2.URLs
-	(*OptionsConfiguration_Network)(nil),                      // 3: syncthing.config.v2.OptionsConfiguration.Network
-	(*OptionsConfiguration_UsageReporting)(nil),               // 4: syncthing.config.v2.OptionsConfiguration.UsageReporting
+	(*OptionsConfiguration_General)(nil),                      // 3: syncthing.config.v2.OptionsConfiguration.General
+	(*OptionsConfiguration_Network)(nil),                      // 4: syncthing.config.v2.OptionsConfiguration.Network
 	(*OptionsConfiguration_AutoUpgrade)(nil),                  // 5: syncthing.config.v2.OptionsConfiguration.AutoUpgrade
-	(*OptionsConfiguration_Audit)(nil),                        // 6: syncthing.config.v2.OptionsConfiguration.Audit
-	(*OptionsConfiguration_Network_ConnectionLimits)(nil),     // 7: syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
-	(*OptionsConfiguration_Network_ConnectionPriorities)(nil), // 8: syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
-	(*OptionsConfiguration_Network_NAT)(nil),                  // 9: syncthing.config.v2.OptionsConfiguration.Network.NAT
-	(*OptionsConfiguration_Network_Discovery)(nil),            // 10: syncthing.config.v2.OptionsConfiguration.Network.Discovery
-	(*OptionsConfiguration_Network_Relays)(nil),               // 11: syncthing.config.v2.OptionsConfiguration.Network.Relays
-	(*OptionsConfiguration_Network_Discovery_Local)(nil),      // 12: syncthing.config.v2.OptionsConfiguration.Network.Discovery.Local
-	(*OptionsConfiguration_Network_Discovery_Global)(nil),     // 13: syncthing.config.v2.OptionsConfiguration.Network.Discovery.Global
+	(*OptionsConfiguration_UsageReporting)(nil),               // 6: syncthing.config.v2.OptionsConfiguration.UsageReporting
+	(*OptionsConfiguration_Audit)(nil),                        // 7: syncthing.config.v2.OptionsConfiguration.Audit
+	(*OptionsConfiguration_Network_ConnectionLimits)(nil),     // 8: syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
+	(*OptionsConfiguration_Network_ConnectionPriorities)(nil), // 9: syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
+	(*OptionsConfiguration_Network_NAT)(nil),                  // 10: syncthing.config.v2.OptionsConfiguration.Network.NAT
+	(*OptionsConfiguration_Network_Discovery)(nil),            // 11: syncthing.config.v2.OptionsConfiguration.Network.Discovery
+	(*OptionsConfiguration_Network_Relays)(nil),               // 12: syncthing.config.v2.OptionsConfiguration.Network.Relays
+	(*OptionsConfiguration_Network_Discovery_Local)(nil),      // 13: syncthing.config.v2.OptionsConfiguration.Network.Discovery.Local
+	(*OptionsConfiguration_Network_Discovery_Global)(nil),     // 14: syncthing.config.v2.OptionsConfiguration.Network.Discovery.Global
 }
 var file_config_v2_options_configuration_proto_depIdxs = []int32{
-	2,  // 0: syncthing.config.v2.OptionsConfiguration.listen:type_name -> syncthing.config.v2.URLs
-	3,  // 1: syncthing.config.v2.OptionsConfiguration.network:type_name -> syncthing.config.v2.OptionsConfiguration.Network
-	4,  // 2: syncthing.config.v2.OptionsConfiguration.usage_reporting:type_name -> syncthing.config.v2.OptionsConfiguration.UsageReporting
-	5,  // 3: syncthing.config.v2.OptionsConfiguration.auto_upgrade:type_name -> syncthing.config.v2.OptionsConfiguration.AutoUpgrade
-	6,  // 4: syncthing.config.v2.OptionsConfiguration.audit:type_name -> syncthing.config.v2.OptionsConfiguration.Audit
-	1,  // 5: syncthing.config.v2.OptionsConfiguration.Network.rate_limits:type_name -> syncthing.config.v2.RateLimits
-	7,  // 6: syncthing.config.v2.OptionsConfiguration.Network.connection_limits:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
-	8,  // 7: syncthing.config.v2.OptionsConfiguration.Network.connection_priorities:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
-	9,  // 8: syncthing.config.v2.OptionsConfiguration.Network.nat:type_name -> syncthing.config.v2.OptionsConfiguration.Network.NAT
-	10, // 9: syncthing.config.v2.OptionsConfiguration.Network.discovery:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Discovery
-	11, // 10: syncthing.config.v2.OptionsConfiguration.Network.relays:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Relays
-	2,  // 11: syncthing.config.v2.OptionsConfiguration.Network.NAT.stun_servers:type_name -> syncthing.config.v2.URLs
-	12, // 12: syncthing.config.v2.OptionsConfiguration.Network.Discovery.local:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Discovery.Local
-	13, // 13: syncthing.config.v2.OptionsConfiguration.Network.Discovery.global:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Discovery.Global
-	2,  // 14: syncthing.config.v2.OptionsConfiguration.Network.Discovery.Global.servers:type_name -> syncthing.config.v2.URLs
-	15, // [15:15] is the sub-list for method output_type
-	15, // [15:15] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	3,  // 0: syncthing.config.v2.OptionsConfiguration.general:type_name -> syncthing.config.v2.OptionsConfiguration.General
+	4,  // 1: syncthing.config.v2.OptionsConfiguration.network:type_name -> syncthing.config.v2.OptionsConfiguration.Network
+	5,  // 2: syncthing.config.v2.OptionsConfiguration.auto_upgrade:type_name -> syncthing.config.v2.OptionsConfiguration.AutoUpgrade
+	6,  // 3: syncthing.config.v2.OptionsConfiguration.usage_reporting:type_name -> syncthing.config.v2.OptionsConfiguration.UsageReporting
+	7,  // 4: syncthing.config.v2.OptionsConfiguration.audit:type_name -> syncthing.config.v2.OptionsConfiguration.Audit
+	2,  // 5: syncthing.config.v2.OptionsConfiguration.Network.listen:type_name -> syncthing.config.v2.URLs
+	1,  // 6: syncthing.config.v2.OptionsConfiguration.Network.rate_limits:type_name -> syncthing.config.v2.RateLimits
+	8,  // 7: syncthing.config.v2.OptionsConfiguration.Network.connection_limits:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
+	9,  // 8: syncthing.config.v2.OptionsConfiguration.Network.connection_priorities:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
+	10, // 9: syncthing.config.v2.OptionsConfiguration.Network.nat:type_name -> syncthing.config.v2.OptionsConfiguration.Network.NAT
+	11, // 10: syncthing.config.v2.OptionsConfiguration.Network.discovery:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Discovery
+	12, // 11: syncthing.config.v2.OptionsConfiguration.Network.relays:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Relays
+	2,  // 12: syncthing.config.v2.OptionsConfiguration.Network.NAT.stun_servers:type_name -> syncthing.config.v2.URLs
+	13, // 13: syncthing.config.v2.OptionsConfiguration.Network.Discovery.local:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Discovery.Local
+	14, // 14: syncthing.config.v2.OptionsConfiguration.Network.Discovery.global:type_name -> syncthing.config.v2.OptionsConfiguration.Network.Discovery.Global
+	2,  // 15: syncthing.config.v2.OptionsConfiguration.Network.Discovery.Global.servers:type_name -> syncthing.config.v2.URLs
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_config_v2_options_configuration_proto_init() }
@@ -2698,7 +2803,7 @@ func file_config_v2_options_configuration_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v2_options_configuration_proto_rawDesc), len(file_config_v2_options_configuration_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

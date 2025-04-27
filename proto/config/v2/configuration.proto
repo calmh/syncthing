@@ -10,7 +10,8 @@ import "google/protobuf/go_features.proto";
 option features.(pb.go).api_level = API_OPAQUE;
 
 message Configuration {
-  repeated FolderConfiguration folders = 1;
-  repeated DeviceConfiguration devices = 2;
-  OptionsConfiguration options = 3;
+  int32 version = 1 [default = 2];
+  repeated FolderConfiguration folders = 3;
+  repeated DeviceConfiguration devices = 4;
+  OptionsConfiguration options = 5;
 }

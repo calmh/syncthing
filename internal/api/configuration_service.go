@@ -21,16 +21,16 @@ type ConfigurationService struct {
 }
 
 func (s *ConfigurationService) GetConfiguration(context.Context, *connect.Request[apiv2.GetConfigurationRequest]) (*connect.Response[apiv2.GetConfigurationResponse], error) {
-	cur, etag := s.mgr.Current()
+	cur := s.mgr.Current()
 	resp := connect.NewResponse(apiv2.GetConfigurationResponse_builder{Config: cur}.Build())
-	resp.Header().Set("ETag", etag)
+	resp.Header().Set("ETag", cur.ETag())
 	return resp, nil
 }
 
 func (s *ConfigurationService) AddDevice(ctx context.Context, req *connect.Request[apiv2.AddDeviceRequest]) (*connect.Response[apiv2.AddDeviceResponse], error) {
 	newID := req.Msg.GetDevice().GetDeviceId()
-	err := s.mgr.Modify(func(cfg *configv2.Configuration, etag string) error {
-		if err := checkEtag(req, etag); err != nil {
+	err := s.mgr.Modify(func(cfg *configv2.Configuration) error {
+		if err := checkEtag(req, cfg.ETag()); err != nil {
 			return err
 		}
 
@@ -56,8 +56,8 @@ func (s *ConfigurationService) AddDevice(ctx context.Context, req *connect.Reque
 
 func (s *ConfigurationService) RemoveDevice(ctx context.Context, req *connect.Request[apiv2.RemoveDeviceRequest]) (*connect.Response[apiv2.RemoveDeviceResponse], error) {
 	devID := req.Msg.GetDeviceId()
-	err := s.mgr.Modify(func(cfg *configv2.Configuration, etag string) error {
-		if err := checkEtag(req, etag); err != nil {
+	err := s.mgr.Modify(func(cfg *configv2.Configuration) error {
+		if err := checkEtag(req, cfg.ETag()); err != nil {
 			return err
 		}
 
@@ -79,8 +79,8 @@ func (s *ConfigurationService) RemoveDevice(ctx context.Context, req *connect.Re
 
 func (s *ConfigurationService) UpdateDevice(ctx context.Context, req *connect.Request[apiv2.UpdateDeviceRequest]) (*connect.Response[apiv2.UpdateDeviceResponse], error) {
 	devID := req.Msg.GetDevice().GetDeviceId()
-	err := s.mgr.Modify(func(cfg *configv2.Configuration, etag string) error {
-		if err := checkEtag(req, etag); err != nil {
+	err := s.mgr.Modify(func(cfg *configv2.Configuration) error {
+		if err := checkEtag(req, cfg.ETag()); err != nil {
 			return err
 		}
 

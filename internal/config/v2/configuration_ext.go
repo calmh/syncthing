@@ -13,3 +13,10 @@ func (c *Configuration) ETag() string {
 	hash := sha256.Sum256(bs)
 	return fmt.Sprintf(`"%s"`, base64.RawStdEncoding.EncodeToString(hash[:]))
 }
+
+func (u *URLs) GetURLsDefault(def ...string) []string {
+	if u == nil {
+		return def
+	}
+	return u.GetUrls()
+}

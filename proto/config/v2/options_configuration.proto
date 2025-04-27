@@ -7,34 +7,38 @@ import "google/protobuf/go_features.proto";
 option features.(pb.go).api_level = API_OPAQUE;
 
 message OptionsConfiguration {
-  URLs listen = 1;
-  bool start_browser = 2 [default = true];
-  int32 keep_temporaries_s = 3 [default = 86400];
-  bool cache_ignored_files = 4;
-  bool overwrite_remote_names = 5;
-  repeated string unacked_notifications = 6;
-  bool set_low_priority = 7 [default = true];
-  int32 max_folder_concurrency = 8;
+  General general = 1;
+  message General {
+    string my_name = 1;
+    bool start_browser = 2 [default = true];
+    int32 keep_temporaries_s = 3 [default = 86400];
+    bool cache_ignored_files = 4;
+    bool overwrite_remote_names = 5;
+    repeated string unacked_notifications = 6;
+    bool set_low_priority = 7 [default = true];
+    int32 max_folder_concurrency = 8;
+  }
 
-  Network network = 9;
+  Network network = 2;
   message Network {
-    bool rate_limit_lan_connections = 1;
-    int32 reconnect_interval_s = 2 [default = 60];
-    repeated string always_local_networks = 3;
-    int32 traffic_class = 4;
-    int32 max_concurrent_incoming_request_kib = 5 [default = 262144];
-    int32 progress_update_interval_s = 6 [default = 5];
-    int32 temp_index_min_blocks = 7 [default = 10];
+    URLs listen = 1;
+    bool rate_limit_lan_connections = 2;
+    int32 reconnect_interval_s = 3 [default = 60];
+    repeated string always_local_networks = 4;
+    int32 traffic_class = 5;
+    int32 max_concurrent_incoming_request_kib = 6 [default = 262144];
+    int32 progress_update_interval_s = 7 [default = 5];
+    int32 temp_index_min_blocks = 8 [default = 10];
 
-    RateLimits rate_limits = 8;
+    RateLimits rate_limits = 9;
 
-    ConnectionLimits connection_limits = 9;
+    ConnectionLimits connection_limits = 10;
     message ConnectionLimits {
       int32 enough = 1;
       int32 max = 2;
     }
 
-    ConnectionPriorities connection_priorities = 10;
+    ConnectionPriorities connection_priorities = 11;
     message ConnectionPriorities {
       int32 tcp_lan = 1 [default = 10];
       int32 quic_lan = 2 [default = 20];
@@ -44,7 +48,7 @@ message OptionsConfiguration {
       int32 upgrade_threshold = 6;
     }
 
-    NAT nat = 11;
+    NAT nat = 12;
     message NAT {
       bool enabled = 1 [default = true];
       int32 lease_interval_s = 2 [default = 3600];
@@ -55,7 +59,7 @@ message OptionsConfiguration {
       URLs stun_servers = 7;
     }
 
-    Discovery discovery = 12;
+    Discovery discovery = 13;
     message Discovery {
       bool announce_lan_addresses = 1;
 
@@ -73,14 +77,14 @@ message OptionsConfiguration {
       }
     }
 
-    Relays relays = 13;
+    Relays relays = 14;
     message Relays {
       bool enabled = 1 [default = true];
       int32 reconnect_interval_s = 2 [default = 600];
     }
   }
 
-  AutoUpgrade auto_upgrade = 11;
+  AutoUpgrade auto_upgrade = 3;
   message AutoUpgrade {
     bool enabled = 1 [default = true];
     int32 check_interval_s = 2 [default = 43200];
@@ -88,7 +92,7 @@ message OptionsConfiguration {
     string server_url = 4 [default = "https://upgrades.syncthing.net/meta.json"];
   }
 
-  UsageReporting usage_reporting = 10;
+  UsageReporting usage_reporting = 4;
   message UsageReporting {
     bool enabled = 1 [default = true];
     string unique_id = 2;
@@ -97,7 +101,7 @@ message OptionsConfiguration {
     bool tls_insecure = 5;
   }
 
-  Audit audit = 12;
+  Audit audit = 5;
   message Audit {
     bool enabled = 1;
     string file = 2;
