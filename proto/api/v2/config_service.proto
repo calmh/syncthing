@@ -3,6 +3,7 @@ edition = "2023";
 package syncthing.api.v2;
 
 import "config/v2/configuration.proto";
+import "config/v2/folder_configuration.proto";
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/go_features.proto";
 

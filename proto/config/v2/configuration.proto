@@ -2,6 +2,7 @@ edition = "2023";
 
 package syncthing.config.v2;
 
+import "config/v2/folder_configuration.proto";
 import "google/protobuf/go_features.proto";
 
 option features.(pb.go).api_level = API_OPAQUE;
@@ -33,8 +34,8 @@ message OptionsConfiguration {
 
     message ConnectionPriorities {
       int32 tcp_lan = 1 [default = 10];
-      int32 tcp_wan = 2 [default = 30];
       int32 quic_lan = 3 [default = 20];
+      int32 tcp_wan = 2 [default = 30];
       int32 quic_wan = 4 [default = 40];
       int32 relays = 5 [default = 50];
       int32 upgrade_threshold = 6 [default = 0];
@@ -48,12 +49,13 @@ message OptionsConfiguration {
     }
     RateLimits rate_limits = 20;
   }
+  Network network = 25;
 
   message NAT {
     bool enabled = 1 [default = true];
-    int32 lease_interval_s = 2;
-    int32 renewal_interval_s = 3;
-    int32 timeout_interval_s = 4;
+    int32 lease_interval_s = 2 [default = 3600];
+    int32 renewal_interval_s = 3 [default = 1800];
+    int32 timeout_interval_s = 4 [default = 10];
   }
   NAT nat = 30;
 
@@ -93,105 +95,6 @@ message OptionsConfiguration {
   }
   AutoUpgrade auto_upgrade = 70;
 }
-
-message FolderConfiguration {
-  FolderType type = 1 [default = FOLDER_TYPE_SEND_RECEIVE];
-  string id = 2;
-  string label = 3;
-  bool paused = 4;
-
-  message Filesystem {
-    string path = 1;
-    FilesystemType fs_type = 2 [default = FILESYSTEM_TYPE_BASIC];
-    bool case_sensitive_fs = 3;
-    bool junctions_as_dirs = 4;
-    Size min_disk_free = 13;
-  }
-  Filesystem filesystem = 10;
-
-  message Device {}
-  repeated Device devices = 11;
-
-  message Scanning {
-    message Watcher {
-      bool enabled = 8 [default = true];
-      double delay_s = 9 [default = 5];
-      double timeout_s = 10 [default = 60];
-    }
-    Watcher watcher = 1;
-
-    bool auto_normalize = 12 [default = true];
-    bool ownership = 34;
-    bool xattrs = 36;
-    int32 hashers = 3;
-    int32 mod_time_window_s = 26;
-    int32 progress_interval_s = 19;
-    int32 rescan_interval_s = 2 [default = 3600];
-    string marker_name = 25 [default = ".stfolder"];
-    XattrFilter xattr_filter = 37;
-  }
-  Scanning scanning = 12;
-
-  message Syncing {
-    bool ignore_perms = 11;
-    int32 copiers = 15 [default = 2];
-    int32 puller_max_pending_kib = 16 [default = 32768];
-    PullOrder order = 18;
-    int32 puller_pause_s = 20 [default = 60];
-    int32 max_conflicts = 21 [default = 5];
-    bool sparse_files = 22 [default = true];
-    int32 max_concurrent_writes = 27 [default = 2];
-    bool disable_temp_indexes = 23;
-    bool fsync = 28 [default = true];
-    BlockPullOrder block_pull_order = 29;
-    CopyRangeMethod copy_range_method = 30;
-    bool ownership = 33;
-    bool xattrs = 35;
-  }
-  Syncing syncing = 13;
-
-  message Versioning {}
-  Versioning versioning = 14;
-}
-
-enum FolderType {
-  FOLDER_TYPE_UNSPECIFIED = 0;
-  FOLDER_TYPE_SEND_RECEIVE = 1;
-  FOLDER_TYPE_SEND_ONLY = 2;
-  FOLDER_TYPE_RECEIVE_ONLY = 3;
-  FOLDER_TYPE_RECEIVE_ENCRYPTED = 4;
-}
-
-enum FilesystemType {
-  FILESYSTEM_TYPE_UNSPECIFIED = 0;
-  FILESYSTEM_TYPE_BASIC = 1;
-  FILESYSTEM_TYPE_FAKE = 2;
-}
-
-message Size {
-  double value = 1;
-  SizeUnit unit = 2;
-}
-
-enum SizeUnit {
-  SIZE_UNIT_UNSPECIFIED = 0;
-  SIZE_UNIT_PERCENT = 1;
-  SIZE_UNIT_BYTES = 2;
-}
-
-enum PullOrder {
-  PULL_ORDER_UNSPECIFIED = 0;
-}
-
-enum BlockPullOrder {
-  BLOCK_PULL_ORDER_UNSPECIFIED = 0;
-}
-
-enum CopyRangeMethod {
-  COPY_RANGE_METHOD_UNSPECIFIED = 0;
-}
-
-message XattrFilter {}
 
 message DeviceConfiguration {
   string id = 1;

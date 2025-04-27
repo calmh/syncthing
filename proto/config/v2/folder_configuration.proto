@@ -1,0 +1,144 @@
+edition = "2023";
+
+package syncthing.config.v2;
+
+import "google/protobuf/go_features.proto";
+
+option features.(pb.go).api_level = API_OPAQUE;
+
+message FolderConfiguration {
+  FolderType type = 1 [default = FOLDER_TYPE_SEND_RECEIVE];
+  string folder_id = 2;
+  bool enabled = 3 [default = true];
+  string label = 4;
+  string marker_name = 5 [default = ".stfolder"];
+
+  Filesystem filesystem = 6;
+  message Filesystem {
+    string path = 1;
+    FilesystemType type = 2 [default = FILESYSTEM_TYPE_BASIC];
+  }
+
+  FilesystemOptions filesystem_options = 7;
+  message FilesystemOptions {
+    bool case_sensitive = 1;
+    bool junctions_as_dirs = 2;
+    Size min_disk_free = 3;
+    bool auto_normalize = 4 [default = true];
+  }
+
+  repeated Sharing shared_with = 8;
+  message Sharing {
+    string device_id = 1;
+    string introduced_by = 2;
+    string encryption_password = 3;
+  }
+
+  Scanning scanning = 9;
+  message Scanning {
+    Watcher watcher = 1;
+    message Watcher {
+      bool enabled = 1 [default = true];
+      double delay_s = 2 [default = 5];
+      double timeout_s = 3 [default = 60];
+    }
+
+    int32 rescan_interval_s = 2 [default = 3600];
+    int32 num_hashers = 3;
+    int32 mod_time_window_s = 4;
+    int32 progress_interval_s = 5;
+    bool scan_ownership = 6;
+    bool scan_xattrs = 7;
+    XattrFilter xattr_filter = 8;
+  }
+
+  Pulling pulling = 10;
+  message Pulling {
+    PullOrder order = 1 [default = PULL_ORDER_RANDOM];
+    BlockPullOrder block_order = 2 [default = BLOCK_PULL_ORDER_STANDARD];
+    int32 num_copiers = 3 [default = 2];
+    int32 max_pending_kib = 4 [default = 32768];
+    int32 max_conflicts = 5 [default = 5];
+    int32 max_concurrent_writes = 6 [default = 2];
+    int32 failed_pause_s = 7 [default = 60];
+    double change_delay_s = 8 [default = 1.0];
+    bool sparse_files = 9 [default = true];
+    bool ignore_permissions = 10;
+    bool temporary_indexes = 11 [default = true];
+    bool fsync = 12 [default = true];
+    CopyRangeMethod copy_range_method = 13 [default = COPY_RANGE_METHOD_STANDARD];
+    bool sync_ownership = 14;
+    bool sync_xattrs = 15;
+    bool ignore_delete = 16;
+    bool copy_ownership_from_parent = 17;
+  }
+
+  Versioning versioning = 11;
+  message Versioning {
+    VersioningType type = 1;
+    Filesystem filesystem = 2;
+    int32 cleanup_interval_s = 3 [default = 3600];
+    repeated KV params = 4;
+  }
+}
+
+enum FolderType {
+  FOLDER_TYPE_UNSPECIFIED = 0;
+  FOLDER_TYPE_SEND_RECEIVE = 1;
+  FOLDER_TYPE_SEND_ONLY = 2;
+  FOLDER_TYPE_RECEIVE_ONLY = 3;
+  FOLDER_TYPE_RECEIVE_ENCRYPTED = 4;
+}
+
+enum FilesystemType {
+  FILESYSTEM_TYPE_UNSPECIFIED = 0;
+  FILESYSTEM_TYPE_BASIC = 1;
+  FILESYSTEM_TYPE_FAKE = 2;
+}
+
+message Size {
+  double percent = 1;
+  int64 bytes = 2;
+}
+
+enum PullOrder {
+  PULL_ORDER_UNSPECIFIED = 0;
+  PULL_ORDER_RANDOM = 1;
+  PULL_ORDER_ALPHABETIC = 2;
+  PULL_ORDER_SMALLEST_FIRST = 3;
+  PULL_ORDER_LARGEST_FIRST = 4;
+  PULL_ORDER_OLDEST_FIRST = 5;
+  PULL_ORDER_NEWEST_FIRST = 6;
+}
+
+enum BlockPullOrder {
+  BLOCK_PULL_ORDER_UNSPECIFIED = 0;
+  BLOCK_PULL_ORDER_STANDARD = 1;
+  BLOCK_PULL_ORDER_RANDOM = 2;
+  BLOCK_PULL_ORDER_IN_ORDER = 3;
+}
+
+enum CopyRangeMethod {
+  COPY_RANGE_METHOD_UNSPECIFIED = 0;
+  COPY_RANGE_METHOD_STANDARD = 1;
+  COPY_RANGE_METHOD_IOCTL = 2;
+  COPY_RANGE_METHOD_COPY_FILE_RANGE = 3;
+  COPY_RANGE_METHOD_SEND_FILE = 4;
+  COPY_RANGE_METHOD_DUPLICATE_EXTENTS = 5;
+  COPY_RANGE_METHOD_ALL_WITH_FALLBACK = 6;
+}
+
+message XattrFilter {}
+
+enum VersioningType {
+  VERSIONING_TYPE_UNSPECIFIED = 0;
+  VERSIONING_TYPE_TRASHCAN = 1;
+  VERSIONING_TYPE_SIMPLE = 2;
+  VERSIONING_TYPE_STAGGERED = 3;
+  VERSIONING_TYPE_EXTERNAL = 4;
+}
+
+message KV {
+  string key = 1;
+  string value = 2;
+}

@@ -21,258 +21,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type FolderType int32
-
-const (
-	FolderType_FOLDER_TYPE_UNSPECIFIED       FolderType = 0
-	FolderType_FOLDER_TYPE_SEND_RECEIVE      FolderType = 1
-	FolderType_FOLDER_TYPE_SEND_ONLY         FolderType = 2
-	FolderType_FOLDER_TYPE_RECEIVE_ONLY      FolderType = 3
-	FolderType_FOLDER_TYPE_RECEIVE_ENCRYPTED FolderType = 4
-)
-
-// Enum value maps for FolderType.
-var (
-	FolderType_name = map[int32]string{
-		0: "FOLDER_TYPE_UNSPECIFIED",
-		1: "FOLDER_TYPE_SEND_RECEIVE",
-		2: "FOLDER_TYPE_SEND_ONLY",
-		3: "FOLDER_TYPE_RECEIVE_ONLY",
-		4: "FOLDER_TYPE_RECEIVE_ENCRYPTED",
-	}
-	FolderType_value = map[string]int32{
-		"FOLDER_TYPE_UNSPECIFIED":       0,
-		"FOLDER_TYPE_SEND_RECEIVE":      1,
-		"FOLDER_TYPE_SEND_ONLY":         2,
-		"FOLDER_TYPE_RECEIVE_ONLY":      3,
-		"FOLDER_TYPE_RECEIVE_ENCRYPTED": 4,
-	}
-)
-
-func (x FolderType) Enum() *FolderType {
-	p := new(FolderType)
-	*p = x
-	return p
-}
-
-func (x FolderType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (FolderType) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_v2_configuration_proto_enumTypes[0].Descriptor()
-}
-
-func (FolderType) Type() protoreflect.EnumType {
-	return &file_config_v2_configuration_proto_enumTypes[0]
-}
-
-func (x FolderType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-type FilesystemType int32
-
-const (
-	FilesystemType_FILESYSTEM_TYPE_UNSPECIFIED FilesystemType = 0
-	FilesystemType_FILESYSTEM_TYPE_BASIC       FilesystemType = 1
-	FilesystemType_FILESYSTEM_TYPE_FAKE        FilesystemType = 2
-)
-
-// Enum value maps for FilesystemType.
-var (
-	FilesystemType_name = map[int32]string{
-		0: "FILESYSTEM_TYPE_UNSPECIFIED",
-		1: "FILESYSTEM_TYPE_BASIC",
-		2: "FILESYSTEM_TYPE_FAKE",
-	}
-	FilesystemType_value = map[string]int32{
-		"FILESYSTEM_TYPE_UNSPECIFIED": 0,
-		"FILESYSTEM_TYPE_BASIC":       1,
-		"FILESYSTEM_TYPE_FAKE":        2,
-	}
-)
-
-func (x FilesystemType) Enum() *FilesystemType {
-	p := new(FilesystemType)
-	*p = x
-	return p
-}
-
-func (x FilesystemType) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (FilesystemType) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_v2_configuration_proto_enumTypes[1].Descriptor()
-}
-
-func (FilesystemType) Type() protoreflect.EnumType {
-	return &file_config_v2_configuration_proto_enumTypes[1]
-}
-
-func (x FilesystemType) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-type SizeUnit int32
-
-const (
-	SizeUnit_SIZE_UNIT_UNSPECIFIED SizeUnit = 0
-	SizeUnit_SIZE_UNIT_PERCENT     SizeUnit = 1
-	SizeUnit_SIZE_UNIT_BYTES       SizeUnit = 2
-)
-
-// Enum value maps for SizeUnit.
-var (
-	SizeUnit_name = map[int32]string{
-		0: "SIZE_UNIT_UNSPECIFIED",
-		1: "SIZE_UNIT_PERCENT",
-		2: "SIZE_UNIT_BYTES",
-	}
-	SizeUnit_value = map[string]int32{
-		"SIZE_UNIT_UNSPECIFIED": 0,
-		"SIZE_UNIT_PERCENT":     1,
-		"SIZE_UNIT_BYTES":       2,
-	}
-)
-
-func (x SizeUnit) Enum() *SizeUnit {
-	p := new(SizeUnit)
-	*p = x
-	return p
-}
-
-func (x SizeUnit) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (SizeUnit) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_v2_configuration_proto_enumTypes[2].Descriptor()
-}
-
-func (SizeUnit) Type() protoreflect.EnumType {
-	return &file_config_v2_configuration_proto_enumTypes[2]
-}
-
-func (x SizeUnit) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-type PullOrder int32
-
-const (
-	PullOrder_PULL_ORDER_UNSPECIFIED PullOrder = 0
-)
-
-// Enum value maps for PullOrder.
-var (
-	PullOrder_name = map[int32]string{
-		0: "PULL_ORDER_UNSPECIFIED",
-	}
-	PullOrder_value = map[string]int32{
-		"PULL_ORDER_UNSPECIFIED": 0,
-	}
-)
-
-func (x PullOrder) Enum() *PullOrder {
-	p := new(PullOrder)
-	*p = x
-	return p
-}
-
-func (x PullOrder) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (PullOrder) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_v2_configuration_proto_enumTypes[3].Descriptor()
-}
-
-func (PullOrder) Type() protoreflect.EnumType {
-	return &file_config_v2_configuration_proto_enumTypes[3]
-}
-
-func (x PullOrder) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-type BlockPullOrder int32
-
-const (
-	BlockPullOrder_BLOCK_PULL_ORDER_UNSPECIFIED BlockPullOrder = 0
-)
-
-// Enum value maps for BlockPullOrder.
-var (
-	BlockPullOrder_name = map[int32]string{
-		0: "BLOCK_PULL_ORDER_UNSPECIFIED",
-	}
-	BlockPullOrder_value = map[string]int32{
-		"BLOCK_PULL_ORDER_UNSPECIFIED": 0,
-	}
-)
-
-func (x BlockPullOrder) Enum() *BlockPullOrder {
-	p := new(BlockPullOrder)
-	*p = x
-	return p
-}
-
-func (x BlockPullOrder) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (BlockPullOrder) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_v2_configuration_proto_enumTypes[4].Descriptor()
-}
-
-func (BlockPullOrder) Type() protoreflect.EnumType {
-	return &file_config_v2_configuration_proto_enumTypes[4]
-}
-
-func (x BlockPullOrder) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-type CopyRangeMethod int32
-
-const (
-	CopyRangeMethod_COPY_RANGE_METHOD_UNSPECIFIED CopyRangeMethod = 0
-)
-
-// Enum value maps for CopyRangeMethod.
-var (
-	CopyRangeMethod_name = map[int32]string{
-		0: "COPY_RANGE_METHOD_UNSPECIFIED",
-	}
-	CopyRangeMethod_value = map[string]int32{
-		"COPY_RANGE_METHOD_UNSPECIFIED": 0,
-	}
-)
-
-func (x CopyRangeMethod) Enum() *CopyRangeMethod {
-	p := new(CopyRangeMethod)
-	*p = x
-	return p
-}
-
-func (x CopyRangeMethod) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (CopyRangeMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_v2_configuration_proto_enumTypes[5].Descriptor()
-}
-
-func (CopyRangeMethod) Type() protoreflect.EnumType {
-	return &file_config_v2_configuration_proto_enumTypes[5]
-}
-
-func (x CopyRangeMethod) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
 type Configuration struct {
 	state              protoimpl.MessageState  `protogen:"opaque.v1"`
 	xxx_hidden_Folders *[]*FolderConfiguration `protobuf:"bytes,1,rep,name=folders"`
@@ -438,6 +186,7 @@ type OptionsConfiguration struct {
 	state                     protoimpl.MessageState               `protogen:"opaque.v1"`
 	xxx_hidden_Listen         *URLs                                `protobuf:"bytes,1,opt,name=listen"`
 	xxx_hidden_StartBrowser   bool                                 `protobuf:"varint,2,opt,name=start_browser,json=startBrowser,def=1"`
+	xxx_hidden_Network        *OptionsConfiguration_Network        `protobuf:"bytes,25,opt,name=network"`
 	xxx_hidden_Nat            *OptionsConfiguration_NAT            `protobuf:"bytes,30,opt,name=nat"`
 	xxx_hidden_Discovery      *OptionsConfiguration_Discovery      `protobuf:"bytes,40,opt,name=discovery"`
 	xxx_hidden_Relays         *OptionsConfiguration_Relays         `protobuf:"bytes,50,opt,name=relays"`
@@ -495,6 +244,13 @@ func (x *OptionsConfiguration) GetStartBrowser() bool {
 	return Default_OptionsConfiguration_StartBrowser
 }
 
+func (x *OptionsConfiguration) GetNetwork() *OptionsConfiguration_Network {
+	if x != nil {
+		return x.xxx_hidden_Network
+	}
+	return nil
+}
+
 func (x *OptionsConfiguration) GetNat() *OptionsConfiguration_NAT {
 	if x != nil {
 		return x.xxx_hidden_Nat
@@ -536,7 +292,11 @@ func (x *OptionsConfiguration) SetListen(v *URLs) {
 
 func (x *OptionsConfiguration) SetStartBrowser(v bool) {
 	x.xxx_hidden_StartBrowser = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 7)
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 8)
+}
+
+func (x *OptionsConfiguration) SetNetwork(v *OptionsConfiguration_Network) {
+	x.xxx_hidden_Network = v
 }
 
 func (x *OptionsConfiguration) SetNat(v *OptionsConfiguration_NAT) {
@@ -571,6 +331,13 @@ func (x *OptionsConfiguration) HasStartBrowser() bool {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
+}
+
+func (x *OptionsConfiguration) HasNetwork() bool {
+	if x == nil {
+		return false
+	}
+	return x.xxx_hidden_Network != nil
 }
 
 func (x *OptionsConfiguration) HasNat() bool {
@@ -616,6 +383,10 @@ func (x *OptionsConfiguration) ClearStartBrowser() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
 }
 
+func (x *OptionsConfiguration) ClearNetwork() {
+	x.xxx_hidden_Network = nil
+}
+
 func (x *OptionsConfiguration) ClearNat() {
 	x.xxx_hidden_Nat = nil
 }
@@ -641,6 +412,7 @@ type OptionsConfiguration_builder struct {
 
 	Listen         *URLs
 	StartBrowser   *bool
+	Network        *OptionsConfiguration_Network
 	Nat            *OptionsConfiguration_NAT
 	Discovery      *OptionsConfiguration_Discovery
 	Relays         *OptionsConfiguration_Relays
@@ -654,457 +426,15 @@ func (b0 OptionsConfiguration_builder) Build() *OptionsConfiguration {
 	_, _ = b, x
 	x.xxx_hidden_Listen = b.Listen
 	if b.StartBrowser != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 7)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 8)
 		x.xxx_hidden_StartBrowser = *b.StartBrowser
 	}
+	x.xxx_hidden_Network = b.Network
 	x.xxx_hidden_Nat = b.Nat
 	x.xxx_hidden_Discovery = b.Discovery
 	x.xxx_hidden_Relays = b.Relays
 	x.xxx_hidden_UsageReporting = b.UsageReporting
 	x.xxx_hidden_AutoUpgrade = b.AutoUpgrade
-	return m0
-}
-
-type FolderConfiguration struct {
-	state                  protoimpl.MessageState          `protogen:"opaque.v1"`
-	xxx_hidden_Type        FolderType                      `protobuf:"varint,1,opt,name=type,enum=syncthing.config.v2.FolderType,def=1"`
-	xxx_hidden_Id          *string                         `protobuf:"bytes,2,opt,name=id"`
-	xxx_hidden_Label       *string                         `protobuf:"bytes,3,opt,name=label"`
-	xxx_hidden_Paused      bool                            `protobuf:"varint,4,opt,name=paused"`
-	xxx_hidden_Filesystem  *FolderConfiguration_Filesystem `protobuf:"bytes,10,opt,name=filesystem"`
-	xxx_hidden_Devices     *[]*FolderConfiguration_Device  `protobuf:"bytes,11,rep,name=devices"`
-	xxx_hidden_Scanning    *FolderConfiguration_Scanning   `protobuf:"bytes,12,opt,name=scanning"`
-	xxx_hidden_Syncing     *FolderConfiguration_Syncing    `protobuf:"bytes,13,opt,name=syncing"`
-	xxx_hidden_Versioning  *FolderConfiguration_Versioning `protobuf:"bytes,14,opt,name=versioning"`
-	XXX_raceDetectHookData protoimpl.RaceDetectHookData
-	XXX_presence           [1]uint32
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
-}
-
-// Default values for FolderConfiguration fields.
-const (
-	Default_FolderConfiguration_Type = FolderType_FOLDER_TYPE_SEND_RECEIVE
-)
-
-func (x *FolderConfiguration) Reset() {
-	*x = FolderConfiguration{}
-	mi := &file_config_v2_configuration_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration) ProtoMessage() {}
-
-func (x *FolderConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *FolderConfiguration) GetType() FolderType {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
-			return x.xxx_hidden_Type
-		}
-	}
-	return Default_FolderConfiguration_Type
-}
-
-func (x *FolderConfiguration) GetId() string {
-	if x != nil {
-		if x.xxx_hidden_Id != nil {
-			return *x.xxx_hidden_Id
-		}
-		return ""
-	}
-	return ""
-}
-
-func (x *FolderConfiguration) GetLabel() string {
-	if x != nil {
-		if x.xxx_hidden_Label != nil {
-			return *x.xxx_hidden_Label
-		}
-		return ""
-	}
-	return ""
-}
-
-func (x *FolderConfiguration) GetPaused() bool {
-	if x != nil {
-		return x.xxx_hidden_Paused
-	}
-	return false
-}
-
-func (x *FolderConfiguration) GetFilesystem() *FolderConfiguration_Filesystem {
-	if x != nil {
-		return x.xxx_hidden_Filesystem
-	}
-	return nil
-}
-
-func (x *FolderConfiguration) GetDevices() []*FolderConfiguration_Device {
-	if x != nil {
-		if x.xxx_hidden_Devices != nil {
-			return *x.xxx_hidden_Devices
-		}
-	}
-	return nil
-}
-
-func (x *FolderConfiguration) GetScanning() *FolderConfiguration_Scanning {
-	if x != nil {
-		return x.xxx_hidden_Scanning
-	}
-	return nil
-}
-
-func (x *FolderConfiguration) GetSyncing() *FolderConfiguration_Syncing {
-	if x != nil {
-		return x.xxx_hidden_Syncing
-	}
-	return nil
-}
-
-func (x *FolderConfiguration) GetVersioning() *FolderConfiguration_Versioning {
-	if x != nil {
-		return x.xxx_hidden_Versioning
-	}
-	return nil
-}
-
-func (x *FolderConfiguration) SetType(v FolderType) {
-	x.xxx_hidden_Type = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 9)
-}
-
-func (x *FolderConfiguration) SetId(v string) {
-	x.xxx_hidden_Id = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 9)
-}
-
-func (x *FolderConfiguration) SetLabel(v string) {
-	x.xxx_hidden_Label = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 9)
-}
-
-func (x *FolderConfiguration) SetPaused(v bool) {
-	x.xxx_hidden_Paused = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 9)
-}
-
-func (x *FolderConfiguration) SetFilesystem(v *FolderConfiguration_Filesystem) {
-	x.xxx_hidden_Filesystem = v
-}
-
-func (x *FolderConfiguration) SetDevices(v []*FolderConfiguration_Device) {
-	x.xxx_hidden_Devices = &v
-}
-
-func (x *FolderConfiguration) SetScanning(v *FolderConfiguration_Scanning) {
-	x.xxx_hidden_Scanning = v
-}
-
-func (x *FolderConfiguration) SetSyncing(v *FolderConfiguration_Syncing) {
-	x.xxx_hidden_Syncing = v
-}
-
-func (x *FolderConfiguration) SetVersioning(v *FolderConfiguration_Versioning) {
-	x.xxx_hidden_Versioning = v
-}
-
-func (x *FolderConfiguration) HasType() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
-}
-
-func (x *FolderConfiguration) HasId() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration) HasLabel() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *FolderConfiguration) HasPaused() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
-}
-
-func (x *FolderConfiguration) HasFilesystem() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Filesystem != nil
-}
-
-func (x *FolderConfiguration) HasScanning() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Scanning != nil
-}
-
-func (x *FolderConfiguration) HasSyncing() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Syncing != nil
-}
-
-func (x *FolderConfiguration) HasVersioning() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Versioning != nil
-}
-
-func (x *FolderConfiguration) ClearType() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-}
-
-func (x *FolderConfiguration) ClearId() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_Id = nil
-}
-
-func (x *FolderConfiguration) ClearLabel() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-	x.xxx_hidden_Label = nil
-}
-
-func (x *FolderConfiguration) ClearPaused() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-	x.xxx_hidden_Paused = false
-}
-
-func (x *FolderConfiguration) ClearFilesystem() {
-	x.xxx_hidden_Filesystem = nil
-}
-
-func (x *FolderConfiguration) ClearScanning() {
-	x.xxx_hidden_Scanning = nil
-}
-
-func (x *FolderConfiguration) ClearSyncing() {
-	x.xxx_hidden_Syncing = nil
-}
-
-func (x *FolderConfiguration) ClearVersioning() {
-	x.xxx_hidden_Versioning = nil
-}
-
-type FolderConfiguration_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Type       *FolderType
-	Id         *string
-	Label      *string
-	Paused     *bool
-	Filesystem *FolderConfiguration_Filesystem
-	Devices    []*FolderConfiguration_Device
-	Scanning   *FolderConfiguration_Scanning
-	Syncing    *FolderConfiguration_Syncing
-	Versioning *FolderConfiguration_Versioning
-}
-
-func (b0 FolderConfiguration_builder) Build() *FolderConfiguration {
-	m0 := &FolderConfiguration{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.Type != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 9)
-		x.xxx_hidden_Type = *b.Type
-	}
-	if b.Id != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 9)
-		x.xxx_hidden_Id = b.Id
-	}
-	if b.Label != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 9)
-		x.xxx_hidden_Label = b.Label
-	}
-	if b.Paused != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 9)
-		x.xxx_hidden_Paused = *b.Paused
-	}
-	x.xxx_hidden_Filesystem = b.Filesystem
-	x.xxx_hidden_Devices = &b.Devices
-	x.xxx_hidden_Scanning = b.Scanning
-	x.xxx_hidden_Syncing = b.Syncing
-	x.xxx_hidden_Versioning = b.Versioning
-	return m0
-}
-
-type Size struct {
-	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Value       float64                `protobuf:"fixed64,1,opt,name=value"`
-	xxx_hidden_Unit        SizeUnit               `protobuf:"varint,2,opt,name=unit,enum=syncthing.config.v2.SizeUnit"`
-	XXX_raceDetectHookData protoimpl.RaceDetectHookData
-	XXX_presence           [1]uint32
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
-}
-
-func (x *Size) Reset() {
-	*x = Size{}
-	mi := &file_config_v2_configuration_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Size) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Size) ProtoMessage() {}
-
-func (x *Size) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *Size) GetValue() float64 {
-	if x != nil {
-		return x.xxx_hidden_Value
-	}
-	return 0
-}
-
-func (x *Size) GetUnit() SizeUnit {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_Unit
-		}
-	}
-	return SizeUnit_SIZE_UNIT_UNSPECIFIED
-}
-
-func (x *Size) SetValue(v float64) {
-	x.xxx_hidden_Value = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
-}
-
-func (x *Size) SetUnit(v SizeUnit) {
-	x.xxx_hidden_Unit = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
-}
-
-func (x *Size) HasValue() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
-}
-
-func (x *Size) HasUnit() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *Size) ClearValue() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-	x.xxx_hidden_Value = 0
-}
-
-func (x *Size) ClearUnit() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_Unit = SizeUnit_SIZE_UNIT_UNSPECIFIED
-}
-
-type Size_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Value *float64
-	Unit  *SizeUnit
-}
-
-func (b0 Size_builder) Build() *Size {
-	m0 := &Size{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.Value != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 2)
-		x.xxx_hidden_Value = *b.Value
-	}
-	if b.Unit != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 2)
-		x.xxx_hidden_Unit = *b.Unit
-	}
-	return m0
-}
-
-type XattrFilter struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *XattrFilter) Reset() {
-	*x = XattrFilter{}
-	mi := &file_config_v2_configuration_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *XattrFilter) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*XattrFilter) ProtoMessage() {}
-
-func (x *XattrFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-type XattrFilter_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-}
-
-func (b0 XattrFilter_builder) Build() *XattrFilter {
-	m0 := &XattrFilter{}
-	b, x := &b0, m0
-	_, _ = b, x
 	return m0
 }
 
@@ -1119,7 +449,7 @@ type DeviceConfiguration struct {
 
 func (x *DeviceConfiguration) Reset() {
 	*x = DeviceConfiguration{}
-	mi := &file_config_v2_configuration_proto_msgTypes[6]
+	mi := &file_config_v2_configuration_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1131,7 +461,7 @@ func (x *DeviceConfiguration) String() string {
 func (*DeviceConfiguration) ProtoMessage() {}
 
 func (x *DeviceConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[6]
+	mi := &file_config_v2_configuration_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1197,7 +527,7 @@ type OptionsConfiguration_Network struct {
 
 func (x *OptionsConfiguration_Network) Reset() {
 	*x = OptionsConfiguration_Network{}
-	mi := &file_config_v2_configuration_proto_msgTypes[7]
+	mi := &file_config_v2_configuration_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1209,7 +539,7 @@ func (x *OptionsConfiguration_Network) String() string {
 func (*OptionsConfiguration_Network) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[7]
+	mi := &file_config_v2_configuration_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1307,9 +637,9 @@ func (b0 OptionsConfiguration_Network_builder) Build() *OptionsConfiguration_Net
 type OptionsConfiguration_NAT struct {
 	state                       protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Enabled          bool                   `protobuf:"varint,1,opt,name=enabled,def=1"`
-	xxx_hidden_LeaseIntervalS   int32                  `protobuf:"varint,2,opt,name=lease_interval_s,json=leaseIntervalS"`
-	xxx_hidden_RenewalIntervalS int32                  `protobuf:"varint,3,opt,name=renewal_interval_s,json=renewalIntervalS"`
-	xxx_hidden_TimeoutIntervalS int32                  `protobuf:"varint,4,opt,name=timeout_interval_s,json=timeoutIntervalS"`
+	xxx_hidden_LeaseIntervalS   int32                  `protobuf:"varint,2,opt,name=lease_interval_s,json=leaseIntervalS,def=3600"`
+	xxx_hidden_RenewalIntervalS int32                  `protobuf:"varint,3,opt,name=renewal_interval_s,json=renewalIntervalS,def=1800"`
+	xxx_hidden_TimeoutIntervalS int32                  `protobuf:"varint,4,opt,name=timeout_interval_s,json=timeoutIntervalS,def=10"`
 	XXX_raceDetectHookData      protoimpl.RaceDetectHookData
 	XXX_presence                [1]uint32
 	unknownFields               protoimpl.UnknownFields
@@ -1318,12 +648,15 @@ type OptionsConfiguration_NAT struct {
 
 // Default values for OptionsConfiguration_NAT fields.
 const (
-	Default_OptionsConfiguration_NAT_Enabled = bool(true)
+	Default_OptionsConfiguration_NAT_Enabled          = bool(true)
+	Default_OptionsConfiguration_NAT_LeaseIntervalS   = int32(3600)
+	Default_OptionsConfiguration_NAT_RenewalIntervalS = int32(1800)
+	Default_OptionsConfiguration_NAT_TimeoutIntervalS = int32(10)
 )
 
 func (x *OptionsConfiguration_NAT) Reset() {
 	*x = OptionsConfiguration_NAT{}
-	mi := &file_config_v2_configuration_proto_msgTypes[8]
+	mi := &file_config_v2_configuration_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1335,7 +668,7 @@ func (x *OptionsConfiguration_NAT) String() string {
 func (*OptionsConfiguration_NAT) ProtoMessage() {}
 
 func (x *OptionsConfiguration_NAT) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[8]
+	mi := &file_config_v2_configuration_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,23 +690,29 @@ func (x *OptionsConfiguration_NAT) GetEnabled() bool {
 
 func (x *OptionsConfiguration_NAT) GetLeaseIntervalS() int32 {
 	if x != nil {
-		return x.xxx_hidden_LeaseIntervalS
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
+			return x.xxx_hidden_LeaseIntervalS
+		}
 	}
-	return 0
+	return Default_OptionsConfiguration_NAT_LeaseIntervalS
 }
 
 func (x *OptionsConfiguration_NAT) GetRenewalIntervalS() int32 {
 	if x != nil {
-		return x.xxx_hidden_RenewalIntervalS
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
+			return x.xxx_hidden_RenewalIntervalS
+		}
 	}
-	return 0
+	return Default_OptionsConfiguration_NAT_RenewalIntervalS
 }
 
 func (x *OptionsConfiguration_NAT) GetTimeoutIntervalS() int32 {
 	if x != nil {
-		return x.xxx_hidden_TimeoutIntervalS
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 3) {
+			return x.xxx_hidden_TimeoutIntervalS
+		}
 	}
-	return 0
+	return Default_OptionsConfiguration_NAT_TimeoutIntervalS
 }
 
 func (x *OptionsConfiguration_NAT) SetEnabled(v bool) {
@@ -1430,17 +769,14 @@ func (x *OptionsConfiguration_NAT) ClearEnabled() {
 
 func (x *OptionsConfiguration_NAT) ClearLeaseIntervalS() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_LeaseIntervalS = 0
 }
 
 func (x *OptionsConfiguration_NAT) ClearRenewalIntervalS() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-	x.xxx_hidden_RenewalIntervalS = 0
 }
 
 func (x *OptionsConfiguration_NAT) ClearTimeoutIntervalS() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-	x.xxx_hidden_TimeoutIntervalS = 0
 }
 
 type OptionsConfiguration_NAT_builder struct {
@@ -1485,7 +821,7 @@ type OptionsConfiguration_Discovery struct {
 
 func (x *OptionsConfiguration_Discovery) Reset() {
 	*x = OptionsConfiguration_Discovery{}
-	mi := &file_config_v2_configuration_proto_msgTypes[9]
+	mi := &file_config_v2_configuration_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1497,7 +833,7 @@ func (x *OptionsConfiguration_Discovery) String() string {
 func (*OptionsConfiguration_Discovery) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Discovery) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[9]
+	mi := &file_config_v2_configuration_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1586,7 +922,7 @@ const (
 
 func (x *OptionsConfiguration_Relays) Reset() {
 	*x = OptionsConfiguration_Relays{}
-	mi := &file_config_v2_configuration_proto_msgTypes[10]
+	mi := &file_config_v2_configuration_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1598,7 +934,7 @@ func (x *OptionsConfiguration_Relays) String() string {
 func (*OptionsConfiguration_Relays) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Relays) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[10]
+	mi := &file_config_v2_configuration_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1698,7 +1034,7 @@ const (
 
 func (x *OptionsConfiguration_UsageReporting) Reset() {
 	*x = OptionsConfiguration_UsageReporting{}
-	mi := &file_config_v2_configuration_proto_msgTypes[11]
+	mi := &file_config_v2_configuration_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1710,7 +1046,7 @@ func (x *OptionsConfiguration_UsageReporting) String() string {
 func (*OptionsConfiguration_UsageReporting) ProtoMessage() {}
 
 func (x *OptionsConfiguration_UsageReporting) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[11]
+	mi := &file_config_v2_configuration_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1816,7 +1152,7 @@ const (
 
 func (x *OptionsConfiguration_AutoUpgrade) Reset() {
 	*x = OptionsConfiguration_AutoUpgrade{}
-	mi := &file_config_v2_configuration_proto_msgTypes[12]
+	mi := &file_config_v2_configuration_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1828,7 +1164,7 @@ func (x *OptionsConfiguration_AutoUpgrade) String() string {
 func (*OptionsConfiguration_AutoUpgrade) ProtoMessage() {}
 
 func (x *OptionsConfiguration_AutoUpgrade) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[12]
+	mi := &file_config_v2_configuration_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1985,7 +1321,7 @@ type OptionsConfiguration_Network_ConnectionLimits struct {
 
 func (x *OptionsConfiguration_Network_ConnectionLimits) Reset() {
 	*x = OptionsConfiguration_Network_ConnectionLimits{}
-	mi := &file_config_v2_configuration_proto_msgTypes[13]
+	mi := &file_config_v2_configuration_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1997,7 +1333,7 @@ func (x *OptionsConfiguration_Network_ConnectionLimits) String() string {
 func (*OptionsConfiguration_Network_ConnectionLimits) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_ConnectionLimits) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[13]
+	mi := &file_config_v2_configuration_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2081,8 +1417,8 @@ func (b0 OptionsConfiguration_Network_ConnectionLimits_builder) Build() *Options
 type OptionsConfiguration_Network_ConnectionPriorities struct {
 	state                       protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_TcpLan           int32                  `protobuf:"varint,1,opt,name=tcp_lan,json=tcpLan,def=10"`
-	xxx_hidden_TcpWan           int32                  `protobuf:"varint,2,opt,name=tcp_wan,json=tcpWan,def=30"`
 	xxx_hidden_QuicLan          int32                  `protobuf:"varint,3,opt,name=quic_lan,json=quicLan,def=20"`
+	xxx_hidden_TcpWan           int32                  `protobuf:"varint,2,opt,name=tcp_wan,json=tcpWan,def=30"`
 	xxx_hidden_QuicWan          int32                  `protobuf:"varint,4,opt,name=quic_wan,json=quicWan,def=40"`
 	xxx_hidden_Relays           int32                  `protobuf:"varint,5,opt,name=relays,def=50"`
 	xxx_hidden_UpgradeThreshold int32                  `protobuf:"varint,6,opt,name=upgrade_threshold,json=upgradeThreshold,def=0"`
@@ -2095,8 +1431,8 @@ type OptionsConfiguration_Network_ConnectionPriorities struct {
 // Default values for OptionsConfiguration_Network_ConnectionPriorities fields.
 const (
 	Default_OptionsConfiguration_Network_ConnectionPriorities_TcpLan           = int32(10)
-	Default_OptionsConfiguration_Network_ConnectionPriorities_TcpWan           = int32(30)
 	Default_OptionsConfiguration_Network_ConnectionPriorities_QuicLan          = int32(20)
+	Default_OptionsConfiguration_Network_ConnectionPriorities_TcpWan           = int32(30)
 	Default_OptionsConfiguration_Network_ConnectionPriorities_QuicWan          = int32(40)
 	Default_OptionsConfiguration_Network_ConnectionPriorities_Relays           = int32(50)
 	Default_OptionsConfiguration_Network_ConnectionPriorities_UpgradeThreshold = int32(0)
@@ -2104,7 +1440,7 @@ const (
 
 func (x *OptionsConfiguration_Network_ConnectionPriorities) Reset() {
 	*x = OptionsConfiguration_Network_ConnectionPriorities{}
-	mi := &file_config_v2_configuration_proto_msgTypes[14]
+	mi := &file_config_v2_configuration_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2116,7 +1452,7 @@ func (x *OptionsConfiguration_Network_ConnectionPriorities) String() string {
 func (*OptionsConfiguration_Network_ConnectionPriorities) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_ConnectionPriorities) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[14]
+	mi := &file_config_v2_configuration_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2136,22 +1472,22 @@ func (x *OptionsConfiguration_Network_ConnectionPriorities) GetTcpLan() int32 {
 	return Default_OptionsConfiguration_Network_ConnectionPriorities_TcpLan
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) GetTcpWan() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_TcpWan
-		}
-	}
-	return Default_OptionsConfiguration_Network_ConnectionPriorities_TcpWan
-}
-
 func (x *OptionsConfiguration_Network_ConnectionPriorities) GetQuicLan() int32 {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
 			return x.xxx_hidden_QuicLan
 		}
 	}
 	return Default_OptionsConfiguration_Network_ConnectionPriorities_QuicLan
+}
+
+func (x *OptionsConfiguration_Network_ConnectionPriorities) GetTcpWan() int32 {
+	if x != nil {
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
+			return x.xxx_hidden_TcpWan
+		}
+	}
+	return Default_OptionsConfiguration_Network_ConnectionPriorities_TcpWan
 }
 
 func (x *OptionsConfiguration_Network_ConnectionPriorities) GetQuicWan() int32 {
@@ -2186,13 +1522,13 @@ func (x *OptionsConfiguration_Network_ConnectionPriorities) SetTcpLan(v int32) {
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 6)
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) SetTcpWan(v int32) {
-	x.xxx_hidden_TcpWan = v
+func (x *OptionsConfiguration_Network_ConnectionPriorities) SetQuicLan(v int32) {
+	x.xxx_hidden_QuicLan = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 6)
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) SetQuicLan(v int32) {
-	x.xxx_hidden_QuicLan = v
+func (x *OptionsConfiguration_Network_ConnectionPriorities) SetTcpWan(v int32) {
+	x.xxx_hidden_TcpWan = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 6)
 }
 
@@ -2218,14 +1554,14 @@ func (x *OptionsConfiguration_Network_ConnectionPriorities) HasTcpLan() bool {
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) HasTcpWan() bool {
+func (x *OptionsConfiguration_Network_ConnectionPriorities) HasQuicLan() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) HasQuicLan() bool {
+func (x *OptionsConfiguration_Network_ConnectionPriorities) HasTcpWan() bool {
 	if x == nil {
 		return false
 	}
@@ -2257,11 +1593,11 @@ func (x *OptionsConfiguration_Network_ConnectionPriorities) ClearTcpLan() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) ClearTcpWan() {
+func (x *OptionsConfiguration_Network_ConnectionPriorities) ClearQuicLan() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
 }
 
-func (x *OptionsConfiguration_Network_ConnectionPriorities) ClearQuicLan() {
+func (x *OptionsConfiguration_Network_ConnectionPriorities) ClearTcpWan() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
 }
 
@@ -2281,8 +1617,8 @@ type OptionsConfiguration_Network_ConnectionPriorities_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	TcpLan           *int32
-	TcpWan           *int32
 	QuicLan          *int32
+	TcpWan           *int32
 	QuicWan          *int32
 	Relays           *int32
 	UpgradeThreshold *int32
@@ -2296,13 +1632,13 @@ func (b0 OptionsConfiguration_Network_ConnectionPriorities_builder) Build() *Opt
 		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 6)
 		x.xxx_hidden_TcpLan = *b.TcpLan
 	}
-	if b.TcpWan != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 6)
-		x.xxx_hidden_TcpWan = *b.TcpWan
-	}
 	if b.QuicLan != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 6)
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 6)
 		x.xxx_hidden_QuicLan = *b.QuicLan
+	}
+	if b.TcpWan != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 6)
+		x.xxx_hidden_TcpWan = *b.TcpWan
 	}
 	if b.QuicWan != nil {
 		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 6)
@@ -2332,7 +1668,7 @@ type OptionsConfiguration_Network_RateLimits struct {
 
 func (x *OptionsConfiguration_Network_RateLimits) Reset() {
 	*x = OptionsConfiguration_Network_RateLimits{}
-	mi := &file_config_v2_configuration_proto_msgTypes[15]
+	mi := &file_config_v2_configuration_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2344,7 +1680,7 @@ func (x *OptionsConfiguration_Network_RateLimits) String() string {
 func (*OptionsConfiguration_Network_RateLimits) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Network_RateLimits) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[15]
+	mi := &file_config_v2_configuration_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2474,7 +1810,7 @@ const (
 
 func (x *OptionsConfiguration_Discovery_Local) Reset() {
 	*x = OptionsConfiguration_Discovery_Local{}
-	mi := &file_config_v2_configuration_proto_msgTypes[16]
+	mi := &file_config_v2_configuration_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2486,7 +1822,7 @@ func (x *OptionsConfiguration_Discovery_Local) String() string {
 func (*OptionsConfiguration_Discovery_Local) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Discovery_Local) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[16]
+	mi := &file_config_v2_configuration_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2619,7 +1955,7 @@ const (
 
 func (x *OptionsConfiguration_Discovery_Global) Reset() {
 	*x = OptionsConfiguration_Discovery_Global{}
-	mi := &file_config_v2_configuration_proto_msgTypes[17]
+	mi := &file_config_v2_configuration_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2631,7 +1967,7 @@ func (x *OptionsConfiguration_Discovery_Global) String() string {
 func (*OptionsConfiguration_Discovery_Global) ProtoMessage() {}
 
 func (x *OptionsConfiguration_Discovery_Global) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[17]
+	mi := &file_config_v2_configuration_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2708,1287 +2044,21 @@ func (b0 OptionsConfiguration_Discovery_Global_builder) Build() *OptionsConfigur
 	return m0
 }
 
-type FolderConfiguration_Filesystem struct {
-	state                      protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Path            *string                `protobuf:"bytes,1,opt,name=path"`
-	xxx_hidden_FsType          FilesystemType         `protobuf:"varint,2,opt,name=fs_type,json=fsType,enum=syncthing.config.v2.FilesystemType,def=1"`
-	xxx_hidden_CaseSensitiveFs bool                   `protobuf:"varint,3,opt,name=case_sensitive_fs,json=caseSensitiveFs"`
-	xxx_hidden_JunctionsAsDirs bool                   `protobuf:"varint,4,opt,name=junctions_as_dirs,json=junctionsAsDirs"`
-	xxx_hidden_MinDiskFree     *Size                  `protobuf:"bytes,13,opt,name=min_disk_free,json=minDiskFree"`
-	XXX_raceDetectHookData     protoimpl.RaceDetectHookData
-	XXX_presence               [1]uint32
-	unknownFields              protoimpl.UnknownFields
-	sizeCache                  protoimpl.SizeCache
-}
-
-// Default values for FolderConfiguration_Filesystem fields.
-const (
-	Default_FolderConfiguration_Filesystem_FsType = FilesystemType_FILESYSTEM_TYPE_BASIC
-)
-
-func (x *FolderConfiguration_Filesystem) Reset() {
-	*x = FolderConfiguration_Filesystem{}
-	mi := &file_config_v2_configuration_proto_msgTypes[18]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration_Filesystem) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration_Filesystem) ProtoMessage() {}
-
-func (x *FolderConfiguration_Filesystem) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[18]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *FolderConfiguration_Filesystem) GetPath() string {
-	if x != nil {
-		if x.xxx_hidden_Path != nil {
-			return *x.xxx_hidden_Path
-		}
-		return ""
-	}
-	return ""
-}
-
-func (x *FolderConfiguration_Filesystem) GetFsType() FilesystemType {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_FsType
-		}
-	}
-	return Default_FolderConfiguration_Filesystem_FsType
-}
-
-func (x *FolderConfiguration_Filesystem) GetCaseSensitiveFs() bool {
-	if x != nil {
-		return x.xxx_hidden_CaseSensitiveFs
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Filesystem) GetJunctionsAsDirs() bool {
-	if x != nil {
-		return x.xxx_hidden_JunctionsAsDirs
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Filesystem) GetMinDiskFree() *Size {
-	if x != nil {
-		return x.xxx_hidden_MinDiskFree
-	}
-	return nil
-}
-
-func (x *FolderConfiguration_Filesystem) SetPath(v string) {
-	x.xxx_hidden_Path = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
-}
-
-func (x *FolderConfiguration_Filesystem) SetFsType(v FilesystemType) {
-	x.xxx_hidden_FsType = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
-}
-
-func (x *FolderConfiguration_Filesystem) SetCaseSensitiveFs(v bool) {
-	x.xxx_hidden_CaseSensitiveFs = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
-}
-
-func (x *FolderConfiguration_Filesystem) SetJunctionsAsDirs(v bool) {
-	x.xxx_hidden_JunctionsAsDirs = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 5)
-}
-
-func (x *FolderConfiguration_Filesystem) SetMinDiskFree(v *Size) {
-	x.xxx_hidden_MinDiskFree = v
-}
-
-func (x *FolderConfiguration_Filesystem) HasPath() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
-}
-
-func (x *FolderConfiguration_Filesystem) HasFsType() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Filesystem) HasCaseSensitiveFs() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *FolderConfiguration_Filesystem) HasJunctionsAsDirs() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
-}
-
-func (x *FolderConfiguration_Filesystem) HasMinDiskFree() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_MinDiskFree != nil
-}
-
-func (x *FolderConfiguration_Filesystem) ClearPath() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-	x.xxx_hidden_Path = nil
-}
-
-func (x *FolderConfiguration_Filesystem) ClearFsType() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Filesystem) ClearCaseSensitiveFs() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-	x.xxx_hidden_CaseSensitiveFs = false
-}
-
-func (x *FolderConfiguration_Filesystem) ClearJunctionsAsDirs() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-	x.xxx_hidden_JunctionsAsDirs = false
-}
-
-func (x *FolderConfiguration_Filesystem) ClearMinDiskFree() {
-	x.xxx_hidden_MinDiskFree = nil
-}
-
-type FolderConfiguration_Filesystem_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Path            *string
-	FsType          *FilesystemType
-	CaseSensitiveFs *bool
-	JunctionsAsDirs *bool
-	MinDiskFree     *Size
-}
-
-func (b0 FolderConfiguration_Filesystem_builder) Build() *FolderConfiguration_Filesystem {
-	m0 := &FolderConfiguration_Filesystem{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.Path != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 5)
-		x.xxx_hidden_Path = b.Path
-	}
-	if b.FsType != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
-		x.xxx_hidden_FsType = *b.FsType
-	}
-	if b.CaseSensitiveFs != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
-		x.xxx_hidden_CaseSensitiveFs = *b.CaseSensitiveFs
-	}
-	if b.JunctionsAsDirs != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 5)
-		x.xxx_hidden_JunctionsAsDirs = *b.JunctionsAsDirs
-	}
-	x.xxx_hidden_MinDiskFree = b.MinDiskFree
-	return m0
-}
-
-type FolderConfiguration_Device struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FolderConfiguration_Device) Reset() {
-	*x = FolderConfiguration_Device{}
-	mi := &file_config_v2_configuration_proto_msgTypes[19]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration_Device) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration_Device) ProtoMessage() {}
-
-func (x *FolderConfiguration_Device) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[19]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-type FolderConfiguration_Device_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-}
-
-func (b0 FolderConfiguration_Device_builder) Build() *FolderConfiguration_Device {
-	m0 := &FolderConfiguration_Device{}
-	b, x := &b0, m0
-	_, _ = b, x
-	return m0
-}
-
-type FolderConfiguration_Scanning struct {
-	state                        protoimpl.MessageState                `protogen:"opaque.v1"`
-	xxx_hidden_Watcher           *FolderConfiguration_Scanning_Watcher `protobuf:"bytes,1,opt,name=watcher"`
-	xxx_hidden_AutoNormalize     bool                                  `protobuf:"varint,12,opt,name=auto_normalize,json=autoNormalize,def=1"`
-	xxx_hidden_Ownership         bool                                  `protobuf:"varint,34,opt,name=ownership"`
-	xxx_hidden_Xattrs            bool                                  `protobuf:"varint,36,opt,name=xattrs"`
-	xxx_hidden_Hashers           int32                                 `protobuf:"varint,3,opt,name=hashers"`
-	xxx_hidden_ModTimeWindowS    int32                                 `protobuf:"varint,26,opt,name=mod_time_window_s,json=modTimeWindowS"`
-	xxx_hidden_ProgressIntervalS int32                                 `protobuf:"varint,19,opt,name=progress_interval_s,json=progressIntervalS"`
-	xxx_hidden_RescanIntervalS   int32                                 `protobuf:"varint,2,opt,name=rescan_interval_s,json=rescanIntervalS,def=3600"`
-	xxx_hidden_MarkerName        *string                               `protobuf:"bytes,25,opt,name=marker_name,json=markerName,def=.stfolder"`
-	xxx_hidden_XattrFilter       *XattrFilter                          `protobuf:"bytes,37,opt,name=xattr_filter,json=xattrFilter"`
-	XXX_raceDetectHookData       protoimpl.RaceDetectHookData
-	XXX_presence                 [1]uint32
-	unknownFields                protoimpl.UnknownFields
-	sizeCache                    protoimpl.SizeCache
-}
-
-// Default values for FolderConfiguration_Scanning fields.
-const (
-	Default_FolderConfiguration_Scanning_AutoNormalize   = bool(true)
-	Default_FolderConfiguration_Scanning_RescanIntervalS = int32(3600)
-	Default_FolderConfiguration_Scanning_MarkerName      = string(".stfolder")
-)
-
-func (x *FolderConfiguration_Scanning) Reset() {
-	*x = FolderConfiguration_Scanning{}
-	mi := &file_config_v2_configuration_proto_msgTypes[20]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration_Scanning) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration_Scanning) ProtoMessage() {}
-
-func (x *FolderConfiguration_Scanning) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[20]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *FolderConfiguration_Scanning) GetWatcher() *FolderConfiguration_Scanning_Watcher {
-	if x != nil {
-		return x.xxx_hidden_Watcher
-	}
-	return nil
-}
-
-func (x *FolderConfiguration_Scanning) GetAutoNormalize() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_AutoNormalize
-		}
-	}
-	return Default_FolderConfiguration_Scanning_AutoNormalize
-}
-
-func (x *FolderConfiguration_Scanning) GetOwnership() bool {
-	if x != nil {
-		return x.xxx_hidden_Ownership
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Scanning) GetXattrs() bool {
-	if x != nil {
-		return x.xxx_hidden_Xattrs
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Scanning) GetHashers() int32 {
-	if x != nil {
-		return x.xxx_hidden_Hashers
-	}
-	return 0
-}
-
-func (x *FolderConfiguration_Scanning) GetModTimeWindowS() int32 {
-	if x != nil {
-		return x.xxx_hidden_ModTimeWindowS
-	}
-	return 0
-}
-
-func (x *FolderConfiguration_Scanning) GetProgressIntervalS() int32 {
-	if x != nil {
-		return x.xxx_hidden_ProgressIntervalS
-	}
-	return 0
-}
-
-func (x *FolderConfiguration_Scanning) GetRescanIntervalS() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 7) {
-			return x.xxx_hidden_RescanIntervalS
-		}
-	}
-	return Default_FolderConfiguration_Scanning_RescanIntervalS
-}
-
-func (x *FolderConfiguration_Scanning) GetMarkerName() string {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 8) {
-			if x.xxx_hidden_MarkerName != nil {
-				return *x.xxx_hidden_MarkerName
-			}
-			return Default_FolderConfiguration_Scanning_MarkerName
-		}
-	}
-	return Default_FolderConfiguration_Scanning_MarkerName
-}
-
-func (x *FolderConfiguration_Scanning) GetXattrFilter() *XattrFilter {
-	if x != nil {
-		return x.xxx_hidden_XattrFilter
-	}
-	return nil
-}
-
-func (x *FolderConfiguration_Scanning) SetWatcher(v *FolderConfiguration_Scanning_Watcher) {
-	x.xxx_hidden_Watcher = v
-}
-
-func (x *FolderConfiguration_Scanning) SetAutoNormalize(v bool) {
-	x.xxx_hidden_AutoNormalize = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetOwnership(v bool) {
-	x.xxx_hidden_Ownership = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetXattrs(v bool) {
-	x.xxx_hidden_Xattrs = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetHashers(v int32) {
-	x.xxx_hidden_Hashers = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetModTimeWindowS(v int32) {
-	x.xxx_hidden_ModTimeWindowS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 5, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetProgressIntervalS(v int32) {
-	x.xxx_hidden_ProgressIntervalS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetRescanIntervalS(v int32) {
-	x.xxx_hidden_RescanIntervalS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 7, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetMarkerName(v string) {
-	x.xxx_hidden_MarkerName = &v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 8, 10)
-}
-
-func (x *FolderConfiguration_Scanning) SetXattrFilter(v *XattrFilter) {
-	x.xxx_hidden_XattrFilter = v
-}
-
-func (x *FolderConfiguration_Scanning) HasWatcher() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Watcher != nil
-}
-
-func (x *FolderConfiguration_Scanning) HasAutoNormalize() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Scanning) HasOwnership() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *FolderConfiguration_Scanning) HasXattrs() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
-}
-
-func (x *FolderConfiguration_Scanning) HasHashers() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
-}
-
-func (x *FolderConfiguration_Scanning) HasModTimeWindowS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 5)
-}
-
-func (x *FolderConfiguration_Scanning) HasProgressIntervalS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 6)
-}
-
-func (x *FolderConfiguration_Scanning) HasRescanIntervalS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 7)
-}
-
-func (x *FolderConfiguration_Scanning) HasMarkerName() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 8)
-}
-
-func (x *FolderConfiguration_Scanning) HasXattrFilter() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_XattrFilter != nil
-}
-
-func (x *FolderConfiguration_Scanning) ClearWatcher() {
-	x.xxx_hidden_Watcher = nil
-}
-
-func (x *FolderConfiguration_Scanning) ClearAutoNormalize() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Scanning) ClearOwnership() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-	x.xxx_hidden_Ownership = false
-}
-
-func (x *FolderConfiguration_Scanning) ClearXattrs() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-	x.xxx_hidden_Xattrs = false
-}
-
-func (x *FolderConfiguration_Scanning) ClearHashers() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
-	x.xxx_hidden_Hashers = 0
-}
-
-func (x *FolderConfiguration_Scanning) ClearModTimeWindowS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 5)
-	x.xxx_hidden_ModTimeWindowS = 0
-}
-
-func (x *FolderConfiguration_Scanning) ClearProgressIntervalS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 6)
-	x.xxx_hidden_ProgressIntervalS = 0
-}
-
-func (x *FolderConfiguration_Scanning) ClearRescanIntervalS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 7)
-}
-
-func (x *FolderConfiguration_Scanning) ClearMarkerName() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 8)
-}
-
-func (x *FolderConfiguration_Scanning) ClearXattrFilter() {
-	x.xxx_hidden_XattrFilter = nil
-}
-
-type FolderConfiguration_Scanning_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Watcher           *FolderConfiguration_Scanning_Watcher
-	AutoNormalize     *bool
-	Ownership         *bool
-	Xattrs            *bool
-	Hashers           *int32
-	ModTimeWindowS    *int32
-	ProgressIntervalS *int32
-	RescanIntervalS   *int32
-	MarkerName        *string
-	XattrFilter       *XattrFilter
-}
-
-func (b0 FolderConfiguration_Scanning_builder) Build() *FolderConfiguration_Scanning {
-	m0 := &FolderConfiguration_Scanning{}
-	b, x := &b0, m0
-	_, _ = b, x
-	x.xxx_hidden_Watcher = b.Watcher
-	if b.AutoNormalize != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 10)
-		x.xxx_hidden_AutoNormalize = *b.AutoNormalize
-	}
-	if b.Ownership != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 10)
-		x.xxx_hidden_Ownership = *b.Ownership
-	}
-	if b.Xattrs != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 10)
-		x.xxx_hidden_Xattrs = *b.Xattrs
-	}
-	if b.Hashers != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 10)
-		x.xxx_hidden_Hashers = *b.Hashers
-	}
-	if b.ModTimeWindowS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 5, 10)
-		x.xxx_hidden_ModTimeWindowS = *b.ModTimeWindowS
-	}
-	if b.ProgressIntervalS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 10)
-		x.xxx_hidden_ProgressIntervalS = *b.ProgressIntervalS
-	}
-	if b.RescanIntervalS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 7, 10)
-		x.xxx_hidden_RescanIntervalS = *b.RescanIntervalS
-	}
-	if b.MarkerName != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 8, 10)
-		x.xxx_hidden_MarkerName = b.MarkerName
-	}
-	x.xxx_hidden_XattrFilter = b.XattrFilter
-	return m0
-}
-
-type FolderConfiguration_Syncing struct {
-	state                          protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_IgnorePerms         bool                   `protobuf:"varint,11,opt,name=ignore_perms,json=ignorePerms"`
-	xxx_hidden_Copiers             int32                  `protobuf:"varint,15,opt,name=copiers,def=2"`
-	xxx_hidden_PullerMaxPendingKib int32                  `protobuf:"varint,16,opt,name=puller_max_pending_kib,json=pullerMaxPendingKib,def=32768"`
-	xxx_hidden_Order               PullOrder              `protobuf:"varint,18,opt,name=order,enum=syncthing.config.v2.PullOrder"`
-	xxx_hidden_PullerPauseS        int32                  `protobuf:"varint,20,opt,name=puller_pause_s,json=pullerPauseS,def=60"`
-	xxx_hidden_MaxConflicts        int32                  `protobuf:"varint,21,opt,name=max_conflicts,json=maxConflicts,def=5"`
-	xxx_hidden_SparseFiles         bool                   `protobuf:"varint,22,opt,name=sparse_files,json=sparseFiles,def=1"`
-	xxx_hidden_MaxConcurrentWrites int32                  `protobuf:"varint,27,opt,name=max_concurrent_writes,json=maxConcurrentWrites,def=2"`
-	xxx_hidden_DisableTempIndexes  bool                   `protobuf:"varint,23,opt,name=disable_temp_indexes,json=disableTempIndexes"`
-	xxx_hidden_Fsync               bool                   `protobuf:"varint,28,opt,name=fsync,def=1"`
-	xxx_hidden_BlockPullOrder      BlockPullOrder         `protobuf:"varint,29,opt,name=block_pull_order,json=blockPullOrder,enum=syncthing.config.v2.BlockPullOrder"`
-	xxx_hidden_CopyRangeMethod     CopyRangeMethod        `protobuf:"varint,30,opt,name=copy_range_method,json=copyRangeMethod,enum=syncthing.config.v2.CopyRangeMethod"`
-	xxx_hidden_Ownership           bool                   `protobuf:"varint,33,opt,name=ownership"`
-	xxx_hidden_Xattrs              bool                   `protobuf:"varint,35,opt,name=xattrs"`
-	XXX_raceDetectHookData         protoimpl.RaceDetectHookData
-	XXX_presence                   [1]uint32
-	unknownFields                  protoimpl.UnknownFields
-	sizeCache                      protoimpl.SizeCache
-}
-
-// Default values for FolderConfiguration_Syncing fields.
-const (
-	Default_FolderConfiguration_Syncing_Copiers             = int32(2)
-	Default_FolderConfiguration_Syncing_PullerMaxPendingKib = int32(32768)
-	Default_FolderConfiguration_Syncing_PullerPauseS        = int32(60)
-	Default_FolderConfiguration_Syncing_MaxConflicts        = int32(5)
-	Default_FolderConfiguration_Syncing_SparseFiles         = bool(true)
-	Default_FolderConfiguration_Syncing_MaxConcurrentWrites = int32(2)
-	Default_FolderConfiguration_Syncing_Fsync               = bool(true)
-)
-
-func (x *FolderConfiguration_Syncing) Reset() {
-	*x = FolderConfiguration_Syncing{}
-	mi := &file_config_v2_configuration_proto_msgTypes[21]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration_Syncing) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration_Syncing) ProtoMessage() {}
-
-func (x *FolderConfiguration_Syncing) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[21]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *FolderConfiguration_Syncing) GetIgnorePerms() bool {
-	if x != nil {
-		return x.xxx_hidden_IgnorePerms
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Syncing) GetCopiers() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_Copiers
-		}
-	}
-	return Default_FolderConfiguration_Syncing_Copiers
-}
-
-func (x *FolderConfiguration_Syncing) GetPullerMaxPendingKib() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
-			return x.xxx_hidden_PullerMaxPendingKib
-		}
-	}
-	return Default_FolderConfiguration_Syncing_PullerMaxPendingKib
-}
-
-func (x *FolderConfiguration_Syncing) GetOrder() PullOrder {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 3) {
-			return x.xxx_hidden_Order
-		}
-	}
-	return PullOrder_PULL_ORDER_UNSPECIFIED
-}
-
-func (x *FolderConfiguration_Syncing) GetPullerPauseS() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 4) {
-			return x.xxx_hidden_PullerPauseS
-		}
-	}
-	return Default_FolderConfiguration_Syncing_PullerPauseS
-}
-
-func (x *FolderConfiguration_Syncing) GetMaxConflicts() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 5) {
-			return x.xxx_hidden_MaxConflicts
-		}
-	}
-	return Default_FolderConfiguration_Syncing_MaxConflicts
-}
-
-func (x *FolderConfiguration_Syncing) GetSparseFiles() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 6) {
-			return x.xxx_hidden_SparseFiles
-		}
-	}
-	return Default_FolderConfiguration_Syncing_SparseFiles
-}
-
-func (x *FolderConfiguration_Syncing) GetMaxConcurrentWrites() int32 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 7) {
-			return x.xxx_hidden_MaxConcurrentWrites
-		}
-	}
-	return Default_FolderConfiguration_Syncing_MaxConcurrentWrites
-}
-
-func (x *FolderConfiguration_Syncing) GetDisableTempIndexes() bool {
-	if x != nil {
-		return x.xxx_hidden_DisableTempIndexes
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Syncing) GetFsync() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 9) {
-			return x.xxx_hidden_Fsync
-		}
-	}
-	return Default_FolderConfiguration_Syncing_Fsync
-}
-
-func (x *FolderConfiguration_Syncing) GetBlockPullOrder() BlockPullOrder {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 10) {
-			return x.xxx_hidden_BlockPullOrder
-		}
-	}
-	return BlockPullOrder_BLOCK_PULL_ORDER_UNSPECIFIED
-}
-
-func (x *FolderConfiguration_Syncing) GetCopyRangeMethod() CopyRangeMethod {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 11) {
-			return x.xxx_hidden_CopyRangeMethod
-		}
-	}
-	return CopyRangeMethod_COPY_RANGE_METHOD_UNSPECIFIED
-}
-
-func (x *FolderConfiguration_Syncing) GetOwnership() bool {
-	if x != nil {
-		return x.xxx_hidden_Ownership
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Syncing) GetXattrs() bool {
-	if x != nil {
-		return x.xxx_hidden_Xattrs
-	}
-	return false
-}
-
-func (x *FolderConfiguration_Syncing) SetIgnorePerms(v bool) {
-	x.xxx_hidden_IgnorePerms = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetCopiers(v int32) {
-	x.xxx_hidden_Copiers = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetPullerMaxPendingKib(v int32) {
-	x.xxx_hidden_PullerMaxPendingKib = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetOrder(v PullOrder) {
-	x.xxx_hidden_Order = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetPullerPauseS(v int32) {
-	x.xxx_hidden_PullerPauseS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetMaxConflicts(v int32) {
-	x.xxx_hidden_MaxConflicts = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 5, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetSparseFiles(v bool) {
-	x.xxx_hidden_SparseFiles = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 6, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetMaxConcurrentWrites(v int32) {
-	x.xxx_hidden_MaxConcurrentWrites = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 7, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetDisableTempIndexes(v bool) {
-	x.xxx_hidden_DisableTempIndexes = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 8, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetFsync(v bool) {
-	x.xxx_hidden_Fsync = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 9, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetBlockPullOrder(v BlockPullOrder) {
-	x.xxx_hidden_BlockPullOrder = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 10, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetCopyRangeMethod(v CopyRangeMethod) {
-	x.xxx_hidden_CopyRangeMethod = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 11, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetOwnership(v bool) {
-	x.xxx_hidden_Ownership = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 12, 14)
-}
-
-func (x *FolderConfiguration_Syncing) SetXattrs(v bool) {
-	x.xxx_hidden_Xattrs = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 13, 14)
-}
-
-func (x *FolderConfiguration_Syncing) HasIgnorePerms() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
-}
-
-func (x *FolderConfiguration_Syncing) HasCopiers() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Syncing) HasPullerMaxPendingKib() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *FolderConfiguration_Syncing) HasOrder() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
-}
-
-func (x *FolderConfiguration_Syncing) HasPullerPauseS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
-}
-
-func (x *FolderConfiguration_Syncing) HasMaxConflicts() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 5)
-}
-
-func (x *FolderConfiguration_Syncing) HasSparseFiles() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 6)
-}
-
-func (x *FolderConfiguration_Syncing) HasMaxConcurrentWrites() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 7)
-}
-
-func (x *FolderConfiguration_Syncing) HasDisableTempIndexes() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 8)
-}
-
-func (x *FolderConfiguration_Syncing) HasFsync() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 9)
-}
-
-func (x *FolderConfiguration_Syncing) HasBlockPullOrder() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 10)
-}
-
-func (x *FolderConfiguration_Syncing) HasCopyRangeMethod() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 11)
-}
-
-func (x *FolderConfiguration_Syncing) HasOwnership() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 12)
-}
-
-func (x *FolderConfiguration_Syncing) HasXattrs() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 13)
-}
-
-func (x *FolderConfiguration_Syncing) ClearIgnorePerms() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-	x.xxx_hidden_IgnorePerms = false
-}
-
-func (x *FolderConfiguration_Syncing) ClearCopiers() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Syncing) ClearPullerMaxPendingKib() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-}
-
-func (x *FolderConfiguration_Syncing) ClearOrder() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
-	x.xxx_hidden_Order = PullOrder_PULL_ORDER_UNSPECIFIED
-}
-
-func (x *FolderConfiguration_Syncing) ClearPullerPauseS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
-}
-
-func (x *FolderConfiguration_Syncing) ClearMaxConflicts() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 5)
-}
-
-func (x *FolderConfiguration_Syncing) ClearSparseFiles() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 6)
-}
-
-func (x *FolderConfiguration_Syncing) ClearMaxConcurrentWrites() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 7)
-}
-
-func (x *FolderConfiguration_Syncing) ClearDisableTempIndexes() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 8)
-	x.xxx_hidden_DisableTempIndexes = false
-}
-
-func (x *FolderConfiguration_Syncing) ClearFsync() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 9)
-}
-
-func (x *FolderConfiguration_Syncing) ClearBlockPullOrder() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 10)
-	x.xxx_hidden_BlockPullOrder = BlockPullOrder_BLOCK_PULL_ORDER_UNSPECIFIED
-}
-
-func (x *FolderConfiguration_Syncing) ClearCopyRangeMethod() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 11)
-	x.xxx_hidden_CopyRangeMethod = CopyRangeMethod_COPY_RANGE_METHOD_UNSPECIFIED
-}
-
-func (x *FolderConfiguration_Syncing) ClearOwnership() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 12)
-	x.xxx_hidden_Ownership = false
-}
-
-func (x *FolderConfiguration_Syncing) ClearXattrs() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 13)
-	x.xxx_hidden_Xattrs = false
-}
-
-type FolderConfiguration_Syncing_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	IgnorePerms         *bool
-	Copiers             *int32
-	PullerMaxPendingKib *int32
-	Order               *PullOrder
-	PullerPauseS        *int32
-	MaxConflicts        *int32
-	SparseFiles         *bool
-	MaxConcurrentWrites *int32
-	DisableTempIndexes  *bool
-	Fsync               *bool
-	BlockPullOrder      *BlockPullOrder
-	CopyRangeMethod     *CopyRangeMethod
-	Ownership           *bool
-	Xattrs              *bool
-}
-
-func (b0 FolderConfiguration_Syncing_builder) Build() *FolderConfiguration_Syncing {
-	m0 := &FolderConfiguration_Syncing{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.IgnorePerms != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 14)
-		x.xxx_hidden_IgnorePerms = *b.IgnorePerms
-	}
-	if b.Copiers != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 14)
-		x.xxx_hidden_Copiers = *b.Copiers
-	}
-	if b.PullerMaxPendingKib != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 14)
-		x.xxx_hidden_PullerMaxPendingKib = *b.PullerMaxPendingKib
-	}
-	if b.Order != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 3, 14)
-		x.xxx_hidden_Order = *b.Order
-	}
-	if b.PullerPauseS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 4, 14)
-		x.xxx_hidden_PullerPauseS = *b.PullerPauseS
-	}
-	if b.MaxConflicts != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 5, 14)
-		x.xxx_hidden_MaxConflicts = *b.MaxConflicts
-	}
-	if b.SparseFiles != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 6, 14)
-		x.xxx_hidden_SparseFiles = *b.SparseFiles
-	}
-	if b.MaxConcurrentWrites != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 7, 14)
-		x.xxx_hidden_MaxConcurrentWrites = *b.MaxConcurrentWrites
-	}
-	if b.DisableTempIndexes != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 8, 14)
-		x.xxx_hidden_DisableTempIndexes = *b.DisableTempIndexes
-	}
-	if b.Fsync != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 9, 14)
-		x.xxx_hidden_Fsync = *b.Fsync
-	}
-	if b.BlockPullOrder != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 10, 14)
-		x.xxx_hidden_BlockPullOrder = *b.BlockPullOrder
-	}
-	if b.CopyRangeMethod != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 11, 14)
-		x.xxx_hidden_CopyRangeMethod = *b.CopyRangeMethod
-	}
-	if b.Ownership != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 12, 14)
-		x.xxx_hidden_Ownership = *b.Ownership
-	}
-	if b.Xattrs != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 13, 14)
-		x.xxx_hidden_Xattrs = *b.Xattrs
-	}
-	return m0
-}
-
-type FolderConfiguration_Versioning struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *FolderConfiguration_Versioning) Reset() {
-	*x = FolderConfiguration_Versioning{}
-	mi := &file_config_v2_configuration_proto_msgTypes[22]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration_Versioning) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration_Versioning) ProtoMessage() {}
-
-func (x *FolderConfiguration_Versioning) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[22]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-type FolderConfiguration_Versioning_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-}
-
-func (b0 FolderConfiguration_Versioning_builder) Build() *FolderConfiguration_Versioning {
-	m0 := &FolderConfiguration_Versioning{}
-	b, x := &b0, m0
-	_, _ = b, x
-	return m0
-}
-
-type FolderConfiguration_Scanning_Watcher struct {
-	state                  protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Enabled     bool                   `protobuf:"varint,8,opt,name=enabled,def=1"`
-	xxx_hidden_DelayS      float64                `protobuf:"fixed64,9,opt,name=delay_s,json=delayS,def=5"`
-	xxx_hidden_TimeoutS    float64                `protobuf:"fixed64,10,opt,name=timeout_s,json=timeoutS,def=60"`
-	XXX_raceDetectHookData protoimpl.RaceDetectHookData
-	XXX_presence           [1]uint32
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
-}
-
-// Default values for FolderConfiguration_Scanning_Watcher fields.
-const (
-	Default_FolderConfiguration_Scanning_Watcher_Enabled  = bool(true)
-	Default_FolderConfiguration_Scanning_Watcher_DelayS   = float64(5)
-	Default_FolderConfiguration_Scanning_Watcher_TimeoutS = float64(60)
-)
-
-func (x *FolderConfiguration_Scanning_Watcher) Reset() {
-	*x = FolderConfiguration_Scanning_Watcher{}
-	mi := &file_config_v2_configuration_proto_msgTypes[23]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*FolderConfiguration_Scanning_Watcher) ProtoMessage() {}
-
-func (x *FolderConfiguration_Scanning_Watcher) ProtoReflect() protoreflect.Message {
-	mi := &file_config_v2_configuration_proto_msgTypes[23]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) GetEnabled() bool {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 0) {
-			return x.xxx_hidden_Enabled
-		}
-	}
-	return Default_FolderConfiguration_Scanning_Watcher_Enabled
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) GetDelayS() float64 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 1) {
-			return x.xxx_hidden_DelayS
-		}
-	}
-	return Default_FolderConfiguration_Scanning_Watcher_DelayS
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) GetTimeoutS() float64 {
-	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
-			return x.xxx_hidden_TimeoutS
-		}
-	}
-	return Default_FolderConfiguration_Scanning_Watcher_TimeoutS
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) SetEnabled(v bool) {
-	x.xxx_hidden_Enabled = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 3)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) SetDelayS(v float64) {
-	x.xxx_hidden_DelayS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 3)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) SetTimeoutS(v float64) {
-	x.xxx_hidden_TimeoutS = v
-	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 3)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) HasEnabled() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) HasDelayS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) HasTimeoutS() bool {
-	if x == nil {
-		return false
-	}
-	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) ClearEnabled() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) ClearDelayS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-}
-
-func (x *FolderConfiguration_Scanning_Watcher) ClearTimeoutS() {
-	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
-}
-
-type FolderConfiguration_Scanning_Watcher_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	Enabled  *bool
-	DelayS   *float64
-	TimeoutS *float64
-}
-
-func (b0 FolderConfiguration_Scanning_Watcher_builder) Build() *FolderConfiguration_Scanning_Watcher {
-	m0 := &FolderConfiguration_Scanning_Watcher{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.Enabled != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 3)
-		x.xxx_hidden_Enabled = *b.Enabled
-	}
-	if b.DelayS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 3)
-		x.xxx_hidden_DelayS = *b.DelayS
-	}
-	if b.TimeoutS != nil {
-		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 3)
-		x.xxx_hidden_TimeoutS = *b.TimeoutS
-	}
-	return m0
-}
-
 var File_config_v2_configuration_proto protoreflect.FileDescriptor
 
 const file_config_v2_configuration_proto_rawDesc = "" +
 	"\n" +
-	"\x1dconfig/v2/configuration.proto\x12\x13syncthing.config.v2\x1a!google/protobuf/go_features.proto\"\xdc\x01\n" +
+	"\x1dconfig/v2/configuration.proto\x12\x13syncthing.config.v2\x1a$config/v2/folder_configuration.proto\x1a!google/protobuf/go_features.proto\"\xdc\x01\n" +
 	"\rConfiguration\x12B\n" +
 	"\afolders\x18\x01 \x03(\v2(.syncthing.config.v2.FolderConfigurationR\afolders\x12B\n" +
 	"\adevices\x18\x02 \x03(\v2(.syncthing.config.v2.DeviceConfigurationR\adevices\x12C\n" +
 	"\aoptions\x18\x03 \x01(\v2).syncthing.config.v2.OptionsConfigurationR\aoptions\"\x1a\n" +
 	"\x04URLs\x12\x12\n" +
-	"\x04urls\x18\x01 \x03(\tR\x04urls\"\xef\x11\n" +
+	"\x04urls\x18\x01 \x03(\tR\x04urls\"\xcc\x12\n" +
 	"\x14OptionsConfiguration\x121\n" +
 	"\x06listen\x18\x01 \x01(\v2\x19.syncthing.config.v2.URLsR\x06listen\x12)\n" +
-	"\rstart_browser\x18\x02 \x01(\b:\x04trueR\fstartBrowser\x12?\n" +
+	"\rstart_browser\x18\x02 \x01(\b:\x04trueR\fstartBrowser\x12K\n" +
+	"\anetwork\x18\x19 \x01(\v21.syncthing.config.v2.OptionsConfiguration.NetworkR\anetwork\x12?\n" +
 	"\x03nat\x18\x1e \x01(\v2-.syncthing.config.v2.OptionsConfiguration.NATR\x03nat\x12Q\n" +
 	"\tdiscovery\x18( \x01(\v23.syncthing.config.v2.OptionsConfiguration.DiscoveryR\tdiscovery\x12H\n" +
 	"\x06relays\x182 \x01(\v20.syncthing.config.v2.OptionsConfiguration.RelaysR\x06relays\x12a\n" +
@@ -4004,9 +2074,9 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"\x06enough\x18\x01 \x01(\x05R\x06enough\x12\x10\n" +
 	"\x03max\x18\x02 \x01(\x05R\x03max\x1a\xda\x01\n" +
 	"\x14ConnectionPriorities\x12\x1b\n" +
-	"\atcp_lan\x18\x01 \x01(\x05:\x0210R\x06tcpLan\x12\x1b\n" +
+	"\atcp_lan\x18\x01 \x01(\x05:\x0210R\x06tcpLan\x12\x1d\n" +
+	"\bquic_lan\x18\x03 \x01(\x05:\x0220R\aquicLan\x12\x1b\n" +
 	"\atcp_wan\x18\x02 \x01(\x05:\x0230R\x06tcpWan\x12\x1d\n" +
-	"\bquic_lan\x18\x03 \x01(\x05:\x0220R\aquicLan\x12\x1d\n" +
 	"\bquic_wan\x18\x04 \x01(\x05:\x0240R\aquicWan\x12\x1a\n" +
 	"\x06relays\x18\x05 \x01(\x05:\x0250R\x06relays\x12.\n" +
 	"\x11upgrade_threshold\x18\x06 \x01(\x05:\x010R\x10upgradeThreshold\x1a\x88\x01\n" +
@@ -4014,12 +2084,12 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"RateLimits\x12\"\n" +
 	"\rmax_send_kbps\x18\x01 \x01(\x05R\vmaxSendKbps\x12\"\n" +
 	"\rmax_recv_kbps\x18\x02 \x01(\x05R\vmaxRecvKbps\x122\n" +
-	"\x15limit_lan_connections\x18\x03 \x01(\bR\x13limitLanConnections\x1a\xab\x01\n" +
+	"\x15limit_lan_connections\x18\x03 \x01(\bR\x13limitLanConnections\x1a\xbb\x01\n" +
 	"\x03NAT\x12\x1e\n" +
-	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12(\n" +
-	"\x10lease_interval_s\x18\x02 \x01(\x05R\x0eleaseIntervalS\x12,\n" +
-	"\x12renewal_interval_s\x18\x03 \x01(\x05R\x10renewalIntervalS\x12,\n" +
-	"\x12timeout_interval_s\x18\x04 \x01(\x05R\x10timeoutIntervalS\x1a\xa7\x03\n" +
+	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12.\n" +
+	"\x10lease_interval_s\x18\x02 \x01(\x05:\x043600R\x0eleaseIntervalS\x122\n" +
+	"\x12renewal_interval_s\x18\x03 \x01(\x05:\x041800R\x10renewalIntervalS\x120\n" +
+	"\x12timeout_interval_s\x18\x04 \x01(\x05:\x0210R\x10timeoutIntervalS\x1a\xa7\x03\n" +
 	"\tDiscovery\x12O\n" +
 	"\x05local\x18\x01 \x01(\v29.syncthing.config.v2.OptionsConfiguration.Discovery.LocalR\x05local\x12R\n" +
 	"\x06global\x18\x02 \x01(\v2:.syncthing.config.v2.OptionsConfiguration.Discovery.GlobalR\x06global\x1a\x95\x01\n" +
@@ -4041,162 +2111,52 @@ const file_config_v2_configuration_proto_rawDesc = "" +
 	"\x10check_interval_s\x18\x02 \x01(\x05:\x0543200R\x0echeckIntervalS\x12-\n" +
 	"\x12release_candidates\x18\x03 \x01(\bR\x11releaseCandidates\x12G\n" +
 	"\n" +
-	"server_url\x18\x04 \x01(\t:(https://upgrades.syncthing.net/meta.jsonR\tserverUrl\"\xb3\x10\n" +
-	"\x13FolderConfiguration\x12M\n" +
-	"\x04type\x18\x01 \x01(\x0e2\x1f.syncthing.config.v2.FolderType:\x18FOLDER_TYPE_SEND_RECEIVER\x04type\x12\x0e\n" +
-	"\x02id\x18\x02 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x03 \x01(\tR\x05label\x12\x16\n" +
-	"\x06paused\x18\x04 \x01(\bR\x06paused\x12S\n" +
-	"\n" +
-	"filesystem\x18\n" +
-	" \x01(\v23.syncthing.config.v2.FolderConfiguration.FilesystemR\n" +
-	"filesystem\x12I\n" +
-	"\adevices\x18\v \x03(\v2/.syncthing.config.v2.FolderConfiguration.DeviceR\adevices\x12M\n" +
-	"\bscanning\x18\f \x01(\v21.syncthing.config.v2.FolderConfiguration.ScanningR\bscanning\x12J\n" +
-	"\asyncing\x18\r \x01(\v20.syncthing.config.v2.FolderConfiguration.SyncingR\asyncing\x12S\n" +
-	"\n" +
-	"versioning\x18\x0e \x01(\v23.syncthing.config.v2.FolderConfiguration.VersioningR\n" +
-	"versioning\x1a\x8c\x02\n" +
-	"\n" +
-	"Filesystem\x12\x12\n" +
-	"\x04path\x18\x01 \x01(\tR\x04path\x12S\n" +
-	"\afs_type\x18\x02 \x01(\x0e2#.syncthing.config.v2.FilesystemType:\x15FILESYSTEM_TYPE_BASICR\x06fsType\x12*\n" +
-	"\x11case_sensitive_fs\x18\x03 \x01(\bR\x0fcaseSensitiveFs\x12*\n" +
-	"\x11junctions_as_dirs\x18\x04 \x01(\bR\x0fjunctionsAsDirs\x12=\n" +
-	"\rmin_disk_free\x18\r \x01(\v2\x19.syncthing.config.v2.SizeR\vminDiskFree\x1a\b\n" +
-	"\x06Device\x1a\xc2\x04\n" +
-	"\bScanning\x12S\n" +
-	"\awatcher\x18\x01 \x01(\v29.syncthing.config.v2.FolderConfiguration.Scanning.WatcherR\awatcher\x12+\n" +
-	"\x0eauto_normalize\x18\f \x01(\b:\x04trueR\rautoNormalize\x12\x1c\n" +
-	"\townership\x18\" \x01(\bR\townership\x12\x16\n" +
-	"\x06xattrs\x18$ \x01(\bR\x06xattrs\x12\x18\n" +
-	"\ahashers\x18\x03 \x01(\x05R\ahashers\x12)\n" +
-	"\x11mod_time_window_s\x18\x1a \x01(\x05R\x0emodTimeWindowS\x12.\n" +
-	"\x13progress_interval_s\x18\x13 \x01(\x05R\x11progressIntervalS\x120\n" +
-	"\x11rescan_interval_s\x18\x02 \x01(\x05:\x043600R\x0frescanIntervalS\x12*\n" +
-	"\vmarker_name\x18\x19 \x01(\t:\t.stfolderR\n" +
-	"markerName\x12C\n" +
-	"\fxattr_filter\x18% \x01(\v2 .syncthing.config.v2.XattrFilterR\vxattrFilter\x1af\n" +
-	"\aWatcher\x12\x1e\n" +
-	"\aenabled\x18\b \x01(\b:\x04trueR\aenabled\x12\x1a\n" +
-	"\adelay_s\x18\t \x01(\x01:\x015R\x06delayS\x12\x1f\n" +
-	"\ttimeout_s\x18\n" +
-	" \x01(\x01:\x0260R\btimeoutS\x1a\x92\x05\n" +
-	"\aSyncing\x12!\n" +
-	"\fignore_perms\x18\v \x01(\bR\vignorePerms\x12\x1b\n" +
-	"\acopiers\x18\x0f \x01(\x05:\x012R\acopiers\x12:\n" +
-	"\x16puller_max_pending_kib\x18\x10 \x01(\x05:\x0532768R\x13pullerMaxPendingKib\x124\n" +
-	"\x05order\x18\x12 \x01(\x0e2\x1e.syncthing.config.v2.PullOrderR\x05order\x12(\n" +
-	"\x0epuller_pause_s\x18\x14 \x01(\x05:\x0260R\fpullerPauseS\x12&\n" +
-	"\rmax_conflicts\x18\x15 \x01(\x05:\x015R\fmaxConflicts\x12'\n" +
-	"\fsparse_files\x18\x16 \x01(\b:\x04trueR\vsparseFiles\x125\n" +
-	"\x15max_concurrent_writes\x18\x1b \x01(\x05:\x012R\x13maxConcurrentWrites\x120\n" +
-	"\x14disable_temp_indexes\x18\x17 \x01(\bR\x12disableTempIndexes\x12\x1a\n" +
-	"\x05fsync\x18\x1c \x01(\b:\x04trueR\x05fsync\x12M\n" +
-	"\x10block_pull_order\x18\x1d \x01(\x0e2#.syncthing.config.v2.BlockPullOrderR\x0eblockPullOrder\x12P\n" +
-	"\x11copy_range_method\x18\x1e \x01(\x0e2$.syncthing.config.v2.CopyRangeMethodR\x0fcopyRangeMethod\x12\x1c\n" +
-	"\townership\x18! \x01(\bR\townership\x12\x16\n" +
-	"\x06xattrs\x18# \x01(\bR\x06xattrs\x1a\f\n" +
-	"\n" +
-	"Versioning\"O\n" +
-	"\x04Size\x12\x14\n" +
-	"\x05value\x18\x01 \x01(\x01R\x05value\x121\n" +
-	"\x04unit\x18\x02 \x01(\x0e2\x1d.syncthing.config.v2.SizeUnitR\x04unit\"\r\n" +
-	"\vXattrFilter\"%\n" +
+	"server_url\x18\x04 \x01(\t:(https://upgrades.syncthing.net/meta.jsonR\tserverUrl\"%\n" +
 	"\x13DeviceConfiguration\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id*\xa3\x01\n" +
-	"\n" +
-	"FolderType\x12\x1b\n" +
-	"\x17FOLDER_TYPE_UNSPECIFIED\x10\x00\x12\x1c\n" +
-	"\x18FOLDER_TYPE_SEND_RECEIVE\x10\x01\x12\x19\n" +
-	"\x15FOLDER_TYPE_SEND_ONLY\x10\x02\x12\x1c\n" +
-	"\x18FOLDER_TYPE_RECEIVE_ONLY\x10\x03\x12!\n" +
-	"\x1dFOLDER_TYPE_RECEIVE_ENCRYPTED\x10\x04*f\n" +
-	"\x0eFilesystemType\x12\x1f\n" +
-	"\x1bFILESYSTEM_TYPE_UNSPECIFIED\x10\x00\x12\x19\n" +
-	"\x15FILESYSTEM_TYPE_BASIC\x10\x01\x12\x18\n" +
-	"\x14FILESYSTEM_TYPE_FAKE\x10\x02*Q\n" +
-	"\bSizeUnit\x12\x19\n" +
-	"\x15SIZE_UNIT_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11SIZE_UNIT_PERCENT\x10\x01\x12\x13\n" +
-	"\x0fSIZE_UNIT_BYTES\x10\x02*'\n" +
-	"\tPullOrder\x12\x1a\n" +
-	"\x16PULL_ORDER_UNSPECIFIED\x10\x00*2\n" +
-	"\x0eBlockPullOrder\x12 \n" +
-	"\x1cBLOCK_PULL_ORDER_UNSPECIFIED\x10\x00*4\n" +
-	"\x0fCopyRangeMethod\x12!\n" +
-	"\x1dCOPY_RANGE_METHOD_UNSPECIFIED\x10\x00B\xdf\x01\n" +
+	"\x02id\x18\x01 \x01(\tR\x02idB\xdf\x01\n" +
 	"\x17com.syncthing.config.v2B\x12ConfigurationProtoP\x01Z:github.com/syncthing/syncthing/internal/config/v2;configv2\xa2\x02\x03SCX\xaa\x02\x13Syncthing.Config.V2\xca\x02\x13Syncthing\\Config\\V2\xe2\x02\x1fSyncthing\\Config\\V2\\GPBMetadata\xea\x02\x15Syncthing::Config::V2\x92\x03\x05\xd2>\x02\x10\x03b\beditionsp\xe8\a"
 
-var file_config_v2_configuration_proto_enumTypes = make([]protoimpl.EnumInfo, 6)
-var file_config_v2_configuration_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_config_v2_configuration_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_config_v2_configuration_proto_goTypes = []any{
-	(FolderType)(0),                                           // 0: syncthing.config.v2.FolderType
-	(FilesystemType)(0),                                       // 1: syncthing.config.v2.FilesystemType
-	(SizeUnit)(0),                                             // 2: syncthing.config.v2.SizeUnit
-	(PullOrder)(0),                                            // 3: syncthing.config.v2.PullOrder
-	(BlockPullOrder)(0),                                       // 4: syncthing.config.v2.BlockPullOrder
-	(CopyRangeMethod)(0),                                      // 5: syncthing.config.v2.CopyRangeMethod
-	(*Configuration)(nil),                                     // 6: syncthing.config.v2.Configuration
-	(*URLs)(nil),                                              // 7: syncthing.config.v2.URLs
-	(*OptionsConfiguration)(nil),                              // 8: syncthing.config.v2.OptionsConfiguration
-	(*FolderConfiguration)(nil),                               // 9: syncthing.config.v2.FolderConfiguration
-	(*Size)(nil),                                              // 10: syncthing.config.v2.Size
-	(*XattrFilter)(nil),                                       // 11: syncthing.config.v2.XattrFilter
-	(*DeviceConfiguration)(nil),                               // 12: syncthing.config.v2.DeviceConfiguration
-	(*OptionsConfiguration_Network)(nil),                      // 13: syncthing.config.v2.OptionsConfiguration.Network
-	(*OptionsConfiguration_NAT)(nil),                          // 14: syncthing.config.v2.OptionsConfiguration.NAT
-	(*OptionsConfiguration_Discovery)(nil),                    // 15: syncthing.config.v2.OptionsConfiguration.Discovery
-	(*OptionsConfiguration_Relays)(nil),                       // 16: syncthing.config.v2.OptionsConfiguration.Relays
-	(*OptionsConfiguration_UsageReporting)(nil),               // 17: syncthing.config.v2.OptionsConfiguration.UsageReporting
-	(*OptionsConfiguration_AutoUpgrade)(nil),                  // 18: syncthing.config.v2.OptionsConfiguration.AutoUpgrade
-	(*OptionsConfiguration_Network_ConnectionLimits)(nil),     // 19: syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
-	(*OptionsConfiguration_Network_ConnectionPriorities)(nil), // 20: syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
-	(*OptionsConfiguration_Network_RateLimits)(nil),           // 21: syncthing.config.v2.OptionsConfiguration.Network.RateLimits
-	(*OptionsConfiguration_Discovery_Local)(nil),              // 22: syncthing.config.v2.OptionsConfiguration.Discovery.Local
-	(*OptionsConfiguration_Discovery_Global)(nil),             // 23: syncthing.config.v2.OptionsConfiguration.Discovery.Global
-	(*FolderConfiguration_Filesystem)(nil),                    // 24: syncthing.config.v2.FolderConfiguration.Filesystem
-	(*FolderConfiguration_Device)(nil),                        // 25: syncthing.config.v2.FolderConfiguration.Device
-	(*FolderConfiguration_Scanning)(nil),                      // 26: syncthing.config.v2.FolderConfiguration.Scanning
-	(*FolderConfiguration_Syncing)(nil),                       // 27: syncthing.config.v2.FolderConfiguration.Syncing
-	(*FolderConfiguration_Versioning)(nil),                    // 28: syncthing.config.v2.FolderConfiguration.Versioning
-	(*FolderConfiguration_Scanning_Watcher)(nil),              // 29: syncthing.config.v2.FolderConfiguration.Scanning.Watcher
+	(*Configuration)(nil),                                     // 0: syncthing.config.v2.Configuration
+	(*URLs)(nil),                                              // 1: syncthing.config.v2.URLs
+	(*OptionsConfiguration)(nil),                              // 2: syncthing.config.v2.OptionsConfiguration
+	(*DeviceConfiguration)(nil),                               // 3: syncthing.config.v2.DeviceConfiguration
+	(*OptionsConfiguration_Network)(nil),                      // 4: syncthing.config.v2.OptionsConfiguration.Network
+	(*OptionsConfiguration_NAT)(nil),                          // 5: syncthing.config.v2.OptionsConfiguration.NAT
+	(*OptionsConfiguration_Discovery)(nil),                    // 6: syncthing.config.v2.OptionsConfiguration.Discovery
+	(*OptionsConfiguration_Relays)(nil),                       // 7: syncthing.config.v2.OptionsConfiguration.Relays
+	(*OptionsConfiguration_UsageReporting)(nil),               // 8: syncthing.config.v2.OptionsConfiguration.UsageReporting
+	(*OptionsConfiguration_AutoUpgrade)(nil),                  // 9: syncthing.config.v2.OptionsConfiguration.AutoUpgrade
+	(*OptionsConfiguration_Network_ConnectionLimits)(nil),     // 10: syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
+	(*OptionsConfiguration_Network_ConnectionPriorities)(nil), // 11: syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
+	(*OptionsConfiguration_Network_RateLimits)(nil),           // 12: syncthing.config.v2.OptionsConfiguration.Network.RateLimits
+	(*OptionsConfiguration_Discovery_Local)(nil),              // 13: syncthing.config.v2.OptionsConfiguration.Discovery.Local
+	(*OptionsConfiguration_Discovery_Global)(nil),             // 14: syncthing.config.v2.OptionsConfiguration.Discovery.Global
+	(*FolderConfiguration)(nil),                               // 15: syncthing.config.v2.FolderConfiguration
 }
 var file_config_v2_configuration_proto_depIdxs = []int32{
-	9,  // 0: syncthing.config.v2.Configuration.folders:type_name -> syncthing.config.v2.FolderConfiguration
-	12, // 1: syncthing.config.v2.Configuration.devices:type_name -> syncthing.config.v2.DeviceConfiguration
-	8,  // 2: syncthing.config.v2.Configuration.options:type_name -> syncthing.config.v2.OptionsConfiguration
-	7,  // 3: syncthing.config.v2.OptionsConfiguration.listen:type_name -> syncthing.config.v2.URLs
-	14, // 4: syncthing.config.v2.OptionsConfiguration.nat:type_name -> syncthing.config.v2.OptionsConfiguration.NAT
-	15, // 5: syncthing.config.v2.OptionsConfiguration.discovery:type_name -> syncthing.config.v2.OptionsConfiguration.Discovery
-	16, // 6: syncthing.config.v2.OptionsConfiguration.relays:type_name -> syncthing.config.v2.OptionsConfiguration.Relays
-	17, // 7: syncthing.config.v2.OptionsConfiguration.usage_reporting:type_name -> syncthing.config.v2.OptionsConfiguration.UsageReporting
-	18, // 8: syncthing.config.v2.OptionsConfiguration.auto_upgrade:type_name -> syncthing.config.v2.OptionsConfiguration.AutoUpgrade
-	0,  // 9: syncthing.config.v2.FolderConfiguration.type:type_name -> syncthing.config.v2.FolderType
-	24, // 10: syncthing.config.v2.FolderConfiguration.filesystem:type_name -> syncthing.config.v2.FolderConfiguration.Filesystem
-	25, // 11: syncthing.config.v2.FolderConfiguration.devices:type_name -> syncthing.config.v2.FolderConfiguration.Device
-	26, // 12: syncthing.config.v2.FolderConfiguration.scanning:type_name -> syncthing.config.v2.FolderConfiguration.Scanning
-	27, // 13: syncthing.config.v2.FolderConfiguration.syncing:type_name -> syncthing.config.v2.FolderConfiguration.Syncing
-	28, // 14: syncthing.config.v2.FolderConfiguration.versioning:type_name -> syncthing.config.v2.FolderConfiguration.Versioning
-	2,  // 15: syncthing.config.v2.Size.unit:type_name -> syncthing.config.v2.SizeUnit
-	19, // 16: syncthing.config.v2.OptionsConfiguration.Network.connection_limits:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
-	20, // 17: syncthing.config.v2.OptionsConfiguration.Network.connection_priorities:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
-	21, // 18: syncthing.config.v2.OptionsConfiguration.Network.rate_limits:type_name -> syncthing.config.v2.OptionsConfiguration.Network.RateLimits
-	22, // 19: syncthing.config.v2.OptionsConfiguration.Discovery.local:type_name -> syncthing.config.v2.OptionsConfiguration.Discovery.Local
-	23, // 20: syncthing.config.v2.OptionsConfiguration.Discovery.global:type_name -> syncthing.config.v2.OptionsConfiguration.Discovery.Global
-	7,  // 21: syncthing.config.v2.OptionsConfiguration.Discovery.Global.servers:type_name -> syncthing.config.v2.URLs
-	1,  // 22: syncthing.config.v2.FolderConfiguration.Filesystem.fs_type:type_name -> syncthing.config.v2.FilesystemType
-	10, // 23: syncthing.config.v2.FolderConfiguration.Filesystem.min_disk_free:type_name -> syncthing.config.v2.Size
-	29, // 24: syncthing.config.v2.FolderConfiguration.Scanning.watcher:type_name -> syncthing.config.v2.FolderConfiguration.Scanning.Watcher
-	11, // 25: syncthing.config.v2.FolderConfiguration.Scanning.xattr_filter:type_name -> syncthing.config.v2.XattrFilter
-	3,  // 26: syncthing.config.v2.FolderConfiguration.Syncing.order:type_name -> syncthing.config.v2.PullOrder
-	4,  // 27: syncthing.config.v2.FolderConfiguration.Syncing.block_pull_order:type_name -> syncthing.config.v2.BlockPullOrder
-	5,  // 28: syncthing.config.v2.FolderConfiguration.Syncing.copy_range_method:type_name -> syncthing.config.v2.CopyRangeMethod
-	29, // [29:29] is the sub-list for method output_type
-	29, // [29:29] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	15, // 0: syncthing.config.v2.Configuration.folders:type_name -> syncthing.config.v2.FolderConfiguration
+	3,  // 1: syncthing.config.v2.Configuration.devices:type_name -> syncthing.config.v2.DeviceConfiguration
+	2,  // 2: syncthing.config.v2.Configuration.options:type_name -> syncthing.config.v2.OptionsConfiguration
+	1,  // 3: syncthing.config.v2.OptionsConfiguration.listen:type_name -> syncthing.config.v2.URLs
+	4,  // 4: syncthing.config.v2.OptionsConfiguration.network:type_name -> syncthing.config.v2.OptionsConfiguration.Network
+	5,  // 5: syncthing.config.v2.OptionsConfiguration.nat:type_name -> syncthing.config.v2.OptionsConfiguration.NAT
+	6,  // 6: syncthing.config.v2.OptionsConfiguration.discovery:type_name -> syncthing.config.v2.OptionsConfiguration.Discovery
+	7,  // 7: syncthing.config.v2.OptionsConfiguration.relays:type_name -> syncthing.config.v2.OptionsConfiguration.Relays
+	8,  // 8: syncthing.config.v2.OptionsConfiguration.usage_reporting:type_name -> syncthing.config.v2.OptionsConfiguration.UsageReporting
+	9,  // 9: syncthing.config.v2.OptionsConfiguration.auto_upgrade:type_name -> syncthing.config.v2.OptionsConfiguration.AutoUpgrade
+	10, // 10: syncthing.config.v2.OptionsConfiguration.Network.connection_limits:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionLimits
+	11, // 11: syncthing.config.v2.OptionsConfiguration.Network.connection_priorities:type_name -> syncthing.config.v2.OptionsConfiguration.Network.ConnectionPriorities
+	12, // 12: syncthing.config.v2.OptionsConfiguration.Network.rate_limits:type_name -> syncthing.config.v2.OptionsConfiguration.Network.RateLimits
+	13, // 13: syncthing.config.v2.OptionsConfiguration.Discovery.local:type_name -> syncthing.config.v2.OptionsConfiguration.Discovery.Local
+	14, // 14: syncthing.config.v2.OptionsConfiguration.Discovery.global:type_name -> syncthing.config.v2.OptionsConfiguration.Discovery.Global
+	1,  // 15: syncthing.config.v2.OptionsConfiguration.Discovery.Global.servers:type_name -> syncthing.config.v2.URLs
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_config_v2_configuration_proto_init() }
@@ -4204,19 +2164,19 @@ func file_config_v2_configuration_proto_init() {
 	if File_config_v2_configuration_proto != nil {
 		return
 	}
+	file_config_v2_folder_configuration_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_v2_configuration_proto_rawDesc), len(file_config_v2_configuration_proto_rawDesc)),
-			NumEnums:      6,
-			NumMessages:   24,
+			NumEnums:      0,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_config_v2_configuration_proto_goTypes,
 		DependencyIndexes: file_config_v2_configuration_proto_depIdxs,
-		EnumInfos:         file_config_v2_configuration_proto_enumTypes,
 		MessageInfos:      file_config_v2_configuration_proto_msgTypes,
 	}.Build()
 	File_config_v2_configuration_proto = out.File

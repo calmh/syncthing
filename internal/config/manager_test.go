@@ -1,12 +1,16 @@
 package config
 
 import (
+	"bytes"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	configv2 "github.com/syncthing/syncthing/internal/config/v2"
+	"github.com/syncthing/syncthing/lib/protocol"
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
@@ -38,8 +42,8 @@ folders:
 	}
 
 	fld := cur.GetFolders()[0]
-	if fld.GetId() != "foo" {
-		t.Error("bad ID", fld.GetId())
+	if fld.GetFolderId() != "foo" {
+		t.Error("bad ID", fld.GetFolderId())
 	}
 	if fld.GetType() != configv2.FolderType_FOLDER_TYPE_SEND_RECEIVE {
 		t.Error("bad type", fld.GetType())
@@ -47,7 +51,7 @@ folders:
 	if fld.GetFilesystem().GetPath() != "/bar" {
 		t.Error("bad path", fld.GetFilesystem().GetPath())
 	}
-	if fld.GetFilesystem().GetFsType() != configv2.FilesystemType_FILESYSTEM_TYPE_BASIC {
+	if fld.GetFilesystem().GetType() != configv2.FilesystemType_FILESYSTEM_TYPE_BASIC {
 		t.Error("bad filesystem type", fld.GetFilesystem(), fld.GetType())
 	}
 
@@ -123,10 +127,16 @@ func TestReflect(t *testing.T) {
 						fmt.Println(strings.Repeat("  ", ind+1), "-", lst.Get(i).Interface())
 					}
 				} else {
+					ev := val.Interface()
+					if fld.Kind() == protoreflect.EnumKind {
+						ev = fld.Enum().Values().ByNumber(val.Enum()).Name()
+					} else if fld.Kind() == protoreflect.StringKind {
+						ev = strconv.Quote(val.String())
+					}
 					if !has {
-						fmt.Println(strings.Repeat("  ", ind), "#", fld.JSONName(), ":", val.Interface())
+						fmt.Println(strings.Repeat("  ", ind), "#", fld.JSONName(), ":", ev)
 					} else {
-						fmt.Println(strings.Repeat("  ", ind), fld.JSONName(), ":", val.Interface())
+						fmt.Println(strings.Repeat("  ", ind), fld.JSONName(), ":", ev)
 					}
 				}
 			}
@@ -135,14 +145,17 @@ func TestReflect(t *testing.T) {
 
 	r := strings.NewReader(`
 folders:
-  - id: foo
+  - folderId: foo
     filesystem:
       path: /bar
+    filesystemOptions:
       minDiskFree:
-        value: 1
-        unit: SIZE_UNIT_PERCENT
+        percent: 0.5
     scanning:
-      ownership: false
+      scanOwnership: false
+options:
+  usageReporting:
+    uniqueId: abcd1234
 `)
 	m := NewManager(nil)
 	if err := m.ReadYAML(r); err != nil {
@@ -150,4 +163,18 @@ folders:
 	}
 	cfg := m.current
 	print(cfg.ProtoReflect(), 0)
+}
+
+func TestConvertV2(t *testing.T) {
+	bs, err := os.ReadFile("_testdata/config.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	v1cfg, _, err := configv1.ReadXML(bytes.NewReader(bs), protocol.EmptyDeviceID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	v2cfg := FromV1(&v1cfg)
+	m := NewManager(v2cfg)
+	m.WriteYAML(os.Stdout)
 }
