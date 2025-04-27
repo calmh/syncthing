@@ -343,6 +343,13 @@ func v2Options(v1 configv1.OptionsConfiguration) *configv2.OptionsConfiguration 
 			}.Build(),
 		}.Build(),
 
+		AutoUpgrade: configv2.OptionsConfiguration_AutoUpgrade_builder{
+			Enabled:           ptr(v1.AutoUpgradeEnabled(), zau.GetEnabled()),
+			CheckIntervalS:    ptr(int32(v1.AutoUpgradeIntervalH*3600), zau.GetCheckIntervalS()),
+			ReleaseCandidates: ptr(v1.UpgradeToPreReleases, zau.GetReleaseCandidates()),
+			ServerUrl:         ptr(v1.ReleasesURL, zau.GetServerUrl()),
+		}.Build(),
+
 		UsageReporting: configv2.OptionsConfiguration_UsageReporting_builder{
 			Enabled:       ptr(v1.URAccepted > 0, zu.GetEnabled()),
 			UniqueId:      ptr(v1.URUniqueID, ""),
@@ -351,11 +358,9 @@ func v2Options(v1 configv1.OptionsConfiguration) *configv2.OptionsConfiguration 
 			TlsInsecure:   ptr(v1.URPostInsecurely, zu.GetTlsInsecure()),
 		}.Build(),
 
-		AutoUpgrade: configv2.OptionsConfiguration_AutoUpgrade_builder{
-			Enabled:           ptr(v1.AutoUpgradeEnabled(), zau.GetEnabled()),
-			CheckIntervalS:    ptr(int32(v1.AutoUpgradeIntervalH*3600), zau.GetCheckIntervalS()),
-			ReleaseCandidates: ptr(v1.UpgradeToPreReleases, zau.GetReleaseCandidates()),
-			ServerUrl:         ptr(v1.ReleasesURL, zau.GetServerUrl()),
+		Audit: configv2.OptionsConfiguration_Audit_builder{
+			Enabled: ptr(v1.AuditEnabled, false),
+			File:    ptr(v1.AuditFile, ""),
 		}.Build(),
 	}
 	return bld.Build()

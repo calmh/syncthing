@@ -80,6 +80,14 @@ message OptionsConfiguration {
     }
   }
 
+  AutoUpgrade auto_upgrade = 11;
+  message AutoUpgrade {
+    bool enabled = 1 [default = true];
+    int32 check_interval_s = 2 [default = 43200];
+    bool release_candidates = 3;
+    string server_url = 4 [default = "https://upgrades.syncthing.net/meta.json"];
+  }
+
   UsageReporting usage_reporting = 10;
   message UsageReporting {
     bool enabled = 1 [default = true];
@@ -87,14 +95,6 @@ message OptionsConfiguration {
     string url = 3 [default = "https://data.syncthing.net/newdata"];
     int32 initial_delay_s = 4 [default = 1800];
     bool tls_insecure = 5;
-  }
-
-  AutoUpgrade auto_upgrade = 11;
-  message AutoUpgrade {
-    bool enabled = 1 [default = true];
-    int32 check_interval_s = 2 [default = 43200];
-    bool release_candidates = 3;
-    string server_url = 4 [default = "https://upgrades.syncthing.net/meta.json"];
   }
 
   Audit audit = 12;
