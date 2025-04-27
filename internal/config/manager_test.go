@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,22 +18,27 @@ import (
 func TestManagerLoadYAML(t *testing.T) {
 	r := strings.NewReader(`
 folders:
-  - id: foo
+  - folderId: foo
     filesystem:
       path: /bar
+    filesystemOptions:
       minDiskFree:
-        value: 1
-        unit: SIZE_UNIT_PERCENT
+        percent: 1.0
     scanning:
-      ownership: false
+      scanOwnership: false
 `)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
 	m := NewManager(nil)
+	go m.Serve(ctx)
 	if err := m.ReadYAML(r); err != nil {
 		t.Fatal(err)
 	}
 
-	cur, etag := m.Current()
-	if etag == "" {
+	cur := m.Current()
+	if cur.ETag() == "" {
 		t.Error("expected etag")
 	}
 
@@ -59,7 +65,11 @@ folders:
 }
 
 func TestDefaultListenAddresses(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
 	m := NewManager(nil)
+	go m.Serve(ctx)
 	if m.current.GetOptions().GetListen() != nil {
 		t.Error("expected nil listen")
 	}
@@ -80,6 +90,7 @@ options:
 	}
 
 	m = NewManager(nil)
+	go m.Serve(ctx)
 	err = m.ReadYAML(strings.NewReader(`
 options:
   listen: {}
@@ -157,7 +168,12 @@ options:
   usageReporting:
     uniqueId: abcd1234
 `)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
 	m := NewManager(nil)
+	go m.Serve(ctx)
 	if err := m.ReadYAML(r); err != nil {
 		t.Fatal(err)
 	}
@@ -175,6 +191,11 @@ func TestConvertV2(t *testing.T) {
 		t.Fatal(err)
 	}
 	v2cfg := FromV1(&v1cfg)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+
 	m := NewManager(v2cfg)
+	go m.Serve(ctx)
 	m.WriteYAML(os.Stdout)
 }
