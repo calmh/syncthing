@@ -93,7 +93,7 @@ func (m *Manager) ReadYAML(r io.Reader) error {
 func (m *Manager) WriteYAML(w io.Writer) error {
 	errC := make(chan error, 1)
 	m.tasks <- func() {
-		bs, err := protoyaml.MarshalOptions{Indent: 2}.Marshal(m.current)
+		bs, err := protoyaml.MarshalOptions{Indent: 4}.Marshal(m.current)
 		if err != nil {
 			errC <- err
 			return

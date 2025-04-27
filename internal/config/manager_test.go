@@ -197,5 +197,6 @@ func TestConvertV2(t *testing.T) {
 
 	m := NewManager(v2cfg)
 	go m.Serve(ctx)
+	t.Log(m.Current().ETag())
 	m.WriteYAML(os.Stdout)
 }

@@ -2,12 +2,14 @@ package configv2
 
 import (
 	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 
 	"google.golang.org/protobuf/proto"
 )
 
 func (c *Configuration) ETag() string {
-	bs, _ := proto.Marshal(c)
-	return fmt.Sprintf(`"%x"`, sha256.Sum256(bs))
+	bs, _ := proto.MarshalOptions{Deterministic: true}.Marshal(c)
+	hash := sha256.Sum256(bs)
+	return fmt.Sprintf(`"%s"`, base64.RawStdEncoding.EncodeToString(hash[:]))
 }
