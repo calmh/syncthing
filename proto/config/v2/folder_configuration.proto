@@ -39,8 +39,8 @@ message FolderConfiguration {
     Watcher watcher = 1;
     message Watcher {
       bool enabled = 1 [default = true];
-      double delay_s = 2 [default = 5];
-      double timeout_s = 3 [default = 60];
+      double delay_s = 2 [default = 10];
+      double timeout_s = 3;
     }
 
     int32 rescan_interval_s = 2 [default = 3600];
@@ -58,7 +58,7 @@ message FolderConfiguration {
     BlockPullOrder block_order = 2 [default = BLOCK_PULL_ORDER_STANDARD];
     int32 num_copiers = 3 [default = 2];
     int32 max_pending_kib = 4 [default = 32768];
-    int32 max_conflicts = 5 [default = 5];
+    int32 max_conflicts = 5 [default = 10];
     int32 max_concurrent_writes = 6 [default = 2];
     int32 failed_pause_s = 7 [default = 60];
     double change_delay_s = 8 [default = 1.0];

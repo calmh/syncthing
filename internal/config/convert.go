@@ -73,11 +73,11 @@ func v2folder(fld configv1.FolderConfiguration) *configv2.FolderConfiguration {
 		Pulling: configv2.FolderConfiguration_Pulling_builder{
 			Order:                   v2PullOrder(fld.Order),
 			BlockOrder:              v2BlockPullOrder(fld.BlockPullOrder),
-			NumCopiers:              nondefPtr(int32(fld.Copiers), zpu.GetNumCopiers()),
-			MaxPendingKib:           nondefPtr(int32(fld.PullerMaxPendingKiB), zpu.GetMaxPendingKib()),
+			NumCopiers:              nondefPtr(int32(fld.Copiers), zpu.GetNumCopiers(), 0),
+			MaxPendingKib:           nondefPtr(int32(fld.PullerMaxPendingKiB), zpu.GetMaxPendingKib(), 0),
 			MaxConflicts:            nondefPtr(int32(fld.MaxConflicts), zpu.GetMaxConflicts()),
-			MaxConcurrentWrites:     nondefPtr(int32(fld.MaxConcurrentWrites), zpu.GetMaxConcurrentWrites()),
-			FailedPauseS:            nondefPtr(int32(fld.PullerPauseS), zpu.GetFailedPauseS()),
+			MaxConcurrentWrites:     nondefPtr(int32(fld.MaxConcurrentWrites), zpu.GetMaxConcurrentWrites(), 0),
+			FailedPauseS:            nondefPtr(int32(fld.PullerPauseS), zpu.GetFailedPauseS(), 0),
 			ChangeDelayS:            nondefPtr(fld.PullerDelayS, zpu.GetChangeDelayS()),
 			SparseFiles:             nondefPtr(!fld.DisableSparseFiles, zpu.GetSparseFiles()),
 			IgnorePermissions:       nondefPtr(fld.IgnorePerms, zpu.GetIgnorePermissions()),
@@ -91,12 +91,20 @@ func v2folder(fld configv1.FolderConfiguration) *configv2.FolderConfiguration {
 		}.Build(),
 	}
 
+	for _, dev := range fld.Devices {
+		bld.SharedWith = append(bld.SharedWith, configv2.FolderConfiguration_Sharing_builder{
+			DeviceId:           ptr(dev.DeviceID.String()),
+			IntroducedBy:       nondefPtr(dev.IntroducedBy.String(), ""),
+			EncryptionPassword: nondefPtr(dev.EncryptionPassword, ""),
+		}.Build())
+	}
+
 	if vt := v2VersioningType(fld.Versioning.Type); vt != nil {
 		zv := (*configv2.FolderConfiguration_Versioning)(nil)
 		vb := configv2.FolderConfiguration_Versioning_builder{
 			Type: vt,
 			Filesystem: configv2.FolderConfiguration_Filesystem_builder{
-				Path: ptr(fld.Versioning.FSPath),
+				Path: nondefPtr(fld.Versioning.FSPath, ""),
 				Type: v2FSType(fld.Versioning.FSType),
 			}.Build(),
 			CleanupIntervalS: nondefPtr(int32(fld.Versioning.CleanupIntervalS), zv.GetCleanupIntervalS()),
@@ -132,7 +140,7 @@ func v2FolderType(v1 configv1.FolderType) *configv2.FolderType {
 func v2FSType(v1 configv1.FilesystemType) *configv2.FilesystemType {
 	switch v1 {
 	case configv1.FilesystemTypeBasic:
-		return configv2.FilesystemType_FILESYSTEM_TYPE_BASIC.Enum()
+		return nil
 	case configv1.FilesystemTypeFake:
 		return configv2.FilesystemType_FILESYSTEM_TYPE_FAKE.Enum()
 	default:
@@ -220,9 +228,11 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
-func nondefPtr[T comparable](v, def T) *T {
-	if v == def {
-		return nil
+func nondefPtr[T comparable](v T, defs ...T) *T {
+	for _, def := range defs {
+		if v == def {
+			return nil
+		}
 	}
 	return &v
 }

@@ -1649,7 +1649,7 @@ type FolderConfiguration_Pulling struct {
 	xxx_hidden_BlockOrder              BlockPullOrder         `protobuf:"varint,2,opt,name=block_order,json=blockOrder,enum=syncthing.config.v2.BlockPullOrder,def=1"`
 	xxx_hidden_NumCopiers              int32                  `protobuf:"varint,3,opt,name=num_copiers,json=numCopiers,def=2"`
 	xxx_hidden_MaxPendingKib           int32                  `protobuf:"varint,4,opt,name=max_pending_kib,json=maxPendingKib,def=32768"`
-	xxx_hidden_MaxConflicts            int32                  `protobuf:"varint,5,opt,name=max_conflicts,json=maxConflicts,def=5"`
+	xxx_hidden_MaxConflicts            int32                  `protobuf:"varint,5,opt,name=max_conflicts,json=maxConflicts,def=10"`
 	xxx_hidden_MaxConcurrentWrites     int32                  `protobuf:"varint,6,opt,name=max_concurrent_writes,json=maxConcurrentWrites,def=2"`
 	xxx_hidden_FailedPauseS            int32                  `protobuf:"varint,7,opt,name=failed_pause_s,json=failedPauseS,def=60"`
 	xxx_hidden_ChangeDelayS            float64                `protobuf:"fixed64,8,opt,name=change_delay_s,json=changeDelayS,def=1"`
@@ -1674,7 +1674,7 @@ const (
 	Default_FolderConfiguration_Pulling_BlockOrder          = BlockPullOrder_BLOCK_PULL_ORDER_STANDARD
 	Default_FolderConfiguration_Pulling_NumCopiers          = int32(2)
 	Default_FolderConfiguration_Pulling_MaxPendingKib       = int32(32768)
-	Default_FolderConfiguration_Pulling_MaxConflicts        = int32(5)
+	Default_FolderConfiguration_Pulling_MaxConflicts        = int32(10)
 	Default_FolderConfiguration_Pulling_MaxConcurrentWrites = int32(2)
 	Default_FolderConfiguration_Pulling_FailedPauseS        = int32(60)
 	Default_FolderConfiguration_Pulling_ChangeDelayS        = float64(1)
@@ -2383,8 +2383,8 @@ func (b0 FolderConfiguration_Versioning_builder) Build() *FolderConfiguration_Ve
 type FolderConfiguration_Scanning_Watcher struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Enabled     bool                   `protobuf:"varint,1,opt,name=enabled,def=1"`
-	xxx_hidden_DelayS      float64                `protobuf:"fixed64,2,opt,name=delay_s,json=delayS,def=5"`
-	xxx_hidden_TimeoutS    float64                `protobuf:"fixed64,3,opt,name=timeout_s,json=timeoutS,def=60"`
+	xxx_hidden_DelayS      float64                `protobuf:"fixed64,2,opt,name=delay_s,json=delayS,def=10"`
+	xxx_hidden_TimeoutS    float64                `protobuf:"fixed64,3,opt,name=timeout_s,json=timeoutS"`
 	XXX_raceDetectHookData protoimpl.RaceDetectHookData
 	XXX_presence           [1]uint32
 	unknownFields          protoimpl.UnknownFields
@@ -2393,9 +2393,8 @@ type FolderConfiguration_Scanning_Watcher struct {
 
 // Default values for FolderConfiguration_Scanning_Watcher fields.
 const (
-	Default_FolderConfiguration_Scanning_Watcher_Enabled  = bool(true)
-	Default_FolderConfiguration_Scanning_Watcher_DelayS   = float64(5)
-	Default_FolderConfiguration_Scanning_Watcher_TimeoutS = float64(60)
+	Default_FolderConfiguration_Scanning_Watcher_Enabled = bool(true)
+	Default_FolderConfiguration_Scanning_Watcher_DelayS  = float64(10)
 )
 
 func (x *FolderConfiguration_Scanning_Watcher) Reset() {
@@ -2443,11 +2442,9 @@ func (x *FolderConfiguration_Scanning_Watcher) GetDelayS() float64 {
 
 func (x *FolderConfiguration_Scanning_Watcher) GetTimeoutS() float64 {
 	if x != nil {
-		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
-			return x.xxx_hidden_TimeoutS
-		}
+		return x.xxx_hidden_TimeoutS
 	}
-	return Default_FolderConfiguration_Scanning_Watcher_TimeoutS
+	return 0
 }
 
 func (x *FolderConfiguration_Scanning_Watcher) SetEnabled(v bool) {
@@ -2496,6 +2493,7 @@ func (x *FolderConfiguration_Scanning_Watcher) ClearDelayS() {
 
 func (x *FolderConfiguration_Scanning_Watcher) ClearTimeoutS() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
+	x.xxx_hidden_TimeoutS = 0
 }
 
 type FolderConfiguration_Scanning_Watcher_builder struct {
@@ -2529,7 +2527,7 @@ var File_config_v2_folder_configuration_proto protoreflect.FileDescriptor
 
 const file_config_v2_folder_configuration_proto_rawDesc = "" +
 	"\n" +
-	"$config/v2/folder_configuration.proto\x12\x13syncthing.config.v2\x1a!google/protobuf/go_features.proto\"\xac\x16\n" +
+	"$config/v2/folder_configuration.proto\x12\x13syncthing.config.v2\x1a!google/protobuf/go_features.proto\"\xaa\x16\n" +
 	"\x13FolderConfiguration\x12M\n" +
 	"\x04type\x18\x01 \x01(\x0e2\x1f.syncthing.config.v2.FolderType:\x18FOLDER_TYPE_SEND_RECEIVER\x04type\x12\x1b\n" +
 	"\tfolder_id\x18\x02 \x01(\tR\bfolderId\x12\x1e\n" +
@@ -2561,7 +2559,7 @@ const file_config_v2_folder_configuration_proto_rawDesc = "" +
 	"\aSharing\x12\x1b\n" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12#\n" +
 	"\rintroduced_by\x18\x02 \x01(\tR\fintroducedBy\x12/\n" +
-	"\x13encryption_password\x18\x03 \x01(\tR\x12encryptionPassword\x1a\x82\x04\n" +
+	"\x13encryption_password\x18\x03 \x01(\tR\x12encryptionPassword\x1a\xff\x03\n" +
 	"\bScanning\x12S\n" +
 	"\awatcher\x18\x01 \x01(\v29.syncthing.config.v2.FolderConfiguration.Scanning.WatcherR\awatcher\x120\n" +
 	"\x11rescan_interval_s\x18\x02 \x01(\x05:\x043600R\x0frescanIntervalS\x12\x1f\n" +
@@ -2572,19 +2570,19 @@ const file_config_v2_folder_configuration_proto_rawDesc = "" +
 	"\x0escan_ownership\x18\x06 \x01(\bR\rscanOwnership\x12\x1f\n" +
 	"\vscan_xattrs\x18\a \x01(\bR\n" +
 	"scanXattrs\x12C\n" +
-	"\fxattr_filter\x18\b \x01(\v2 .syncthing.config.v2.XattrFilterR\vxattrFilter\x1af\n" +
+	"\fxattr_filter\x18\b \x01(\v2 .syncthing.config.v2.XattrFilterR\vxattrFilter\x1ac\n" +
 	"\aWatcher\x12\x1e\n" +
-	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12\x1a\n" +
-	"\adelay_s\x18\x02 \x01(\x01:\x015R\x06delayS\x12\x1f\n" +
-	"\ttimeout_s\x18\x03 \x01(\x01:\x0260R\btimeoutS\x1a\xf7\x06\n" +
+	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12\x1b\n" +
+	"\adelay_s\x18\x02 \x01(\x01:\x0210R\x06delayS\x12\x1b\n" +
+	"\ttimeout_s\x18\x03 \x01(\x01R\btimeoutS\x1a\xf8\x06\n" +
 	"\aPulling\x12G\n" +
 	"\x05order\x18\x01 \x01(\x0e2\x1e.syncthing.config.v2.PullOrder:\x11PULL_ORDER_RANDOMR\x05order\x12_\n" +
 	"\vblock_order\x18\x02 \x01(\x0e2#.syncthing.config.v2.BlockPullOrder:\x19BLOCK_PULL_ORDER_STANDARDR\n" +
 	"blockOrder\x12\"\n" +
 	"\vnum_copiers\x18\x03 \x01(\x05:\x012R\n" +
 	"numCopiers\x12-\n" +
-	"\x0fmax_pending_kib\x18\x04 \x01(\x05:\x0532768R\rmaxPendingKib\x12&\n" +
-	"\rmax_conflicts\x18\x05 \x01(\x05:\x015R\fmaxConflicts\x125\n" +
+	"\x0fmax_pending_kib\x18\x04 \x01(\x05:\x0532768R\rmaxPendingKib\x12'\n" +
+	"\rmax_conflicts\x18\x05 \x01(\x05:\x0210R\fmaxConflicts\x125\n" +
 	"\x15max_concurrent_writes\x18\x06 \x01(\x05:\x012R\x13maxConcurrentWrites\x12(\n" +
 	"\x0efailed_pause_s\x18\a \x01(\x05:\x0260R\ffailedPauseS\x12'\n" +
 	"\x0echange_delay_s\x18\b \x01(\x01:\x011R\fchangeDelayS\x12'\n" +
