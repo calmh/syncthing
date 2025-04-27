@@ -28,7 +28,7 @@ func (s *ConfigurationService) GetConfiguration(context.Context, *connect.Reques
 }
 
 func (s *ConfigurationService) AddDevice(ctx context.Context, req *connect.Request[apiv2.AddDeviceRequest]) (*connect.Response[apiv2.AddDeviceResponse], error) {
-	newID := req.Msg.GetDevice().GetId()
+	newID := req.Msg.GetDevice().GetDeviceId()
 	err := s.mgr.Modify(func(cfg *configv2.Configuration, etag string) error {
 		if err := checkEtag(req, etag); err != nil {
 			return err
@@ -36,13 +36,13 @@ func (s *ConfigurationService) AddDevice(ctx context.Context, req *connect.Reque
 
 		devs := cfg.GetDevices()
 		for _, dev := range devs {
-			if dev.GetId() == newID {
+			if dev.GetDeviceId() == newID {
 				return connect.NewError(connect.CodeAlreadyExists, fmt.Errorf("device %v already exists", newID))
 			}
 		}
 		devs = append(devs, req.Msg.GetDevice())
 		slices.SortFunc(devs, func(a, b *configv2.DeviceConfiguration) int {
-			return cmp.Compare(a.GetId(), b.GetId())
+			return cmp.Compare(a.GetDeviceId(), b.GetDeviceId())
 		})
 		cfg.SetDevices(devs)
 
@@ -62,7 +62,7 @@ func (s *ConfigurationService) RemoveDevice(ctx context.Context, req *connect.Re
 		}
 
 		devs := cfg.GetDevices()
-		idx := slices.IndexFunc(devs, func(i *configv2.DeviceConfiguration) bool { return i.GetId() == devID })
+		idx := slices.IndexFunc(devs, func(i *configv2.DeviceConfiguration) bool { return i.GetDeviceId() == devID })
 		if idx < 0 {
 			return connect.NewError(connect.CodeNotFound, fmt.Errorf("device %v does not exist", devID))
 		}
@@ -78,14 +78,14 @@ func (s *ConfigurationService) RemoveDevice(ctx context.Context, req *connect.Re
 }
 
 func (s *ConfigurationService) UpdateDevice(ctx context.Context, req *connect.Request[apiv2.UpdateDeviceRequest]) (*connect.Response[apiv2.UpdateDeviceResponse], error) {
-	devID := req.Msg.GetDevice().GetId()
+	devID := req.Msg.GetDevice().GetDeviceId()
 	err := s.mgr.Modify(func(cfg *configv2.Configuration, etag string) error {
 		if err := checkEtag(req, etag); err != nil {
 			return err
 		}
 
 		devs := cfg.GetDevices()
-		idx := slices.IndexFunc(devs, func(i *configv2.DeviceConfiguration) bool { return i.GetId() == devID })
+		idx := slices.IndexFunc(devs, func(i *configv2.DeviceConfiguration) bool { return i.GetDeviceId() == devID })
 		if idx < 0 {
 			return connect.NewError(connect.CodeNotFound, fmt.Errorf("device %v does not exist", devID))
 		}
