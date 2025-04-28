@@ -139,10 +139,11 @@ func (lim *limiter) CommitConfiguration(from, to *configv2.Configuration) {
 	// Delete, add or update limiters for devices
 	lim.processDevicesConfigurationLocked(from, to)
 
-	if from.Options.MaxRecvKbps == to.Options.MaxRecvKbps &&
-		from.Options.MaxSendKbps == to.Options.MaxSendKbps &&
-		from.Options.LimitBandwidthInLan == to.Options.LimitBandwidthInLan {
-		return true
+	fromRL := from.GetOptions().GetNetwork().GetRateLimits()
+	toRL := to.GetOptions().GetNetwork().GetRateLimits()
+	if fromRL.GetMaxRecvKbps() == toRL.GetMaxRecvKbps() &&
+		fromRL.GetMaxSendKbps() == toRL.GetMaxSendKbps() && from.GetOptions().GetNetwork().GetRateLimitLanConnections() == to.GetOptions().GetNetwork().GetRateLimitLanConnections() {
+		return
 	}
 
 	limited := false
@@ -151,35 +152,34 @@ func (lim *limiter) CommitConfiguration(from, to *configv2.Configuration) {
 
 	// The rate variables are in KiB/s in the config (despite the camel casing
 	// of the name). We multiply by 1024 to get bytes/s.
-	if to.Options.MaxRecvKbps <= 0 {
+	if rl := toRL.GetMaxRecvKbps(); rl <= 0 {
 		lim.read.SetLimit(rate.Inf)
 	} else {
-		lim.read.SetLimit(1024 * rate.Limit(to.Options.MaxRecvKbps))
-		recvLimitStr = fmt.Sprintf("limit is %d KiB/s", to.Options.MaxRecvKbps)
+		lim.read.SetLimit(1024 * rate.Limit(rl))
+		recvLimitStr = fmt.Sprintf("limit is %d KiB/s", rl)
 		limited = true
 	}
 
-	if to.Options.MaxSendKbps <= 0 {
+	if rl := toRL.GetMaxSendKbps(); rl <= 0 {
 		lim.write.SetLimit(rate.Inf)
 	} else {
-		lim.write.SetLimit(1024 * rate.Limit(to.Options.MaxSendKbps))
-		sendLimitStr = fmt.Sprintf("limit is %d KiB/s", to.Options.MaxSendKbps)
+		lim.write.SetLimit(1024 * rate.Limit(rl))
+		sendLimitStr = fmt.Sprintf("limit is %d KiB/s", rl)
 		limited = true
 	}
 
-	lim.limitsLAN.Store(to.Options.LimitBandwidthInLan)
+	limLAN := to.GetOptions().GetNetwork().GetRateLimitLanConnections()
+	lim.limitsLAN.Store(limLAN)
 
 	l.Infof("Overall send rate %s, receive rate %s", sendLimitStr, recvLimitStr)
 
 	if limited {
-		if to.Options.LimitBandwidthInLan {
+		if limLAN {
 			l.Infoln("Rate limits apply to LAN connections")
 		} else {
 			l.Infoln("Rate limits do not apply to LAN connections")
 		}
 	}
-
-	return true
 }
 
 func (*limiter) String() string {
