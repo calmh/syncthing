@@ -35,10 +35,16 @@ nextFolder:
 				if pwd := dev.GetEncryptionPassword(); pwd != "" {
 					res[fld.GetFolderId()] = pwd
 				}
-				break nextFolder
+				continue nextFolder
 			}
 		}
 	}
+	return res
+}
+
+func (c *DeviceConfiguration) DeviceID() protocol.DeviceID {
+	id, _ := protocol.DeviceIDFromString(c.GetDeviceId())
+	return id
 }
 
 func (u *URLs) GetURLsDefault(def ...string) []string {

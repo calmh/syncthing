@@ -15,7 +15,6 @@ import (
 	"golang.org/x/time/rate"
 
 	"github.com/syncthing/syncthing/internal/config"
-	configv1 "github.com/syncthing/syncthing/internal/config/v1"
 	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -68,19 +67,20 @@ func (l *limiter) close() {
 }
 
 // This function sets limiters according to corresponding DeviceConfiguration
-func (lim *limiter) setLimitsLocked(device configv1.DeviceConfiguration) bool {
-	readLimiter := lim.getReadLimiterLocked(device.DeviceID)
-	writeLimiter := lim.getWriteLimiterLocked(device.DeviceID)
+func (lim *limiter) setLimitsLocked(device *configv2.DeviceConfiguration) bool {
+	id := device.DeviceID()
+	readLimiter := lim.getReadLimiterLocked(id)
+	writeLimiter := lim.getWriteLimiterLocked(id)
 
 	// limiters for this device are created so we can store previous rates for logging
-	previousReadLimit := readLimiter.Limit()
 	previousWriteLimit := writeLimiter.Limit()
-	currentReadLimit := rate.Limit(device.MaxRecvKbps) * 1024
-	currentWriteLimit := rate.Limit(device.MaxSendKbps) * 1024
-	if device.MaxSendKbps <= 0 {
+	previousReadLimit := readLimiter.Limit()
+	currentWriteLimit := rate.Limit(device.GetRateLimits().GetMaxSendKbps()) * 1024
+	currentReadLimit := rate.Limit(device.GetRateLimits().GetMaxRecvKbps()) * 1024
+	if device.GetRateLimits().GetMaxSendKbps() <= 0 {
 		currentWriteLimit = rate.Inf
 	}
-	if device.MaxRecvKbps <= 0 {
+	if device.GetRateLimits().GetMaxRecvKbps() <= 0 {
 		currentReadLimit = rate.Inf
 	}
 	// Nothing about this device has changed. Start processing next device
@@ -95,25 +95,26 @@ func (lim *limiter) setLimitsLocked(device configv1.DeviceConfiguration) bool {
 }
 
 // This function handles removing, adding and updating of device limiters.
-func (lim *limiter) processDevicesConfigurationLocked(from, to configv1.Configuration) {
+func (lim *limiter) processDevicesConfigurationLocked(from, to *configv2.Configuration) {
 	seen := make(map[protocol.DeviceID]struct{})
 
 	// Mark devices which should not be removed, create new limiters if needed and assign new limiter rate
-	for _, dev := range to.Devices {
-		if dev.DeviceID == lim.myID {
+	for _, dev := range to.GetDevices() {
+		id := dev.DeviceID()
+		if id == lim.myID {
 			// This limiter was created for local device. Should skip this device
 			continue
 		}
-		seen[dev.DeviceID] = struct{}{}
+		seen[id] = struct{}{}
 
 		if lim.setLimitsLocked(dev) {
 			readLimitStr := "is unlimited"
-			if dev.MaxRecvKbps > 0 {
-				readLimitStr = fmt.Sprintf("limit is %d KiB/s", dev.MaxRecvKbps)
+			if rl := dev.GetRateLimits().GetMaxRecvKbps(); rl > 0 {
+				readLimitStr = fmt.Sprintf("limit is %d KiB/s", rl)
 			}
 			writeLimitStr := "is unlimited"
-			if dev.MaxSendKbps > 0 {
-				writeLimitStr = fmt.Sprintf("limit is %d KiB/s", dev.MaxSendKbps)
+			if rl := dev.GetRateLimits().GetMaxSendKbps(); rl > 0 {
+				writeLimitStr = fmt.Sprintf("limit is %d KiB/s", rl)
 			}
 
 			l.Infof("Device %s send rate %s, receive rate %s", dev.DeviceID, writeLimitStr, readLimitStr)
@@ -121,12 +122,13 @@ func (lim *limiter) processDevicesConfigurationLocked(from, to configv1.Configur
 	}
 
 	// Delete remote devices which were removed in new configuration
-	for _, dev := range from.Devices {
-		if _, ok := seen[dev.DeviceID]; !ok {
+	for _, dev := range from.GetDevices() {
+		id := dev.DeviceID()
+		if _, ok := seen[id]; !ok {
 			l.Debugf("deviceID: %s should be removed", dev.DeviceID)
 
-			delete(lim.deviceWriteLimiters, dev.DeviceID)
-			delete(lim.deviceReadLimiters, dev.DeviceID)
+			delete(lim.deviceWriteLimiters, id)
+			delete(lim.deviceReadLimiters, id)
 		}
 	}
 }

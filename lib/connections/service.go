@@ -931,7 +931,7 @@ func (s *service) checkAndSignalConnectLoopOnUpdatedDevices(from, to *configv2.C
 			continue
 		}
 		if oldDev, ok := oldDevices[dev.GetDeviceId()]; !ok || !oldDev.GetEnabled() {
-			s.dialNowDevices[dev.GetDeviceId()] = struct{}{}
+			s.dialNowDevices[dev.DeviceID()] = struct{}{}
 			dial = true
 		} else if !slices.Equal(oldDev.GetAddresses().GetUrls(), dev.GetAddresses().GetUrls()) {
 			dial = true
