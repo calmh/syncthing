@@ -15,6 +15,7 @@ import (
 	"time"
 
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
@@ -190,8 +191,8 @@ func (f *relayListenerFactory) New(uri *url.URL, cfg configv1.Wrapper, tlsCfg *t
 	return t
 }
 
-func (relayListenerFactory) Valid(cfg configv1.Configuration) error {
-	if !cfg.Options.RelaysEnabled {
+func (relayListenerFactory) Valid(cfg *configv2.Configuration) error {
+	if !cfg.GetOptions().GetNetwork().GetRelays().GetEnabled() {
 		return errDisabled
 	}
 	return nil

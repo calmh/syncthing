@@ -15,6 +15,7 @@ import (
 	"time"
 
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
@@ -244,7 +245,7 @@ func (f *tcpListenerFactory) New(uri *url.URL, cfg configv1.Wrapper, tlsCfg *tls
 	return l
 }
 
-func (tcpListenerFactory) Valid(_ configv1.Configuration) error {
+func (tcpListenerFactory) Valid(_ *configv2.Configuration) error {
 	// Always valid
 	return nil
 }

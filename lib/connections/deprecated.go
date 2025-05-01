@@ -6,7 +6,10 @@
 
 package connections
 
-import configv1 "github.com/syncthing/syncthing/internal/config/v1"
+import (
+	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
+)
 
 // invalidListener is never valid
 type invalidListener struct {
@@ -14,7 +17,7 @@ type invalidListener struct {
 	err error
 }
 
-func (i invalidListener) Valid(_ configv1.Configuration) error {
+func (i invalidListener) Valid(_ *configv2.Configuration) error {
 	if i.err == nil {
 		// fallback so we don't accidentally return nil
 		return errUnsupported

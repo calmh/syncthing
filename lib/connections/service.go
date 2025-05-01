@@ -746,7 +746,7 @@ func (s *service) resolveDeviceAddrs(ctx context.Context, cfg configv1.DeviceCon
 }
 
 type lanChecker struct {
-	cfg configv1.Wrapper
+	cfg *config.Manager
 }
 
 func (s *lanChecker) isLANHost(host string) bool {
@@ -787,7 +787,7 @@ func (s *lanChecker) isLAN(addr net.Addr) bool {
 		return true
 	}
 
-	for _, lan := range s.cfg.Options().AlwaysLocalNets {
+	for _, lan := range s.cfg.Current().GetOptions().GetNetwork().GetAlwaysLocalNetworks() {
 		_, ipnet, err := net.ParseCIDR(lan)
 		if err != nil {
 			l.Debugln("Network", lan, "is malformed:", err)

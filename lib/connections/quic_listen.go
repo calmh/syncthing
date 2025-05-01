@@ -22,6 +22,7 @@ import (
 	"github.com/quic-go/quic-go"
 
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/nat"
@@ -229,7 +230,7 @@ func (t *quicListener) NATType() string {
 
 type quicListenerFactory struct{}
 
-func (*quicListenerFactory) Valid(configv1.Configuration) error {
+func (*quicListenerFactory) Valid(_ *configv2.Configuration) error {
 	return nil
 }
 
@@ -248,6 +249,6 @@ func (f *quicListenerFactory) New(uri *url.URL, cfg configv1.Wrapper, tlsCfg *tl
 	return l
 }
 
-func (quicListenerFactory) Enabled(_ configv1.Configuration) bool {
+func (quicListenerFactory) Enabled(_ *configv2.Configuration) bool {
 	return true
 }

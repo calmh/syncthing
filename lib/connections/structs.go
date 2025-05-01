@@ -17,7 +17,9 @@ import (
 
 	"github.com/thejerf/suture/v4"
 
+	"github.com/syncthing/syncthing/internal/config"
 	configv1 "github.com/syncthing/syncthing/internal/config/v1"
+	configv2 "github.com/syncthing/syncthing/internal/config/v2"
 
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/nat"
@@ -193,8 +195,8 @@ type genericDialer interface {
 }
 
 type listenerFactory interface {
-	New(*url.URL, configv1.Wrapper, *tls.Config, chan internalConn, *nat.Service, *registry.Registry, *lanChecker) genericListener
-	Valid(configv1.Configuration) error
+	New(*url.URL, *config.Manager, *tls.Config, chan internalConn, *nat.Service, *registry.Registry, *lanChecker) genericListener
+	Valid(*configv2.Configuration) error
 }
 
 type ListenerAddresses struct {
