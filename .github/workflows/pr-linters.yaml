@@ -48,6 +48,10 @@ jobs:
           go run build.go assets
           go test -v ./meta
 
+  #
+  # Set labels on PRs, which are used to categorise release notes
+  #
+
   labels:
     name: Set labels
     runs-on: ubuntu-latest
