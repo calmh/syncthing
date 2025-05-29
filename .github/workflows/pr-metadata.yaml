@@ -1,4 +1,4 @@
-name: Run issue metadata jobs
+name: PR metadata
 
 on:
   pull_request:

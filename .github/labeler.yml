@@ -1,23 +1,23 @@
 version: 1
 labels:
 
-- label: pr-feat
+- label: enhancement
   title: ^feat\b
 
-- label: pr-fix
+- label: bug
   title: ^fix\b
 
-- label: pr-docs
+- label: documentation
   title: ^docs\b
 
-- label: pr-chore
+- label: chore
   title: ^chore\b
 
-- label: pr-refactor
+- label: chore
   title: ^refactor\b
 
-- label: pr-build
+- label: build
   title: ^build\b
 
-- label: pr-deps
+- label: dependencies
   title: ^build\(deps\)\b
