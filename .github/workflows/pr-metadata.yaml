@@ -4,8 +4,9 @@ on:
   pull_request:
     types:
       - opened
-      - edited
       - reopened
+      - edited
+      - synchronize
 
 permissions:
   contents: read
