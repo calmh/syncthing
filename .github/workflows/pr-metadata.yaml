@@ -2,7 +2,10 @@ name: Run issue metadata jobs
 
 on:
   pull_request:
-  issues:
+    types:
+      - opened
+      - edited
+      - reopened
 
 permissions:
   contents: read
