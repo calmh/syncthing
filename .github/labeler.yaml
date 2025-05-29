@@ -1,0 +1,23 @@
+version: 1
+labels:
+
+- label: pr-feat
+  title: ^feat\b
+
+- label: pr-fix
+  title: ^fix\b
+
+- label: pr-docs
+  title: ^docs\b
+
+- label: pr-chore
+  title: ^chore\b
+
+- label: pr-refactor
+  title: ^refactor\b
+
+- label: pr-build
+  title: ^build\b
+
+- label: pr-deps
+  title: ^build\(deps\)\b
