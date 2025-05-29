@@ -1,0 +1,16 @@
+changelog:
+  categories:
+    - title: Fixes
+      labels:
+        - bug
+
+    - title: Features
+      labels:
+        - enhancement
+
+    - title: Other
+      labels:
+        - '*'
+      exclude:
+        labels:
+          - dependencies
