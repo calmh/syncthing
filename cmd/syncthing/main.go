@@ -919,8 +919,9 @@ func (browserCmd) Run() error {
 }
 
 type debugCmd struct {
-	ResetDatabase      resetDatabaseCmd `cmd:"" help:"Reset the database, forcing a full rescan and resync"`
-	DatabaseStatistics databaseStatsCmd `cmd:"" help:"Display database size statistics"`
+	ResetDatabase      resetDatabaseCmd  `cmd:"" help:"Reset the database, forcing a full rescan and resync"`
+	DatabaseStatistics databaseStatsCmd  `cmd:"" help:"Display database size statistics"`
+	DuplicateFiles     duplicateFilesCmd `cmd:"" help:""`
 }
 
 type resetDatabaseCmd struct{}
@@ -970,6 +971,27 @@ func (c databaseStatsCmd) printStat(w io.Writer, s *sqlite.DatabaseStatistics) {
 		totalName += " + children"
 	}
 	fmt.Fprintf(w, "%s\t%s\t%s\t%8d KiB\t%5.01f %%\n", totalName, cmp.Or(s.FolderID, "-"), "(total)", s.Total.Size/1024, float64(s.Total.Size-s.Total.Unused)*100/float64(s.Total.Size))
+}
+
+type duplicateFilesCmd struct{}
+
+func (c duplicateFilesCmd) Run() error {
+	db, err := sqlite.Open(locations.Get(locations.Database))
+	if err != nil {
+		return err
+	}
+	dups, err := db.DuplicateFiles()
+	if err != nil {
+		return err
+	}
+
+	for _, dup := range dups {
+		fmt.Println(dup.Folder, dup.Count, dup.Size)
+		for _, n := range dup.Names {
+			fmt.Println(" -", n)
+		}
+	}
+	return nil
 }
 
 func setConfigDataLocationsFromFlags(homeDir, confDir, dataDir string) error {

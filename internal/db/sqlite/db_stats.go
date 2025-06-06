@@ -6,6 +6,11 @@
 
 package sqlite
 
+import (
+	"cmp"
+	"slices"
+)
+
 type DatabaseStatistics struct {
 	Name     string               `json:"name"`
 	FolderID string               `json:"folderID,omitempty"`
@@ -66,4 +71,61 @@ func (s *baseDB) tableStats() ([]TableStatistics, TableStatistics, error) {
 		total.Unused += s.Unused
 	}
 	return stats, total, nil
+}
+
+type DuplicateFile struct {
+	Folder string
+	Size   int
+	Count  int
+	Names  []string
+}
+
+func (s *DB) DuplicateFiles() ([]DuplicateFile, error) {
+	var res []DuplicateFile
+	err := s.forEachFolder(func(fdb *folderDB) error {
+		var blocklists []struct {
+			Hash  []byte `db:"blocklist_hash"`
+			Count int
+		}
+		err := fdb.stmt(`
+			SELECT blocklist_hash, count(*) as count FROM files
+			WHERE device_idx = {{.LocalDeviceIdx}} AND NOT deleted AND blocklist_hash IS NOT NULL
+			GROUP BY blocklist_hash
+			HAVING count > 1
+		`).Select(&blocklists)
+		if err != nil {
+			return err
+		}
+		for _, bl := range blocklists {
+			var files []struct {
+				Name string
+				Size int
+			}
+			err := fdb.stmt(`
+				SELECT name, size FROM files
+				WHERE device_idx = {{.LocalDeviceIdx}} AND blocklist_hash = ?
+			`).Select(&files, bl.Hash)
+			if err != nil {
+				return err
+			}
+
+			d := DuplicateFile{
+				Folder: fdb.folderID,
+				Size:   files[0].Size,
+				Count:  bl.Count,
+			}
+			for _, f := range files {
+				d.Names = append(d.Names, f.Name)
+			}
+			res = append(res, d)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	slices.SortFunc(res, func(a, b DuplicateFile) int {
+		return cmp.Compare(a.Count*a.Size, b.Count*b.Size)
+	})
+	return res, nil
 }
