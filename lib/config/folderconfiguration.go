@@ -86,11 +86,6 @@ type FolderConfiguration struct {
 	SyncXattrs              bool                        `json:"syncXattrs" xml:"syncXattrs"`
 	SendXattrs              bool                        `json:"sendXattrs" xml:"sendXattrs"`
 	XattrFilter             XattrFilter                 `json:"xattrFilter" xml:"xattrFilter"`
-	// Legacy deprecated
-	DeprecatedReadOnly       bool    `json:"-" xml:"ro,attr,omitempty"`        // Deprecated: Do not use.
-	DeprecatedMinDiskFreePct float64 `json:"-" xml:"minDiskFreePct,omitempty"` // Deprecated: Do not use.
-	DeprecatedPullers        int     `json:"-" xml:"pullers,omitempty"`        // Deprecated: Do not use.
-	DeprecatedScanOwnership  bool    `json:"-" xml:"scanOwnership,omitempty"`  // Deprecated: Do not use.
 }
 
 // Extended attribute filter. This is a list of patterns to match (glob

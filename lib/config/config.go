@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	OldestHandledVersion = 10
+	OldestHandledVersion = 37
 	CurrentVersion       = 51
 	MaxRescanIntervalS   = 365 * 24 * 60 * 60
 )
@@ -93,15 +93,14 @@ var (
 )
 
 type Configuration struct {
-	Version                  int                   `json:"version" xml:"version,attr"`
-	Folders                  []FolderConfiguration `json:"folders" xml:"folder"`
-	Devices                  []DeviceConfiguration `json:"devices" xml:"device"`
-	GUI                      GUIConfiguration      `json:"gui" xml:"gui"`
-	LDAP                     LDAPConfiguration     `json:"ldap" xml:"ldap"`
-	Options                  OptionsConfiguration  `json:"options" xml:"options"`
-	IgnoredDevices           []ObservedDevice      `json:"remoteIgnoredDevices" xml:"remoteIgnoredDevice"`
-	DeprecatedPendingDevices []ObservedDevice      `json:"-" xml:"pendingDevice,omitempty"` // Deprecated: Do not use.
-	Defaults                 Defaults              `json:"defaults" xml:"defaults"`
+	Version        int                   `json:"version" xml:"version,attr"`
+	Folders        []FolderConfiguration `json:"folders" xml:"folder"`
+	Devices        []DeviceConfiguration `json:"devices" xml:"device"`
+	GUI            GUIConfiguration      `json:"gui" xml:"gui"`
+	LDAP           LDAPConfiguration     `json:"ldap" xml:"ldap"`
+	Options        OptionsConfiguration  `json:"options" xml:"options"`
+	IgnoredDevices []ObservedDevice      `json:"remoteIgnoredDevices" xml:"remoteIgnoredDevice"`
+	Defaults       Defaults              `json:"defaults" xml:"defaults"`
 }
 
 type Defaults struct {
@@ -290,11 +289,8 @@ func (cfg *Configuration) prepare(myID protocol.DeviceID) error {
 
 	cfg.Defaults.prepare(myID, existingDevices)
 
-	cfg.removeDeprecatedProtocols()
-
 	structutil.FillNilExceptDeprecated(cfg)
 
-	// TestIssue1750 relies on migrations happening after preparing options.
 	cfg.applyMigrations()
 
 	return nil
@@ -405,18 +401,6 @@ func (cfg *Configuration) prepareIgnoredDevices(existingDevices map[protocol.Dev
 	}
 	cfg.IgnoredDevices = newIgnoredDevices
 	return ignoredDevices
-}
-
-func (cfg *Configuration) removeDeprecatedProtocols() {
-	// Deprecated protocols are removed from the list of listeners and
-	// device addresses. So far just kcp*.
-	for _, prefix := range []string{"kcp"} {
-		cfg.Options.RawListenAddresses = filterURLSchemePrefix(cfg.Options.RawListenAddresses, prefix)
-		for i := range cfg.Devices {
-			dev := &cfg.Devices[i]
-			dev.Addresses = filterURLSchemePrefix(dev.Addresses, prefix)
-		}
-	}
 }
 
 func (cfg *Configuration) applyMigrations() {

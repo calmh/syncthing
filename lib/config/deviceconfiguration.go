@@ -30,7 +30,6 @@ type DeviceConfiguration struct {
 	MaxSendKbps              int               `json:"maxSendKbps" xml:"maxSendKbps"`
 	MaxRecvKbps              int               `json:"maxRecvKbps" xml:"maxRecvKbps"`
 	IgnoredFolders           []ObservedFolder  `json:"ignoredFolders" xml:"ignoredFolder"`
-	DeprecatedPendingFolders []ObservedFolder  `json:"-" xml:"pendingFolder,omitempty"` // Deprecated: Do not use.
 	MaxRequestKiB            int               `json:"maxRequestKiB" xml:"maxRequestKiB"`
 	Untrusted                bool              `json:"untrusted" xml:"untrusted"`
 	RemoteGUIPort            int               `json:"remoteGUIPort" xml:"remoteGUIPort"`

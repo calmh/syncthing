@@ -20,55 +20,54 @@ import (
 )
 
 type OptionsConfiguration struct {
-	RawListenAddresses          []string `json:"listenAddresses" xml:"listenAddress" default:"default"`
-	RawGlobalAnnServers         []string `json:"globalAnnounceServers" xml:"globalAnnounceServer" default:"default"`
-	GlobalAnnEnabled            bool     `json:"globalAnnounceEnabled" xml:"globalAnnounceEnabled" default:"true"`
-	LocalAnnEnabled             bool     `json:"localAnnounceEnabled" xml:"localAnnounceEnabled" default:"true"`
-	LocalAnnPort                int      `json:"localAnnouncePort" xml:"localAnnouncePort" default:"21027"`
-	LocalAnnMCAddr              string   `json:"localAnnounceMCAddr" xml:"localAnnounceMCAddr" default:"[ff12::8384]:21027"`
-	MaxSendKbps                 int      `json:"maxSendKbps" xml:"maxSendKbps"`
-	MaxRecvKbps                 int      `json:"maxRecvKbps" xml:"maxRecvKbps"`
-	ReconnectIntervalS          int      `json:"reconnectionIntervalS" xml:"reconnectionIntervalS" default:"60"`
-	RelaysEnabled               bool     `json:"relaysEnabled" xml:"relaysEnabled" default:"true"`
-	RelayReconnectIntervalM     int      `json:"relayReconnectIntervalM" xml:"relayReconnectIntervalM" default:"10"`
-	StartBrowser                bool     `json:"startBrowser" xml:"startBrowser" default:"true"`
-	NATEnabled                  bool     `json:"natEnabled" xml:"natEnabled" default:"true"`
-	NATLeaseM                   int      `json:"natLeaseMinutes" xml:"natLeaseMinutes" default:"60"`
-	NATRenewalM                 int      `json:"natRenewalMinutes" xml:"natRenewalMinutes" default:"30"`
-	NATTimeoutS                 int      `json:"natTimeoutSeconds" xml:"natTimeoutSeconds" default:"10"`
-	URAccepted                  int      `json:"urAccepted" xml:"urAccepted"`
-	URSeen                      int      `json:"urSeen" xml:"urSeen"`
-	URUniqueID                  string   `json:"urUniqueId" xml:"urUniqueID"`
-	URURL                       string   `json:"urURL" xml:"urURL" default:"https://data.syncthing.net/newdata"`
-	URPostInsecurely            bool     `json:"urPostInsecurely" xml:"urPostInsecurely" default:"false"`
-	URInitialDelayS             int      `json:"urInitialDelayS" xml:"urInitialDelayS" default:"1800"`
-	AutoUpgradeIntervalH        int      `json:"autoUpgradeIntervalH" xml:"autoUpgradeIntervalH" default:"12"`
-	UpgradeToPreReleases        bool     `json:"upgradeToPreReleases" xml:"upgradeToPreReleases"`
-	KeepTemporariesH            int      `json:"keepTemporariesH" xml:"keepTemporariesH" default:"24"`
-	CacheIgnoredFiles           bool     `json:"cacheIgnoredFiles" xml:"cacheIgnoredFiles" default:"false"`
-	ProgressUpdateIntervalS     int      `json:"progressUpdateIntervalS" xml:"progressUpdateIntervalS" default:"5"`
-	LimitBandwidthInLan         bool     `json:"limitBandwidthInLan" xml:"limitBandwidthInLan" default:"false"`
-	MinHomeDiskFree             Size     `json:"minHomeDiskFree" xml:"minHomeDiskFree" default:"1 %"`
-	ReleasesURL                 string   `json:"releasesURL" xml:"releasesURL" default:"https://upgrades.syncthing.net/meta.json"`
-	AlwaysLocalNets             []string `json:"alwaysLocalNets" xml:"alwaysLocalNet"`
-	OverwriteRemoteDevNames     bool     `json:"overwriteRemoteDeviceNamesOnConnect" xml:"overwriteRemoteDeviceNamesOnConnect" default:"false"`
-	TempIndexMinBlocks          int      `json:"tempIndexMinBlocks" xml:"tempIndexMinBlocks" default:"10"`
-	UnackedNotificationIDs      []string `json:"unackedNotificationIDs" xml:"unackedNotificationID"`
-	TrafficClass                int      `json:"trafficClass" xml:"trafficClass"`
-	DeprecatedDefaultFolderPath string   `json:"-" xml:"defaultFolderPath,omitempty"` // Deprecated: Do not use.
-	SetLowPriority              bool     `json:"setLowPriority" xml:"setLowPriority" default:"true"`
-	RawMaxFolderConcurrency     int      `json:"maxFolderConcurrency" xml:"maxFolderConcurrency"`
-	CRURL                       string   `json:"crURL" xml:"crashReportingURL" default:"https://crash.syncthing.net/newcrash"`
-	CREnabled                   bool     `json:"crashReportingEnabled" xml:"crashReportingEnabled" default:"true"`
-	StunKeepaliveStartS         int      `json:"stunKeepaliveStartS" xml:"stunKeepaliveStartS" default:"180"`
-	StunKeepaliveMinS           int      `json:"stunKeepaliveMinS" xml:"stunKeepaliveMinS" default:"20"`
-	RawStunServers              []string `json:"stunServers" xml:"stunServer" default:"default"`
-	RawMaxCIRequestKiB          int      `json:"maxConcurrentIncomingRequestKiB" xml:"maxConcurrentIncomingRequestKiB"`
-	AnnounceLANAddresses        bool     `json:"announceLANAddresses" xml:"announceLANAddresses" default:"true"`
-	SendFullIndexOnUpgrade      bool     `json:"sendFullIndexOnUpgrade" xml:"sendFullIndexOnUpgrade"`
-	FeatureFlags                []string `json:"featureFlags" xml:"featureFlag"`
-	AuditEnabled                bool     `json:"auditEnabled" xml:"auditEnabled" default:"false" restart:"true"`
-	AuditFile                   string   `json:"auditFile" xml:"auditFile" restart:"true"`
+	RawListenAddresses      []string `json:"listenAddresses" xml:"listenAddress" default:"default"`
+	RawGlobalAnnServers     []string `json:"globalAnnounceServers" xml:"globalAnnounceServer" default:"default"`
+	GlobalAnnEnabled        bool     `json:"globalAnnounceEnabled" xml:"globalAnnounceEnabled" default:"true"`
+	LocalAnnEnabled         bool     `json:"localAnnounceEnabled" xml:"localAnnounceEnabled" default:"true"`
+	LocalAnnPort            int      `json:"localAnnouncePort" xml:"localAnnouncePort" default:"21027"`
+	LocalAnnMCAddr          string   `json:"localAnnounceMCAddr" xml:"localAnnounceMCAddr" default:"[ff12::8384]:21027"`
+	MaxSendKbps             int      `json:"maxSendKbps" xml:"maxSendKbps"`
+	MaxRecvKbps             int      `json:"maxRecvKbps" xml:"maxRecvKbps"`
+	ReconnectIntervalS      int      `json:"reconnectionIntervalS" xml:"reconnectionIntervalS" default:"60"`
+	RelaysEnabled           bool     `json:"relaysEnabled" xml:"relaysEnabled" default:"true"`
+	RelayReconnectIntervalM int      `json:"relayReconnectIntervalM" xml:"relayReconnectIntervalM" default:"10"`
+	StartBrowser            bool     `json:"startBrowser" xml:"startBrowser" default:"true"`
+	NATEnabled              bool     `json:"natEnabled" xml:"natEnabled" default:"true"`
+	NATLeaseM               int      `json:"natLeaseMinutes" xml:"natLeaseMinutes" default:"60"`
+	NATRenewalM             int      `json:"natRenewalMinutes" xml:"natRenewalMinutes" default:"30"`
+	NATTimeoutS             int      `json:"natTimeoutSeconds" xml:"natTimeoutSeconds" default:"10"`
+	URAccepted              int      `json:"urAccepted" xml:"urAccepted"`
+	URSeen                  int      `json:"urSeen" xml:"urSeen"`
+	URUniqueID              string   `json:"urUniqueId" xml:"urUniqueID"`
+	URURL                   string   `json:"urURL" xml:"urURL" default:"https://data.syncthing.net/newdata"`
+	URPostInsecurely        bool     `json:"urPostInsecurely" xml:"urPostInsecurely" default:"false"`
+	URInitialDelayS         int      `json:"urInitialDelayS" xml:"urInitialDelayS" default:"1800"`
+	AutoUpgradeIntervalH    int      `json:"autoUpgradeIntervalH" xml:"autoUpgradeIntervalH" default:"12"`
+	UpgradeToPreReleases    bool     `json:"upgradeToPreReleases" xml:"upgradeToPreReleases"`
+	KeepTemporariesH        int      `json:"keepTemporariesH" xml:"keepTemporariesH" default:"24"`
+	CacheIgnoredFiles       bool     `json:"cacheIgnoredFiles" xml:"cacheIgnoredFiles" default:"false"`
+	ProgressUpdateIntervalS int      `json:"progressUpdateIntervalS" xml:"progressUpdateIntervalS" default:"5"`
+	LimitBandwidthInLan     bool     `json:"limitBandwidthInLan" xml:"limitBandwidthInLan" default:"false"`
+	MinHomeDiskFree         Size     `json:"minHomeDiskFree" xml:"minHomeDiskFree" default:"1 %"`
+	ReleasesURL             string   `json:"releasesURL" xml:"releasesURL" default:"https://upgrades.syncthing.net/meta.json"`
+	AlwaysLocalNets         []string `json:"alwaysLocalNets" xml:"alwaysLocalNet"`
+	OverwriteRemoteDevNames bool     `json:"overwriteRemoteDeviceNamesOnConnect" xml:"overwriteRemoteDeviceNamesOnConnect" default:"false"`
+	TempIndexMinBlocks      int      `json:"tempIndexMinBlocks" xml:"tempIndexMinBlocks" default:"10"`
+	UnackedNotificationIDs  []string `json:"unackedNotificationIDs" xml:"unackedNotificationID"`
+	TrafficClass            int      `json:"trafficClass" xml:"trafficClass"`
+	SetLowPriority          bool     `json:"setLowPriority" xml:"setLowPriority" default:"true"`
+	RawMaxFolderConcurrency int      `json:"maxFolderConcurrency" xml:"maxFolderConcurrency"`
+	CRURL                   string   `json:"crURL" xml:"crashReportingURL" default:"https://crash.syncthing.net/newcrash"`
+	CREnabled               bool     `json:"crashReportingEnabled" xml:"crashReportingEnabled" default:"true"`
+	StunKeepaliveStartS     int      `json:"stunKeepaliveStartS" xml:"stunKeepaliveStartS" default:"180"`
+	StunKeepaliveMinS       int      `json:"stunKeepaliveMinS" xml:"stunKeepaliveMinS" default:"20"`
+	RawStunServers          []string `json:"stunServers" xml:"stunServer" default:"default"`
+	RawMaxCIRequestKiB      int      `json:"maxConcurrentIncomingRequestKiB" xml:"maxConcurrentIncomingRequestKiB"`
+	AnnounceLANAddresses    bool     `json:"announceLANAddresses" xml:"announceLANAddresses" default:"true"`
+	SendFullIndexOnUpgrade  bool     `json:"sendFullIndexOnUpgrade" xml:"sendFullIndexOnUpgrade"`
+	FeatureFlags            []string `json:"featureFlags" xml:"featureFlag"`
+	AuditEnabled            bool     `json:"auditEnabled" xml:"auditEnabled" default:"false" restart:"true"`
+	AuditFile               string   `json:"auditFile" xml:"auditFile" restart:"true"`
 	// The number of connections at which we stop trying to connect to more
 	// devices, zero meaning no limit. Does not affect incoming connections.
 	ConnectionLimitEnough int `json:"connectionLimitEnough" xml:"connectionLimitEnough"`
@@ -82,14 +81,6 @@ type OptionsConfiguration struct {
 	ConnectionPriorityQUICWAN          int `json:"connectionPriorityQuicWan" xml:"connectionPriorityQuicWan" default:"40"`
 	ConnectionPriorityRelay            int `json:"connectionPriorityRelay" xml:"connectionPriorityRelay" default:"50"`
 	ConnectionPriorityUpgradeThreshold int `json:"connectionPriorityUpgradeThreshold" xml:"connectionPriorityUpgradeThreshold" default:"0"`
-	// Legacy deprecated
-	DeprecatedUPnPEnabled        bool     `json:"-" xml:"upnpEnabled,omitempty"`        // Deprecated: Do not use.
-	DeprecatedUPnPLeaseM         int      `json:"-" xml:"upnpLeaseMinutes,omitempty"`   // Deprecated: Do not use.
-	DeprecatedUPnPRenewalM       int      `json:"-" xml:"upnpRenewalMinutes,omitempty"` // Deprecated: Do not use.
-	DeprecatedUPnPTimeoutS       int      `json:"-" xml:"upnpTimeoutSeconds,omitempty"` // Deprecated: Do not use.
-	DeprecatedRelayServers       []string `json:"-" xml:"relayServer,omitempty"`        // Deprecated: Do not use.
-	DeprecatedMinHomeDiskFreePct float64  `json:"-" xml:"minHomeDiskFreePct,omitempty"` // Deprecated: Do not use.
-	DeprecatedMaxConcurrentScans int      `json:"-" xml:"maxConcurrentScans,omitempty"` // Deprecated: Do not use.
 }
 
 func (opts OptionsConfiguration) Copy() OptionsConfiguration {

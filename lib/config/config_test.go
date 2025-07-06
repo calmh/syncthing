@@ -17,7 +17,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
-	"slices"
 	"strings"
 	"testing"
 
@@ -417,49 +416,6 @@ func TestDeviceCompression(t *testing.T) {
 	}
 }
 
-func TestDeviceAddressesStatic(t *testing.T) {
-	name, _ := os.Hostname()
-	expected := map[protocol.DeviceID]DeviceConfiguration{
-		device1: {
-			DeviceID:        device1,
-			Addresses:       []string{"tcp://192.0.2.1", "tcp://192.0.2.2"},
-			AllowedNetworks: []string{},
-			IgnoredFolders:  []ObservedFolder{},
-		},
-		device2: {
-			DeviceID:        device2,
-			Addresses:       []string{"tcp://192.0.2.3:6070", "tcp://[2001:db8::42]:4242"},
-			AllowedNetworks: []string{},
-			IgnoredFolders:  []ObservedFolder{},
-		},
-		device3: {
-			DeviceID:        device3,
-			Addresses:       []string{"tcp://[2001:db8::44]:4444", "tcp://192.0.2.4:6090"},
-			AllowedNetworks: []string{},
-			IgnoredFolders:  []ObservedFolder{},
-		},
-		device4: {
-			DeviceID:        device4,
-			Name:            name, // Set when auto created
-			Addresses:       []string{"dynamic"},
-			Compression:     CompressionMetadata,
-			AllowedNetworks: []string{},
-			IgnoredFolders:  []ObservedFolder{},
-		},
-	}
-
-	cfg, cfgCancel, err := copyAndLoad(testFs, "deviceaddressesstatic.xml", device4)
-	defer cfgCancel()
-	if err != nil {
-		t.Error(err)
-	}
-
-	actual := cfg.Devices()
-	if diff, equal := messagediff.PrettyDiff(expected, actual); !equal {
-		t.Errorf("Devices differ. Diff:\n%s", diff)
-	}
-}
-
 func TestVersioningConfig(t *testing.T) {
 	cfg, cfgCancel, err := copyAndLoad(testFs, "versioningconfig.xml", device4)
 	defer cfgCancel()
@@ -500,30 +456,6 @@ func TestIssue1262(t *testing.T) {
 
 	if actual != expected {
 		t.Errorf("%q != %q", actual, expected)
-	}
-}
-
-func TestIssue1750(t *testing.T) {
-	cfg, cfgCancel, err := copyAndLoad(testFs, "issue-1750.xml", device4)
-	defer cfgCancel()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if cfg.Options().RawListenAddresses[0] != "tcp://:23000" {
-		t.Errorf("%q != %q", cfg.Options().RawListenAddresses[0], "tcp://:23000")
-	}
-
-	if cfg.Options().RawListenAddresses[1] != "tcp://:23001" {
-		t.Errorf("%q != %q", cfg.Options().RawListenAddresses[1], "tcp://:23001")
-	}
-
-	if cfg.Options().RawGlobalAnnServers[0] != "udp4://syncthing.nym.se:22026" {
-		t.Errorf("%q != %q", cfg.Options().RawGlobalAnnServers[0], "udp4://syncthing.nym.se:22026")
-	}
-
-	if cfg.Options().RawGlobalAnnServers[1] != "udp4://syncthing.nym.se:22027" {
-		t.Errorf("%q != %q", cfg.Options().RawGlobalAnnServers[1], "udp4://syncthing.nym.se:22027")
 	}
 }
 
@@ -856,65 +788,6 @@ func TestEmptyFolderPaths(t *testing.T) {
 	defer _Cancel()
 	if err == nil || !strings.Contains(err.Error(), errFolderPathEmpty.Error()) {
 		t.Fatal("Expected error due to empty folder path, got", err)
-	}
-}
-
-func TestV14ListenAddressesMigration(t *testing.T) {
-	tcs := [][3][]string{
-		// Default listen plus default relays is now "default"
-		{
-			{"tcp://0.0.0.0:22000"},
-			{"dynamic+https://relays.syncthing.net/endpoint"},
-			{"default"},
-		},
-		// Default listen address without any relay addresses gets converted
-		// to just the listen address. It's easier this way, and frankly the
-		// user has gone to some trouble to get the empty string in the
-		// config to start with...
-		{
-			{"tcp://0.0.0.0:22000"}, // old listen addrs
-			{""},                    // old relay addrs
-			{"tcp://0.0.0.0:22000"}, // new listen addrs
-		},
-		// Default listen plus non-default relays gets copied verbatim
-		{
-			{"tcp://0.0.0.0:22000"},
-			{"dynamic+https://other.example.com"},
-			{"tcp://0.0.0.0:22000", "dynamic+https://other.example.com"},
-		},
-		// Non-default listen plus default relays gets copied verbatim
-		{
-			{"tcp://1.2.3.4:22000"},
-			{"dynamic+https://relays.syncthing.net/endpoint"},
-			{"tcp://1.2.3.4:22000", "dynamic+https://relays.syncthing.net/endpoint"},
-		},
-		// Default stuff gets sucked into "default", the rest gets copied
-		{
-			{"tcp://0.0.0.0:22000", "tcp://1.2.3.4:22000"},
-			{"dynamic+https://relays.syncthing.net/endpoint", "relay://other.example.com"},
-			{"default", "tcp://1.2.3.4:22000", "relay://other.example.com"},
-		},
-	}
-
-	m := migration{14, migrateToConfigV14}
-
-	for _, tc := range tcs {
-		cfg := Configuration{
-			Version: 13,
-			Options: OptionsConfiguration{
-				RawListenAddresses:     tc[0],
-				DeprecatedRelayServers: tc[1],
-			},
-		}
-		m.apply(&cfg)
-		if cfg.Version != 14 {
-			t.Error("Configuration was not converted")
-		}
-
-		slices.Sort(tc[2])
-		if !reflect.DeepEqual(cfg.Options.RawListenAddresses, tc[2]) {
-			t.Errorf("Migration error; actual %#v != expected %#v", cfg.Options.RawListenAddresses, tc[2])
-		}
 	}
 }
 
