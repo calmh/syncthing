@@ -154,3 +154,12 @@ func AddTag(tag string) {
 	extraTags = append(extraTags, tag)
 	LongVersion = LongVersionFor("syncthing")
 }
+
+func Is64bit() bool {
+	switch runtime.GOARCH {
+	case "amd64", "arm64", "loong64", "mips64", "mips64le", "ppc64", "ppc64le", "riscv64", "s390x":
+		return true
+	default:
+		return false
+	}
+}

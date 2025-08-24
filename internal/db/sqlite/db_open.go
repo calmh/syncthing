@@ -15,6 +15,7 @@ import (
 
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/slogutil"
+	"github.com/syncthing/syncthing/lib/build"
 )
 
 const (
@@ -52,6 +53,9 @@ func Open(path string, opts ...Option) (*DB, error) {
 		"journal_mode = WAL",
 		"optimize = 0x10002",
 		"auto_vacuum = INCREMENTAL",
+	}
+	if build.Is64bit() {
+		pragmas = append(pragmas, "mmap_size = 2147418112")
 	}
 	schemas := []string{
 		"sql/schema/common/*",
@@ -100,6 +104,9 @@ func OpenForMigration(path string) (*DB, error) {
 		"foreign_keys = 0",
 		"synchronous = 0",
 		"locking_mode = EXCLUSIVE",
+	}
+	if build.Is64bit() {
+		pragmas = append(pragmas, "mmap_size = 2147418112")
 	}
 	schemas := []string{
 		"sql/schema/common/*",
