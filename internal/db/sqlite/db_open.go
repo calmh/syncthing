@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 
@@ -54,7 +55,7 @@ func Open(path string, opts ...Option) (*DB, error) {
 		"optimize = 0x10002",
 		"auto_vacuum = INCREMENTAL",
 	}
-	if build.Is64bit() {
+	if Is64bit() {
 		pragmas = append(pragmas, "mmap_size = 2147418112")
 	}
 	schemas := []string{
@@ -105,7 +106,7 @@ func OpenForMigration(path string) (*DB, error) {
 		"synchronous = 0",
 		"locking_mode = EXCLUSIVE",
 	}
-	if build.Is64bit() {
+	if Is64bit() {
 		pragmas = append(pragmas, "mmap_size = 2147418112")
 	}
 	schemas := []string{
@@ -146,4 +147,17 @@ func (s *DB) Close() error {
 		delete(s.folderDBs, folder)
 	}
 	return wrap(s.baseDB.Close())
+}
+
+func Is64bit() bool {
+	if build.IsWindows {
+		// mmap causes database files to be unable to ever shrink on Windows
+		return false
+	}
+	switch runtime.GOARCH {
+	// case "amd64", "arm64", "loong64", "mips64", "mips64le", "ppc64", "ppc64le", "riscv64", "s390x":
+	// 	return true
+	default:
+		return false
+	}
 }
