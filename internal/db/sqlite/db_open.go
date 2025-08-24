@@ -155,8 +155,8 @@ func Is64bit() bool {
 		return false
 	}
 	switch runtime.GOARCH {
-	// case "amd64", "arm64", "loong64", "mips64", "mips64le", "ppc64", "ppc64le", "riscv64", "s390x":
-	// 	return true
+	case "amd64", "arm64", "loong64", "mips64", "mips64le", "ppc64", "ppc64le", "riscv64", "s390x":
+		return true
 	default:
 		return false
 	}
