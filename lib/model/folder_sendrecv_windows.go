@@ -8,9 +8,11 @@ package model
 
 import (
 	"fmt"
+	"log/slog"
 	"os/user"
 	"strings"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -20,13 +22,13 @@ func (f *sendReceiveFolder) syncOwnership(file *protocol.FileInfo, path string) 
 		return nil
 	}
 
-	l.Debugf("Owner name for %s is %s (group=%v)", path, file.Platform.Windows.OwnerName, file.Platform.Windows.OwnerIsGroup)
+	slog.Debug("Owner name", slogutil.FilePath(path), slog.String("owner", file.Platform.Windows.OwnerName), slog.Bool("group", file.Platform.Windows.OwnerIsGroup))
 	usid, gsid, err := lookupUserAndGroup(file.Platform.Windows.OwnerName, file.Platform.Windows.OwnerIsGroup)
 	if err != nil {
 		return err
 	}
 
-	l.Debugf("Owner for %s resolved to uid=%q gid=%q", path, usid, gsid)
+	slog.Debug("Owner resolved", slogutil.FilePath(path), slog.String("uid", usid), slog.String("gid", gsid))
 	return f.mtimefs.Lchown(path, usid, gsid)
 }
 

@@ -48,7 +48,7 @@ func (t emptyDirTracker) emptyDirs() []string {
 
 func (t emptyDirTracker) deleteEmptyDirs(fs fs.Filesystem) {
 	for _, path := range t.emptyDirs() {
-		l.Debugln("Cleaner: deleting empty directory", path)
+		slog.Debug("Cleaner: deleting empty directory", slogutil.FilePath(path))
 		err := fs.Remove(path)
 		if err != nil {
 			slog.Warn("Failed to remove versioned directory", slogutil.FilePath(path), slogutil.Error(err))

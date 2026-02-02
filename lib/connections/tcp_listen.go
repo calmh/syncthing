@@ -143,15 +143,15 @@ func (t *tcpListener) serve(ctx context.Context) error {
 		}
 
 		acceptFailures = 0
-		l.Debugln("Listen (BEP/tcp): connect from", conn.RemoteAddr())
+		slog.Debug("Listen (BEP/tcp): connect from", slog.Any("remote", conn.RemoteAddr()))
 
 		if err := dialer.SetTCPOptions(conn); err != nil {
-			l.Debugln("Listen (BEP/tcp): setting tcp options:", err)
+			slog.Debug("Listen (BEP/tcp): setting tcp options", slogutil.Error(err))
 		}
 
 		if tc := t.cfg.Options().TrafficClass; tc != 0 {
 			if err := dialer.SetTrafficClass(conn, tc); err != nil {
-				l.Debugln("Listen (BEP/tcp): setting traffic class:", err)
+				slog.Debug("Listen (BEP/tcp): setting traffic class", slogutil.Error(err))
 			}
 		}
 

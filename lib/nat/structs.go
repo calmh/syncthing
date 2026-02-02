@@ -45,7 +45,7 @@ func (m *Mapping) clearAddresses() {
 	m.mut.Lock()
 	change := len(m.extAddresses) > 0
 	for id, addr := range m.extAddresses {
-		l.Debugf("Clearing mapping %s: ID: %s Address: %s", m, id, addr)
+		slog.Debug("Clearing mapping", slog.Any("mapping", m), slog.String("id", id), slog.Any("address", addr))
 		delete(m.extAddresses, id)
 	}
 	m.expires = time.Time{}

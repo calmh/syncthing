@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"sync"
 	"time"
@@ -89,12 +90,12 @@ func (r *caseFilesystemRegistry) get(fs Filesystem) Filesystem {
 			r.startCleaner.Do(func() {
 				go r.cleaner()
 			})
-			l.Debugf("Created new case cache for key %v", k)
+			slog.Debug("Created new case cache", slog.Any("key", k))
 		}
 		r.mut.Unlock()
 	}
 	if ok {
-		l.Debugf("Reusing case cache for key %v", k)
+		slog.Debug("Reusing case cache", slog.Any("key", k))
 	}
 
 	return &caseFilesystem{

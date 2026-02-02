@@ -131,7 +131,7 @@ func Discover(ctx context.Context, _, timeout time.Duration) []nat.Device {
 			defer wg.Done()
 			hasGUA, err := interfaceHasGUAIPv6(iface)
 			if err != nil {
-				l.Debugf("Couldn't check for IPv6 GUAs on %s: %s", iface.Name, err)
+				slog.Debug("Couldn't check for IPv6 GUAs", slog.String("interface", iface.Name), slogutil.Error(err))
 			} else if hasGUA {
 				// Discover IPv6 gateways on interface. Only discover IGDv2, since IGDv1
 				// + IPv6 is not standardized and will lead to duplicates on routers.
@@ -160,14 +160,14 @@ func Discover(ctx context.Context, _, timeout time.Duration) []nat.Device {
 				return results
 			}
 			if seenResults[result.ID()] {
-				l.Debugf("Skipping duplicate result %s", result.ID())
+				slog.Debug("Skipping duplicate result", slog.String("id", result.ID()))
 				continue
 			}
 
 			results = append(results, result)
 			seenResults[result.ID()] = true
 
-			l.Debugf("UPnP discovery result %s", result.ID())
+			slog.Debug("UPnP discovery result", slog.String("id", result.ID()))
 		case <-ctx.Done():
 			return nil
 		}
@@ -207,7 +207,7 @@ USER-AGENT: syncthing/%s
 
 	search := []byte(strings.ReplaceAll(searchStr, "\n", "\r\n") + "\r\n")
 
-	l.Debugln("Starting discovery of device type", deviceType, "on", intf.Name)
+	slog.Debug("Starting discovery of device type", slog.String("device_type", deviceType), slog.String("interface", intf.Name))
 
 	proto := "udp4"
 	if ip6 {
@@ -219,24 +219,24 @@ USER-AGENT: syncthing/%s
 			// Requires https://github.com/golang/go/issues/63529 to be fixed.
 			slog.InfoContext(ctx, "Support for IPv6 UPnP is currently not available on Windows", slogutil.Error(err))
 		} else {
-			l.Debugln("UPnP discovery: listening to udp multicast:", err)
+			slog.Debug("UPnP discovery: listening to udp multicast", slogutil.Error(err))
 		}
 		return
 	}
 	defer socket.Close() // Make sure our socket gets closed
 
-	l.Debugln("Sending search request for device type", deviceType, "on", intf.Name)
+	slog.Debug("Sending search request for device type", slog.String("device_type", deviceType), slog.String("interface", intf.Name))
 
 	_, err = socket.WriteTo(search, &ssdp)
 	if err != nil {
 		var e net.Error
 		if !errors.As(err, &e) || !e.Timeout() {
-			l.Debugln("UPnP discovery: sending search request:", err)
+			slog.Debug("UPnP discovery: sending search request", slogutil.Error(err))
 		}
 		return
 	}
 
-	l.Debugln("Listening for UPnP response for device type", deviceType, "on", intf.Name)
+	slog.Debug("Listening for UPnP response for device type", slog.String("device_type", deviceType), slog.String("interface", intf.Name))
 
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -270,7 +270,7 @@ loop:
 		if err != nil {
 			var unsupp *UnsupportedDeviceTypeError
 			if errors.As(err, &unsupp) {
-				l.Debugln(err.Error())
+				slog.Debug("UPnP unsupported", slogutil.Error(err))
 			} else if !errors.Is(err, context.Canceled) {
 				slog.WarnContext(ctx, "Failed to parse UPnP response", slogutil.Error(err))
 			}
@@ -285,11 +285,11 @@ loop:
 			}
 		}
 	}
-	l.Debugln("Discovery for device type", deviceType, "on", intf.Name, "finished.")
+	slog.Debug("Discovery for device type finished", slog.String("device_type", deviceType), slog.String("interface", intf.Name))
 }
 
 func parseResponse(ctx context.Context, deviceType string, addr *net.UDPAddr, resp []byte, netInterface *net.Interface) ([]IGDService, error) {
-	l.Debugln("Handling UPnP response:\n\n" + string(resp))
+	slog.Debug("Handling UPnP response", slog.String("response", string(resp)))
 
 	reader := bufio.NewReader(bytes.NewBuffer(resp))
 	request := &http.Request{}
@@ -509,7 +509,7 @@ func getIGDServices(deviceUUID string, localIPAddress net.IP, rootURL string, de
 				services := getChildServices(connection, urn)
 
 				if len(services) == 0 {
-					l.Debugln(rootURL, "- no services of type", urn, " found on connection.")
+					slog.Debug("No services found on connection", slog.String("root_url", rootURL), slog.String("urn", urn))
 				}
 
 				for _, service := range services {
@@ -519,7 +519,7 @@ func getIGDServices(deviceUUID string, localIPAddress net.IP, rootURL string, de
 						u, _ := url.Parse(rootURL)
 						replaceRawPath(u, service.ControlURL)
 
-						l.Debugln(rootURL, "- found", service.Type, "with URL", u)
+						slog.Debug("Found service", slog.String("root_url", rootURL), slog.String("type", service.Type), slogutil.URI(u.String()))
 
 						service := IGDService{
 							UUID:      deviceUUID,
@@ -591,9 +591,7 @@ func soapRequestWithIP(ctx context.Context, url, service, function, message stri
 	req.Header.Set("Cache-Control", "no-cache")
 	req.Header.Set("Pragma", "no-cache")
 
-	l.Debugln("SOAP Request URL: " + url)
-	l.Debugln("SOAP Action: " + req.Header.Get("SOAPAction"))
-	l.Debugln("SOAP Request:\n\n" + body)
+	slog.Debug("SOAP Request", slog.String("url", url), slog.String("action", req.Header.Get("SOAPAction")), slog.String("body", body))
 
 	dialer := net.Dialer{
 		LocalAddr: localIP,
@@ -606,17 +604,17 @@ func soapRequestWithIP(ctx context.Context, url, service, function, message stri
 	}
 	r, err := httpClient.Do(req)
 	if err != nil {
-		l.Debugln("SOAP do:", err)
+		slog.Debug("SOAP do failed", slogutil.Error(err))
 		return resp, err
 	}
 
 	resp, err = io.ReadAll(r.Body)
 	if err != nil {
-		l.Debugf("Error reading SOAP response: %v, partial response (if present):\n\n%s", err, resp)
+		slog.Debug("Error reading SOAP response", slogutil.Error(err), slog.String("partial_response", string(resp)))
 		return resp, err
 	}
 
-	l.Debugf("SOAP Response: %s\n\n%s\n\n", r.Status, resp)
+	slog.Debug("SOAP Response", slog.String("status", r.Status), slog.String("response", string(resp)))
 
 	r.Body.Close()
 

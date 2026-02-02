@@ -14,6 +14,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"runtime"
 	"sync"
 	"time"
@@ -331,7 +332,7 @@ func (l *logger) Log(t EventType, data interface{}) {
 
 func (l *logger) sendEvent(e Event) {
 	l.nextGlobalID++
-	dl.Debugln("log", l.nextGlobalID, e.Type, e.Data)
+	slog.Debug("Event log", slog.Int("id", l.nextGlobalID), slog.Any("type", e.Type), slog.Any("data", e.Data))
 
 	e.GlobalID = l.nextGlobalID
 
@@ -365,7 +366,7 @@ func (l *logger) sendEvent(e Event) {
 func (l *logger) Subscribe(mask EventType) Subscription {
 	res := make(chan Subscription)
 	l.funcs <- func(ctx context.Context) {
-		dl.Debugln("subscribe", mask)
+		slog.Debug("Event subscribe", slog.Any("mask", mask))
 
 		s := &subscription{
 			mask:          mask,
@@ -397,7 +398,7 @@ func (l *logger) Subscribe(mask EventType) Subscription {
 }
 
 func (l *logger) unsubscribe(s *subscription) {
-	dl.Debugln("unsubscribe", s.mask)
+	slog.Debug("Event unsubscribe", slog.Any("mask", s.mask))
 	for i, ss := range l.subs {
 		if s == ss {
 			last := len(l.subs) - 1
@@ -424,7 +425,7 @@ func (l *logger) String() string {
 // out of the event channel is closed. Poll should not be called concurrently
 // from multiple goroutines for a single subscription.
 func (s *subscription) Poll(timeout time.Duration) (Event, error) {
-	dl.Debugln("poll", timeout)
+	slog.Debug("Event poll", slog.Duration("timeout", timeout))
 
 	s.timeout.Reset(timeout)
 

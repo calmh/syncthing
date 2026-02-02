@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"path"
 	"strings"
@@ -30,6 +31,7 @@ import (
 
 	"github.com/syncthing/syncthing/internal/gen/bep"
 	"github.com/syncthing/syncthing/internal/protoutil"
+	"github.com/syncthing/syncthing/internal/slogutil"
 )
 
 const (
@@ -443,7 +445,7 @@ func (c *rawConnection) dispatcherLoop() (err error) {
 		if err != nil {
 			return fmt.Errorf("protocol error: %w", err)
 		}
-		l.Debugf("handle %v message", msgContext)
+		slog.Debug("handle message", slog.Any("context", msgContext))
 
 		switch msg := msg.(type) {
 		case *bep.ClusterConfig:
@@ -594,12 +596,12 @@ func (c *rawConnection) readHeader(fourByteBuf []byte) (*bep.Header, error) {
 }
 
 func (c *rawConnection) handleIndex(im *Index) error {
-	l.Debugf("Index(%v, %v, %d file)", c.deviceID, im.Folder, len(im.Files))
+	slog.Debug("Index", slog.Any("device", c.deviceID), slog.String("folder", im.Folder), slog.Int("files", len(im.Files)))
 	return c.model.Index(im)
 }
 
 func (c *rawConnection) handleIndexUpdate(im *IndexUpdate) error {
-	l.Debugf("queueing IndexUpdate(%v, %v, %d files)", c.deviceID, im.Folder, len(im.Files))
+	slog.Debug("queueing IndexUpdate", slog.Any("device", c.deviceID), slog.String("folder", im.Folder), slog.Int("files", len(im.Files)))
 	return c.model.IndexUpdate(im)
 }
 
@@ -766,7 +768,7 @@ func (c *rawConnection) writerLoop() {
 
 func (c *rawConnection) writeMessage(msg proto.Message) error {
 	msgContext, _ := messageContext(msg)
-	l.Debugf("Writing %v", msgContext)
+	slog.Debug("Writing message", slog.Any("context", msgContext))
 
 	defer func() {
 		metricDeviceSentMessages.WithLabelValues(c.idString).Inc()
@@ -811,7 +813,7 @@ func (c *rawConnection) writeMessage(msg proto.Message) error {
 
 	n, err := c.cw.Write(buf)
 
-	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message), err=%v", n, hdrSize, size, err)
+	slog.Debug("Wrote bytes on the wire", slog.Int("total", n), slog.Int("header", hdrSize), slog.Int("message", size), slog.Any("err", err))
 	if err != nil {
 		return fmt.Errorf("writing message: %w", err)
 	}
@@ -859,7 +861,7 @@ func (c *rawConnection) writeCompressedMessage(msg proto.Message, marshaled []by
 	binary.BigEndian.PutUint32(buf[2+hdrSize:], uint32(compressedSize))
 
 	n, err := c.cw.Write(buf[:totSize])
-	l.Debugf("wrote %d bytes on the wire (2 bytes length, %d bytes header, 4 bytes message length, %d bytes message (%d uncompressed)), err=%v", n, hdrSize, compressedSize, len(marshaled), err)
+	slog.Debug("Wrote compressed bytes on the wire", slog.Int("total", n), slog.Int("header", hdrSize), slog.Int("compressed", compressedSize), slog.Int("uncompressed", len(marshaled)), slog.Any("err", err))
 	if err != nil {
 		return true, fmt.Errorf("writing message: %w", err)
 	}
@@ -962,9 +964,9 @@ func (c *rawConnection) internalClose(err error) {
 	c.closeOnce.Do(func() {
 		c.startStopMut.Lock()
 
-		l.Debugf("close connection to %s at %s due to %v", c.deviceID.Short(), c.ConnectionInfo, err)
+		slog.Debug("Close connection", slog.String("device", c.deviceID.Short().String()), slog.Any("conn", c.ConnectionInfo), slogutil.Error(err))
 		if cerr := c.closer.Close(); cerr != nil {
-			l.Debugf("failed to close underlying conn %s at %s %v:", c.deviceID.Short(), c.ConnectionInfo, cerr)
+			slog.Debug("Failed to close underlying conn", slog.String("device", c.deviceID.Short().String()), slog.Any("conn", c.ConnectionInfo), slogutil.Error(cerr))
 		}
 		close(c.closed)
 
@@ -1005,11 +1007,11 @@ func (c *rawConnection) pingSender() {
 		case <-ticker.C:
 			d := time.Since(c.cw.Last())
 			if d < PingSendInterval/2 {
-				l.Debugln(c.deviceID, "ping skipped after wr", d)
+				slog.Debug("ping skipped after wr", slog.Any("device", c.deviceID), slog.Duration("d", d))
 				continue
 			}
 
-			l.Debugln(c.deviceID, "ping -> after", d)
+			slog.Debug("ping -> after", slog.Any("device", c.deviceID), slog.Duration("d", d))
 			c.ping()
 
 		case <-c.closed:
@@ -1030,11 +1032,11 @@ func (c *rawConnection) pingReceiver() {
 		case <-ticker.C:
 			d := time.Since(c.cr.Last())
 			if d > ReceiveTimeout {
-				l.Debugln(c.deviceID, "ping timeout", d)
+				slog.Debug("ping timeout", slog.Any("device", c.deviceID), slog.Duration("d", d))
 				c.internalClose(ErrTimeout)
 			}
 
-			l.Debugln(c.deviceID, "last read within", d)
+			slog.Debug("last read within", slog.Any("device", c.deviceID), slog.Duration("d", d))
 
 		case <-c.closed:
 			return

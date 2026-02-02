@@ -155,7 +155,7 @@ func SelectLatestRelease(rels []Release, current string, upgradeToPreReleases bo
 		}
 
 		if rel.Prerelease && !upgradeToPreReleases {
-			l.Debugln("skipping pre-release", rel.Tag)
+			slog.Debug("Skipping pre-release", slog.String("tag", rel.Tag))
 			continue
 		}
 
@@ -166,7 +166,7 @@ func SelectLatestRelease(rels []Release, current string, upgradeToPreReleases bo
 			// Check for the architecture
 			for _, expRel := range expectedReleases {
 				if strings.HasPrefix(assetName, expRel) {
-					l.Debugln("selected", rel.Tag)
+					slog.Debug("Selected release", slog.String("tag", rel.Tag))
 					selected = rel
 					break nextAsset
 				}
@@ -186,7 +186,7 @@ func upgradeTo(binary string, rel Release) error {
 	expectedReleases := releaseNames(rel.Tag)
 	for _, asset := range rel.Assets {
 		assetName := path.Base(asset.Name)
-		l.Debugln("considering release", assetName)
+		slog.Debug("Considering release", slog.String("asset", assetName))
 
 		for _, expRel := range expectedReleases {
 			if strings.HasPrefix(assetName, expRel) {
@@ -220,7 +220,7 @@ func upgradeToURL(archiveName, binary string, url string) error {
 }
 
 func readRelease(archiveName, dir, url string) (string, error) {
-	l.Debugf("loading %q", url)
+	slog.Debug("Loading release", slogutil.URI(url))
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -343,7 +343,7 @@ func archiveFileVisitor(dir string, tempFile *string, signature *[]byte, archive
 	var err error
 	filename := path.Base(archivePath)
 	archiveDir := path.Dir(archivePath)
-	l.Debugf("considering file %s", archivePath)
+	slog.Debug("Considering file", slogutil.FilePath(archivePath))
 	switch filename {
 	case "syncthing", "syncthing.exe":
 		archiveDirs := strings.Split(archiveDir, "/")
@@ -352,14 +352,14 @@ func archiveFileVisitor(dir string, tempFile *string, signature *[]byte, archive
 			// other things.
 			return nil
 		}
-		l.Debugf("found upgrade binary %s", archivePath)
+		slog.Debug("Found upgrade binary", slogutil.FilePath(archivePath))
 		*tempFile, err = writeBinary(dir, io.LimitReader(filedata, maxBinarySize))
 		if err != nil {
 			return err
 		}
 
 	case "release.sig":
-		l.Debugf("found signature %s", archivePath)
+		slog.Debug("Found signature", slogutil.FilePath(archivePath))
 		*signature, err = io.ReadAll(io.LimitReader(filedata, maxSignatureSize))
 		if err != nil {
 			return err
@@ -377,7 +377,7 @@ func verifyUpgrade(archiveName, tempName string, sig []byte) error {
 		return errors.New("no signature found")
 	}
 
-	l.Debugf("checking signature\n%s", sig)
+	slog.Debug("Checking signature", slog.String("sig", string(sig)))
 
 	fd, err := os.Open(tempName)
 	if err != nil {

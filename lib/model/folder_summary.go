@@ -12,6 +12,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"sync"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"github.com/thejerf/suture/v4"
 
 	"github.com/syncthing/syncthing/internal/db"
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -403,7 +405,7 @@ func (c *folderSummaryService) sendSummary(ctx context.Context, folder string) {
 		// remote device.
 		comp, err := c.model.Completion(devCfg.DeviceID, folder)
 		if err != nil {
-			l.Debugf("Error getting completion for folder %v, device %v: %v", folder, devCfg.DeviceID, err)
+			slog.Debug("Error getting completion", slog.String("folder", folder), slog.Any("device", devCfg.DeviceID), slogutil.Error(err))
 			continue
 		}
 		ev := comp.Map()

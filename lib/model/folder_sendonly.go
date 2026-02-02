@@ -8,6 +8,7 @@ package model
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/syncthing/syncthing/internal/itererr"
 	"github.com/syncthing/syncthing/lib/config"
@@ -56,7 +57,7 @@ func (f *sendOnlyFolder) pull(ctx context.Context) (bool, error) {
 		if f.ignores.Match(file.FileName()).IsIgnored() {
 			file.SetIgnored()
 			batch.Append(file)
-			l.Debugln(f, "Handling ignored file", file)
+			slog.Debug("Handling ignored file", slog.Any("folder", f), slog.Any("file", file))
 			continue
 		}
 
@@ -82,7 +83,7 @@ func (f *sendOnlyFolder) pull(ctx context.Context) (bool, error) {
 		}
 
 		batch.Append(file)
-		l.Debugln(f, "Merging versions of identical file", file)
+		slog.Debug("Merging versions of identical file", slog.Any("folder", f), slog.Any("file", file))
 	}
 
 	batch.Flush()

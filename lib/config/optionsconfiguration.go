@@ -8,11 +8,13 @@ package config
 
 import (
 	"fmt"
+	"log/slog"
 	"net"
 	"runtime"
 	"slices"
 	"strings"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/stringutil"
@@ -184,14 +186,14 @@ func (opts OptionsConfiguration) StunServers() []string {
 		case "default":
 			_, records, err := net.LookupSRV("stun", "udp", "syncthing.net")
 			if err != nil {
-				l.Debugln("Unable to resolve primary STUN servers via DNS:", err)
+				slog.Debug("Unable to resolve primary STUN servers via DNS", slogutil.Error(err))
 			}
 
 			for _, record := range records {
 				priority := record.Priority
 				target := strings.TrimSuffix(record.Target, ".")
 				address := fmt.Sprintf("%s:%d", target, record.Port)
-				l.Debugf("Resolved primary STUN server %s with priority %d", address, priority)
+				slog.Debug("Resolved primary STUN server", slogutil.Address(address), slog.Uint64("priority", uint64(priority)))
 				addresses = append(addresses, address)
 			}
 

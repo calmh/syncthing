@@ -10,11 +10,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/fs"
@@ -44,7 +46,7 @@ func newExternal(cfg config.FolderConfiguration) Versioner {
 		filesystem: cfg.Filesystem(),
 	}
 
-	l.Debugf("instantiated %#v", s)
+	slog.Debug("Instantiated external versioner", slog.String("command", command))
 	return s
 }
 
@@ -53,7 +55,7 @@ func newExternal(cfg config.FolderConfiguration) Versioner {
 func (v external) Archive(filePath string) error {
 	info, err := v.filesystem.Lstat(filePath)
 	if fs.IsNotExist(err) {
-		l.Debugln("not archiving nonexistent file", filePath)
+		slog.Debug("Not archiving nonexistent file", slogutil.FilePath(filePath))
 		return nil
 	} else if err != nil {
 		return err
@@ -62,7 +64,7 @@ func (v external) Archive(filePath string) error {
 		panic("bug: attempting to version a symlink")
 	}
 
-	l.Debugln("archiving", filePath)
+	slog.Debug("Archiving", slogutil.FilePath(filePath))
 
 	if v.command == "" {
 		return errors.New("command is empty, please enter a valid command")
@@ -99,7 +101,7 @@ func (v external) Archive(filePath string) error {
 	}
 	cmd.Env = filteredEnv
 	combinedOutput, err := cmd.CombinedOutput()
-	l.Debugln("external command output:", string(combinedOutput))
+	slog.Debug("External command output", slog.String("output", string(combinedOutput)))
 	if err != nil {
 		eerr := &exec.ExitError{}
 		if errors.As(err, &eerr) && len(eerr.Stderr) > 0 {

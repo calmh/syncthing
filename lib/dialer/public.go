@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"time"
 
@@ -71,12 +72,12 @@ func dialContextWithFallback(ctx context.Context, fallback proxy.ContextDialer, 
 	}
 	if dialer == proxy.Direct {
 		conn, err := fallback.DialContext(ctx, network, addr)
-		l.Debugf("Dialing direct result %s %s: %v %v", network, addr, conn, err)
+		slog.Debug("Dialing direct result", slog.String("network", network), slog.String("addr", addr), slog.Any("conn", conn), slog.Any("err", err))
 		return conn, err
 	}
 	if noFallback {
 		conn, err := dialer.DialContext(ctx, network, addr)
-		l.Debugf("Dialing no fallback result %s %s: %v %v", network, addr, conn, err)
+		slog.Debug("Dialing no fallback result", slog.String("network", network), slog.String("addr", addr), slog.Any("conn", conn), slog.Any("err", err))
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +156,7 @@ func dialTwicePreferFirst(ctx context.Context, first, second dialFunc, firstName
 	secondDone := make(chan struct{})
 	go func() {
 		firstConn, firstErr = first(ctx, network, address)
-		l.Debugf("Dialing %s result %s %s: %v %v", firstName, network, address, firstConn, firstErr)
+		slog.Debug("Dialing result", slog.String("name", firstName), slog.String("network", network), slog.String("address", address), slog.Any("conn", firstConn), slog.Any("err", firstErr))
 		close(firstDone)
 	}()
 	go func() {
@@ -174,7 +175,7 @@ func dialTwicePreferFirst(ctx context.Context, first, second dialFunc, firstName
 		case <-time.After(sleep):
 		}
 		secondConn, secondErr = second(ctx, network, address)
-		l.Debugf("Dialing %s result %s %s: %v %v", secondName, network, address, secondConn, secondErr)
+		slog.Debug("Dialing result", slog.String("name", secondName), slog.String("network", network), slog.String("address", address), slog.Any("conn", secondConn), slog.Any("err", secondErr))
 		close(secondDone)
 	}()
 	<-firstDone

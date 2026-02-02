@@ -12,6 +12,7 @@ package fs
 
 import (
 	"errors"
+	"log/slog"
 	"path/filepath"
 )
 
@@ -23,20 +24,20 @@ type ancestorDirList struct {
 }
 
 func (ancestors *ancestorDirList) Push(info FileInfo) {
-	l.Debugf("ancestorDirList: Push '%s'", info.Name())
+	slog.Debug("ancestorDirList: Push", slog.String("name", info.Name()))
 	ancestors.list = append(ancestors.list, info)
 }
 
 func (ancestors *ancestorDirList) Pop() FileInfo {
 	aLen := len(ancestors.list)
 	info := ancestors.list[aLen-1]
-	l.Debugf("ancestorDirList: Pop '%s'", info.Name())
+	slog.Debug("ancestorDirList: Pop", slog.String("name", info.Name()))
 	ancestors.list = ancestors.list[:aLen-1]
 	return info
 }
 
 func (ancestors *ancestorDirList) Contains(info FileInfo) bool {
-	l.Debugf("ancestorDirList: Contains '%s'", info.Name())
+	slog.Debug("ancestorDirList: Contains", slog.String("name", info.Name()))
 	for _, ancestor := range ancestors.list {
 		if ancestors.fs.SameFile(info, ancestor) {
 			return true
@@ -82,7 +83,7 @@ func NewWalkFilesystem(next Filesystem) Filesystem {
 
 // walk recursively descends path, calling walkFn.
 func (f *walkFilesystem) walk(path string, info FileInfo, walkFn WalkFunc, ancestors *ancestorDirList) error {
-	l.Debugf("walk: path=%s", path)
+	slog.Debug("walk", slog.String("path", path))
 	path, err := Canonicalize(path)
 	if err != nil {
 		return err

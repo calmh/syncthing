@@ -32,7 +32,7 @@ func NewBroadcast(port int) Interface {
 func writeBroadcasts(ctx context.Context, inbox <-chan []byte, port int) error {
 	conn, err := net.ListenUDP("udp4", nil)
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to listen on UDP", slogutil.Error(err))
 		return err
 	}
 	doneCtx, cancel := context.WithCancel(ctx)
@@ -52,7 +52,7 @@ func writeBroadcasts(ctx context.Context, inbox <-chan []byte, port int) error {
 
 		intfs, err := netutil.Interfaces()
 		if err != nil {
-			l.Debugln("Failed to list interfaces:", err)
+			slog.DebugContext(ctx, "Failed to list interfaces", slogutil.Error(err))
 			// net.Interfaces() is broken on Android. see https://github.com/golang/go/issues/40569
 			// Use the general broadcast address 255.255.255.255 instead.
 		}
@@ -72,7 +72,7 @@ func writeBroadcasts(ctx context.Context, inbox <-chan []byte, port int) error {
 
 			addrs, err := netutil.InterfaceAddrsByInterface(&intf)
 			if err != nil {
-				l.Debugln("Failed to list interface addresses:", err)
+				slog.DebugContext(ctx, "Failed to list interface addresses", slogutil.Error(err))
 				// Interface discovery might work while retrieving the addresses doesn't. So log the error and carry on.
 				continue
 			}
@@ -81,7 +81,7 @@ func writeBroadcasts(ctx context.Context, inbox <-chan []byte, port int) error {
 				if iaddr, ok := addr.(*net.IPNet); ok && len(iaddr.IP) >= 4 && iaddr.IP.IsGlobalUnicast() && iaddr.IP.To4() != nil {
 					baddr := bcast(iaddr)
 					dsts = append(dsts, baddr.IP)
-					slog.Debug("Added broadcast address", slogutil.Address(baddr), "intf", intf.Name, slog.String("intf_flags", intf.Flags.String()))
+					slog.Debug("Added broadcast address", slogutil.Address(baddr), slog.String("intf", intf.Name), slog.Any("intf_flags", intf.Flags))
 				}
 			}
 		}
@@ -103,17 +103,17 @@ func writeBroadcasts(ctx context.Context, inbox <-chan []byte, port int) error {
 			if errors.As(err, &nerr) && nerr.Timeout() {
 				// Write timeouts should not happen. We treat it as a fatal
 				// error on the socket.
-				l.Debugln(err)
+				slog.DebugContext(ctx, "Write timeout", slogutil.Error(err))
 				return err
 			}
 
 			if err != nil {
 				// Some other error that we don't expect. Debug and continue.
-				l.Debugln(err)
+				slog.DebugContext(ctx, "Write error", slogutil.Error(err))
 				continue
 			}
 
-			l.Debugf("sent %d bytes to %s", len(bs), dst)
+			slog.DebugContext(ctx, "Sent broadcast", slog.Int("bytes", len(bs)), slogutil.Address(dst))
 			success++
 		}
 
@@ -127,7 +127,7 @@ func writeBroadcasts(ctx context.Context, inbox <-chan []byte, port int) error {
 func readBroadcasts(ctx context.Context, outbox chan<- recv, port int) error {
 	conn, err := net.ListenUDP("udp4", &net.UDPAddr{Port: port})
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to listen on UDP", slogutil.Error(err))
 		return err
 	}
 
@@ -142,11 +142,11 @@ func readBroadcasts(ctx context.Context, outbox chan<- recv, port int) error {
 	for {
 		n, addr, err := conn.ReadFrom(bs)
 		if err != nil {
-			l.Debugln(err)
+			slog.DebugContext(ctx, "Read error", slogutil.Error(err))
 			return err
 		}
 
-		l.Debugf("recv %d bytes from %s", n, addr)
+		slog.DebugContext(ctx, "Received broadcast", slog.Int("bytes", n), slogutil.Address(addr))
 
 		c := make([]byte, n)
 		copy(c, bs)

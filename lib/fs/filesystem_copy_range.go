@@ -7,6 +7,7 @@
 package fs
 
 import (
+	"log/slog"
 	"sync"
 	"syscall"
 )
@@ -22,7 +23,7 @@ func registerCopyRangeImplementation(copyMethod CopyRangeMethod, impl copyRangeI
 	mut.Lock()
 	defer mut.Unlock()
 
-	l.Debugln("Registering " + copyMethod.String() + " copyRange method")
+	slog.Debug("Registering copyRange method", slog.Any("method", copyMethod))
 
 	copyRangeMethods[copyMethod] = impl
 }

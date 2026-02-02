@@ -77,7 +77,7 @@ func (s *IGDService) AddPinhole(ctx context.Context, protocol nat.Protocol, intA
 		// and pinhole it if so. It's not an error if not though, so don't return
 		// an error if one doesn't occur.
 		if intAddr.IP.To4() != nil {
-			l.Debugf("Listener is IPv4. Not using gateway %s", s.ID())
+			slog.Debug("Listener is IPv4. Not using gateway", slog.String("gateway", s.ID()))
 			return nil, nil
 		}
 		for _, addr := range addrs {
@@ -96,7 +96,7 @@ func (s *IGDService) AddPinhole(ctx context.Context, protocol nat.Protocol, intA
 				}, nil
 			}
 
-			l.Debugf("Listener IP %s not on interface for gateway %s", intAddr.IP, s.ID())
+			slog.Debug("Listener IP not on interface for gateway", slogutil.Address(intAddr.IP.String()), slog.String("gateway", s.ID()))
 		}
 		return nil, nil
 	}
@@ -169,9 +169,9 @@ func (s *IGDService) tryAddPinholeForIP6(ctx context.Context, protocol nat.Proto
 		var succResponse soapAddPinholeResponse
 		if unmarshalErr := xml.Unmarshal(resp, &succResponse); unmarshalErr != nil {
 			// Ignore errors since this is only used for debug logging.
-			l.Debugf("Failed to parse response from gateway %s: %s", s.ID(), unmarshalErr)
+			slog.Debug("Failed to parse response from gateway", slog.String("gateway", s.ID()), slogutil.Error(unmarshalErr))
 		} else {
-			l.Debugf("UPnPv6: UID for pinhole on [%s]:%d/%s is %d on gateway %s", ip, port, protocol, succResponse.UniqueID, s.ID())
+			slog.Debug("UPnPv6: UID for pinhole", slogutil.Address(ip), slog.Int("port", port), slog.Any("protocol", protocol), slog.Int("uid", succResponse.UniqueID), slog.String("gateway", s.ID()))
 		}
 	}
 	// Either there was no error or an error not handled above (no response, e.g. network error).
@@ -209,7 +209,7 @@ func (s *IGDService) AddPortMapping(ctx context.Context, protocol nat.Protocol, 
 		}
 
 		err = fmt.Errorf("UPnP Error: %s (%d)", envelope.ErrorDescription, envelope.ErrorCode)
-		l.Debugf("Couldn't add port mapping for %s (external port %d -> internal port %d/%s): %s", s.LocalIPv4, externalPort, internalPort, protocol, err)
+		slog.Debug("Couldn't add port mapping", slogutil.Address(s.LocalIPv4), slog.Int("external_port", externalPort), slog.Int("internal_port", internalPort), slog.Any("protocol", protocol), slogutil.Error(err))
 	}
 
 	return externalPort, err

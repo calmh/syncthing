@@ -22,6 +22,7 @@ import (
 
 	"github.com/shirou/gopsutil/v4/disk"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -141,12 +142,12 @@ func (f FolderConfiguration) ModTimeWindow() time.Duration {
 	if f.RawModTimeWindowS < 1 && build.IsAndroid {
 		if usage, err := disk.Usage(f.Filesystem().URI()); err != nil {
 			dur = 2 * time.Second
-			l.Debugf(`Detecting FS at "%v" on android: Setting mtime window to 2s: err == "%v"`, f.Path, err)
+			slog.Debug("Detecting FS on Android: Setting mtime window to 2s due to error", slogutil.FilePath(f.Path), slogutil.Error(err))
 		} else if strings.HasPrefix(strings.ToLower(usage.Fstype), "ext2") || strings.HasPrefix(strings.ToLower(usage.Fstype), "ext3") || strings.HasPrefix(strings.ToLower(usage.Fstype), "ext4") {
-			l.Debugf(`Detecting FS at %v on android: Leaving mtime window at 0: usage.Fstype == "%v"`, f.Path, usage.Fstype)
+			slog.Debug("Detecting FS on Android: Leaving mtime window at 0", slogutil.FilePath(f.Path), slog.String("fstype", usage.Fstype))
 		} else {
 			dur = 2 * time.Second
-			l.Debugf(`Detecting FS at "%v" on android: Setting mtime window to 2s: usage.Fstype == "%v"`, f.Path, usage.Fstype)
+			slog.Debug("Detecting FS on Android: Setting mtime window to 2s", slogutil.FilePath(f.Path), slog.String("fstype", usage.Fstype))
 		}
 	}
 	return dur
@@ -180,9 +181,9 @@ func (f *FolderConfiguration) CreateMarker() error {
 
 	// Sync & hide the containing directory
 	if dir, err := ffs.Open("."); err != nil {
-		l.Debugln("folder marker: open . failed:", err)
+		slog.Debug("Folder marker: open . failed", slogutil.Error(err))
 	} else if err := dir.Sync(); err != nil {
-		l.Debugln("folder marker: fsync . failed:", err)
+		slog.Debug("Folder marker: fsync . failed", slogutil.Error(err))
 	}
 	ffs.Hide(DefaultMarkerName)
 

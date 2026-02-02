@@ -271,6 +271,6 @@ type dialTarget struct {
 }
 
 func (t dialTarget) Dial(ctx context.Context) (internalConn, error) {
-	l.Debugln("dialing", t.deviceID, t.uri, "prio", t.priority)
+	slog.DebugContext(ctx, "Dialing", slog.Any("device", t.deviceID), slog.Any("uri", t.uri), slog.Int("priority", t.priority))
 	return t.dialer.Dial(ctx, t.deviceID, t.uri)
 }

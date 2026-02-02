@@ -13,6 +13,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/netutil"
 
@@ -33,13 +34,13 @@ func NewMulticast(addr string) Interface {
 func writeMulticasts(ctx context.Context, inbox <-chan []byte, addr string) error {
 	gaddr, err := net.ResolveUDPAddr("udp6", addr)
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to resolve UDP address", slogutil.Error(err))
 		return err
 	}
 
 	conn, err := net.ListenPacket("udp6", ":0")
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to listen on UDP", slogutil.Error(err))
 		return err
 	}
 	doneCtx, cancel := context.WithCancel(ctx)
@@ -65,7 +66,7 @@ func writeMulticasts(ctx context.Context, inbox <-chan []byte, addr string) erro
 
 		intfs, err := netutil.Interfaces()
 		if err != nil {
-			l.Debugln(err)
+			slog.DebugContext(ctx, "Failed to list interfaces", slogutil.Error(err))
 			return err
 		}
 
@@ -86,11 +87,11 @@ func writeMulticasts(ctx context.Context, inbox <-chan []byte, addr string) erro
 			pconn.SetWriteDeadline(time.Time{})
 
 			if err != nil {
-				l.Debugln(err, "on write to", gaddr, intf.Name)
+				slog.DebugContext(ctx, "Write error", slogutil.Address(gaddr), slog.String("intf", intf.Name), slogutil.Error(err))
 				continue
 			}
 
-			l.Debugf("sent %d bytes to %v on %s", len(bs), gaddr, intf.Name)
+			slog.DebugContext(ctx, "Sent multicast", slog.Int("bytes", len(bs)), slogutil.Address(gaddr), slog.String("intf", intf.Name))
 
 			success++
 
@@ -110,13 +111,13 @@ func writeMulticasts(ctx context.Context, inbox <-chan []byte, addr string) erro
 func readMulticasts(ctx context.Context, outbox chan<- recv, addr string) error {
 	gaddr, err := net.ResolveUDPAddr("udp6", addr)
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to resolve UDP address", slogutil.Error(err))
 		return err
 	}
 
 	conn, err := net.ListenPacket("udp6", addr)
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to listen on UDP", slogutil.Error(err))
 		return err
 	}
 	doneCtx, cancel := context.WithCancel(ctx)
@@ -128,7 +129,7 @@ func readMulticasts(ctx context.Context, outbox chan<- recv, addr string) error 
 
 	intfs, err := netutil.Interfaces()
 	if err != nil {
-		l.Debugln(err)
+		slog.DebugContext(ctx, "Failed to list interfaces", slogutil.Error(err))
 		return err
 	}
 
@@ -146,9 +147,9 @@ func readMulticasts(ctx context.Context, outbox chan<- recv, addr string) error 
 
 		err := pconn.JoinGroup(&intf, &net.UDPAddr{IP: gaddr.IP})
 		if err != nil {
-			l.Debugln("IPv6 join", intf.Name, "failed:", err)
+			slog.DebugContext(ctx, "IPv6 join failed", slog.String("intf", intf.Name), slogutil.Error(err))
 		} else {
-			l.Debugln("IPv6 join", intf.Name, "success")
+			slog.DebugContext(ctx, "IPv6 join success", slog.String("intf", intf.Name))
 		}
 		joined++
 	}
@@ -167,10 +168,10 @@ func readMulticasts(ctx context.Context, outbox chan<- recv, addr string) error 
 		}
 		n, _, addr, err := pconn.ReadFrom(bs)
 		if err != nil {
-			l.Debugln(err)
+			slog.DebugContext(ctx, "Read error", slogutil.Error(err))
 			return err
 		}
-		l.Debugf("recv %d bytes from %s", n, addr)
+		slog.DebugContext(ctx, "Received multicast", slog.Int("bytes", n), slogutil.Address(addr))
 
 		c := make([]byte, n)
 		copy(c, bs)

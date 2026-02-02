@@ -233,7 +233,7 @@ func (c *localClient) registerDevice(src net.Addr, device *discoproto.Announce) 
 
 	id, err := protocol.DeviceIDFromBytes(device.Id)
 	if err != nil {
-		l.Debugf("discover: Failed to parse device ID %x: %v", device.Id, err)
+		slog.Debug("Failed to parse device ID", slog.String("id", hex.EncodeToString(device.Id)), slogutil.Error(err))
 		return false
 	}
 
@@ -243,7 +243,7 @@ func (c *localClient) registerDevice(src net.Addr, device *discoproto.Announce) 
 	// Any empty or unspecified addresses should be set to the source address
 	// of the announcement. We also skip any addresses we can't parse.
 
-	l.Debugln("discover: Registering addresses for", id)
+	slog.Debug("Registering addresses", slog.Any("device", id))
 	var validAddresses []string
 	for _, addr := range device.Addresses {
 		u, err := url.Parse(addr)
@@ -277,12 +277,12 @@ func (c *localClient) registerDevice(src net.Addr, device *discoproto.Announce) 
 				continue
 			}
 			u.Host = net.JoinHostPort(host, strconv.Itoa(tcpAddr.Port))
-			l.Debugf("discover: Reconstructed URL is %v", u)
+			slog.Debug("Reconstructed URL", slogutil.URI(u.String()))
 			validAddresses = append(validAddresses, u.String())
-			l.Debugf("discover: Replaced address %v in %s to get %s", tcpAddr.IP, addr, u.String())
+			slog.Debug("Replaced address", slogutil.Address(tcpAddr.IP.String()), slog.String("original", addr), slog.String("result", u.String()))
 		} else {
 			validAddresses = append(validAddresses, addr)
-			l.Debugf("discover: Accepted address %s verbatim", addr)
+			slog.Debug("Accepted address verbatim", slog.String("addr", addr))
 		}
 	}
 

@@ -126,7 +126,7 @@ func (t *ProgressEmitter) sendDownloadProgressEventLocked() {
 		}
 	}
 	t.evLogger.Log(events.DownloadProgress, output)
-	l.Debugf("progress emitter: emitting %#v", output)
+	slog.Debug("Progress emitter: emitting", slog.Any("output", output))
 }
 
 func (t *ProgressEmitter) computeProgressUpdates() []progressUpdate {
@@ -222,7 +222,7 @@ func (t *ProgressEmitter) CommitConfiguration(_, to config.Configuration) bool {
 		}
 		if t.interval != newInterval {
 			t.interval = newInterval
-			l.Debugln("Progress emitter: updated interval", t.interval)
+			slog.Debug("Progress emitter: updated interval", slog.Duration("interval", t.interval))
 		}
 	} else if !t.disabled {
 		t.clearLocked()
@@ -246,7 +246,7 @@ func (t *ProgressEmitter) Register(s *sharedPullerState) {
 	if t.disabled {
 		return
 	}
-	l.Debugln("progress emitter: registering", s.folder, s.file.Name)
+	slog.Debug("Progress emitter: registering", slog.String("folder", s.folder), slog.String("name", s.file.Name))
 	if t.emptyLocked() {
 		t.timer.Reset(t.interval)
 	}
@@ -265,7 +265,7 @@ func (t *ProgressEmitter) Deregister(s *sharedPullerState) {
 		return
 	}
 
-	l.Debugln("progress emitter: deregistering", s.folder, s.file.Name)
+	slog.Debug("Progress emitter: deregistering", slog.String("folder", s.folder), slog.String("name", s.file.Name))
 	delete(t.registry[s.folder], s.file.Name)
 }
 
@@ -277,7 +277,7 @@ func (t *ProgressEmitter) BytesCompleted(folder string) (bytes int64) {
 	for _, s := range t.registry[folder] {
 		bytes += s.Progress().BytesDone
 	}
-	l.Debugf("progress emitter: bytes completed for %s: %d", folder, bytes)
+	slog.Debug("Progress emitter: bytes completed", slog.String("folder", folder), slog.Int64("bytes", bytes))
 	return
 }
 

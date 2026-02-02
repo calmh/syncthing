@@ -9,6 +9,7 @@ package versioner
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -39,7 +40,7 @@ func newTrashcan(cfg config.FolderConfiguration) Versioner {
 		copyRangeMethod: cfg.CopyRangeMethod.ToFS(),
 	}
 
-	l.Debugf("instantiated %#v", s)
+	slog.Debug("Instantiated trashcan versioner", slog.Int("cleanout_days", cleanoutDays))
 	return s
 }
 

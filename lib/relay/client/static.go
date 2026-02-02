@@ -50,20 +50,20 @@ func newStaticClient(uri *url.URL, certs []tls.Certificate, invitations chan pro
 
 func (c *staticClient) serve(ctx context.Context) error {
 	if err := c.connect(ctx); err != nil {
-		l.Debugf("Could not connect to relay %s: %s", c.uri, err)
+		slog.Debug("Could not connect to relay", slogutil.URI(c.uri.String()), slogutil.Error(err))
 		return err
 	}
 
-	l.Debugln(c, "connected", c.conn.RemoteAddr())
+	slog.Debug("Connected to relay", slog.Any("client", c), slog.Any("remote", c.conn.RemoteAddr()))
 	defer c.disconnect()
 
 	if err := c.join(); err != nil {
-		l.Debugf("Could not join relay %s: %s", c.uri, err)
+		slog.Debug("Could not join relay", slogutil.URI(c.uri.String()), slogutil.Error(err))
 		return err
 	}
 
 	if err := c.conn.SetDeadline(time.Time{}); err != nil {
-		l.Debugln("Relay set deadline:", err)
+		slog.Debug("Relay set deadline failed", slogutil.Error(err))
 		return err
 	}
 
@@ -80,15 +80,15 @@ func (c *staticClient) serve(ctx context.Context) error {
 		select {
 		case message := <-messages:
 			timeout.Reset(c.messageTimeout)
-			l.Debugf("%s received message %T", c, message)
+			slog.Debug("Received message", slog.Any("client", c), slog.String("type", fmt.Sprintf("%T", message)))
 
 			switch msg := message.(type) {
 			case protocol.Ping:
 				if err := protocol.WriteMessage(c.conn, protocol.Pong{}); err != nil {
-					l.Debugln("Relay write:", err)
+					slog.Debug("Relay write failed", slogutil.Error(err))
 					return err
 				}
-				l.Debugln(c, "sent pong")
+				slog.Debug("Sent pong", slog.Any("client", c))
 
 			case protocol.SessionInvitation:
 				ip := net.IP(msg.Address)
@@ -98,16 +98,16 @@ func (c *staticClient) serve(ctx context.Context) error {
 				select {
 				case c.invitations <- msg:
 				case <-ctx.Done():
-					l.Debugln(c, "stopping")
+					slog.Debug("Stopping", slog.Any("client", c))
 					return ctx.Err()
 				}
 
 			case protocol.RelayFull:
-				l.Debugf("Disconnected from relay %s due to it becoming full.", c.uri)
+				slog.Debug("Disconnected from relay due to it becoming full", slogutil.URI(c.uri.String()))
 				return errors.New("relay full")
 
 			default:
-				l.Debugf("Relay: protocol error: unexpected message %v", msg)
+				slog.Debug("Relay: protocol error: unexpected message", slog.Any("msg", msg))
 				return fmt.Errorf("protocol error: unexpected message %v", msg)
 			}
 
@@ -116,11 +116,11 @@ func (c *staticClient) serve(ctx context.Context) error {
 			return ctx.Err()
 
 		case err := <-errorsc:
-			l.Debugf("Disconnecting from relay %s due to error: %s", c.uri, err)
+			slog.Debug("Disconnecting from relay due to error", slogutil.URI(c.uri.String()), slogutil.Error(err))
 			return err
 
 		case <-timeout.C:
-			l.Debugln(c, "timed out")
+			slog.Debug("Timed out", slog.Any("client", c))
 			return errors.New("timed out")
 		}
 	}
@@ -173,7 +173,7 @@ func (c *staticClient) connect(ctx context.Context) error {
 }
 
 func (c *staticClient) disconnect() {
-	l.Debugln(c, "disconnecting")
+	slog.Debug("Disconnecting", slog.Any("client", c))
 	c.conn.Close()
 }
 

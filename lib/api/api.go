@@ -530,7 +530,7 @@ func debugMiddleware(h http.Handler) http.Handler {
 					written = rf.Int()
 				}
 			}
-			l.Debugf("http: %s %q: status %d, %d bytes in %.02f ms", r.Method, r.URL.String(), status, written, ms)
+			slog.Debug("HTTP request", slog.String("method", r.Method), slog.String("url", r.URL.String()), slog.Int64("status", status), slog.Int64("bytes", written), slog.Float64("ms", ms))
 		}
 	})
 }
@@ -1090,7 +1090,7 @@ func (s *service) getSystemLog(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	since, err := time.Parse(time.RFC3339, q.Get("since"))
 	if err != nil {
-		l.Debugln(err)
+		slog.Debug("Failed to parse since parameter", slogutil.Error(err))
 	}
 	sendJSON(w, map[string][]slogutil.Line{
 		"messages": s.systemLog.Since(since),
@@ -1101,7 +1101,7 @@ func (s *service) getSystemLogTxt(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	since, err := time.Parse(time.RFC3339, q.Get("since"))
 	if err != nil {
-		l.Debugln(err)
+		slog.Debug("Failed to parse since parameter", slogutil.Error(err))
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 

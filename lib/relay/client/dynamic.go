@@ -8,12 +8,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"slices"
 	"sync"
 	"time"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/rand"
 	"github.com/syncthing/syncthing/lib/relay/protocol"
@@ -46,16 +48,16 @@ func (c *dynamicClient) serve(ctx context.Context) error {
 	// Trim off the `dynamic+` prefix
 	uri.Scheme = uri.Scheme[8:]
 
-	l.Debugln(c, "looking up dynamic relays")
+	slog.Debug("Looking up dynamic relays", slog.Any("client", c))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri.String(), nil)
 	if err != nil {
-		l.Debugln(c, "failed to lookup dynamic relays", err)
+		slog.Debug("Failed to lookup dynamic relays", slog.Any("client", c), slogutil.Error(err))
 		return err
 	}
 	data, err := http.DefaultClient.Do(req)
 	if err != nil {
-		l.Debugln(c, "failed to lookup dynamic relays", err)
+		slog.Debug("Failed to lookup dynamic relays", slog.Any("client", c), slogutil.Error(err))
 		return err
 	}
 
@@ -63,7 +65,7 @@ func (c *dynamicClient) serve(ctx context.Context) error {
 	err = json.NewDecoder(data.Body).Decode(&ann)
 	data.Body.Close()
 	if err != nil {
-		l.Debugln(c, "failed to lookup dynamic relays", err)
+		slog.Debug("Failed to lookup dynamic relays", slog.Any("client", c), slogutil.Error(err))
 		return err
 	}
 
@@ -71,22 +73,22 @@ func (c *dynamicClient) serve(ctx context.Context) error {
 	for _, relayAnn := range ann.Relays {
 		ruri, err := url.Parse(relayAnn.URL)
 		if err != nil {
-			l.Debugln(c, "failed to parse dynamic relay address", relayAnn.URL, err)
+			slog.Debug("Failed to parse dynamic relay address", slog.Any("client", c), slogutil.URI(relayAnn.URL), slogutil.Error(err))
 			continue
 		}
-		l.Debugln(c, "found", ruri)
+		slog.Debug("Found relay", slog.Any("client", c), slogutil.URI(ruri.String()))
 		addrs = append(addrs, ruri.String())
 	}
 
 	for _, addr := range relayAddressesOrder(ctx, addrs) {
 		select {
 		case <-ctx.Done():
-			l.Debugln(c, "stopping")
+			slog.Debug("Stopping", slog.Any("client", c))
 			return nil
 		default:
 			ruri, err := url.Parse(addr)
 			if err != nil {
-				l.Debugln(c, "skipping relay", addr, err)
+				slog.Debug("Skipping relay", slog.Any("client", c), slog.String("addr", addr), slogutil.Error(err))
 				continue
 			}
 			client := newStaticClient(ruri, c.certs, c.invitations, c.timeout)
@@ -95,14 +97,14 @@ func (c *dynamicClient) serve(ctx context.Context) error {
 			c.mut.Unlock()
 
 			err = c.client.Serve(ctx)
-			l.Debugf("Disconnected from %s://%s: %v", c.client.URI().Scheme, c.client.URI().Host, err)
+			slog.Debug("Disconnected from relay", slog.String("scheme", c.client.URI().Scheme), slog.String("host", c.client.URI().Host), slogutil.Error(err))
 
 			c.mut.Lock()
 			c.client = nil
 			c.mut.Unlock()
 		}
 	}
-	l.Debugln(c, "could not find a connectable relay")
+	slog.Debug("Could not find a connectable relay", slog.Any("client", c))
 	return errors.New("could not find a connectable relay")
 }
 

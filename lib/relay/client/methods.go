@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/url"
 	"strconv"
@@ -65,7 +66,7 @@ func GetInvitationFromRelay(ctx context.Context, uri *url.URL, id syncthingproto
 	case protocol.Response:
 		return protocol.SessionInvitation{}, &incorrectResponseCodeErr{msg.Code, msg.Message}
 	case protocol.SessionInvitation:
-		l.Debugln("Received invitation", msg, "via", conn.LocalAddr())
+		slog.Debug("Received invitation", slog.Any("invitation", msg), slog.Any("via", conn.LocalAddr()))
 		ip := net.IP(msg.Address)
 		if len(ip) == 0 || ip.IsUnspecified() {
 			msg.Address, _ = osutil.IPFromAddr(conn.RemoteAddr())

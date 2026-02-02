@@ -7,6 +7,7 @@
 package api
 
 import (
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -67,7 +68,7 @@ func (m *csrfManager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(r.URL.Path, m.prefix) {
 		cookie, err := r.Cookie("CSRF-Token-" + m.unique)
 		if err != nil || !m.tokens.Check(cookie.Value) {
-			l.Debugln("new CSRF cookie in response to request for", r.URL)
+			slog.Debug("New CSRF cookie in response to request", slog.Any("url", r.URL))
 			cookie = &http.Cookie{
 				Name:  "CSRF-Token-" + m.unique,
 				Value: m.tokens.New(),

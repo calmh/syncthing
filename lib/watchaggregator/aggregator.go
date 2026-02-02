@@ -9,6 +9,7 @@ package watchaggregator
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"path/filepath"
 	"strings"
 	"time"
@@ -173,7 +174,7 @@ func (a *aggregator) mainLoop(in <-chan fs.Event, out chan<- []string, cfg confi
 		case folderCfg := <-a.folderCfgUpdate:
 			a.updateConfig(folderCfg)
 		case <-a.ctx.Done():
-			l.Debugln(a, "Stopped")
+			slog.DebugContext(a.ctx, "Aggregator stopped", "folder", a.folderID)
 			return
 		}
 	}
@@ -181,11 +182,11 @@ func (a *aggregator) mainLoop(in <-chan fs.Event, out chan<- []string, cfg confi
 
 func (a *aggregator) newEvent(event fs.Event, inProgress map[string]struct{}) {
 	if _, ok := a.root.events["."]; ok {
-		l.Debugln(a, "Will scan entire folder anyway; dropping:", event.Name)
+		slog.DebugContext(a.ctx, "Will scan entire folder anyway; dropping", "folder", a.folderID, "name", event.Name)
 		return
 	}
 	if _, ok := inProgress[event.Name]; ok {
-		l.Debugln(a, "Skipping path we modified:", event.Name)
+		slog.DebugContext(a.ctx, "Skipping path we modified", "folder", a.folderID, "name", event.Name)
 		return
 	}
 	a.aggregateEvent(event, time.Now())
@@ -193,7 +194,7 @@ func (a *aggregator) newEvent(event fs.Event, inProgress map[string]struct{}) {
 
 func (a *aggregator) aggregateEvent(event fs.Event, evTime time.Time) {
 	if event.Name == "." || a.counts.total() == maxFiles {
-		l.Debugln(a, "Scan entire folder")
+		slog.DebugContext(a.ctx, "Scan entire folder", "folder", a.folderID)
 		firstModTime := evTime
 		if a.root.childCount() != 0 {
 			event.Type = event.Type.Merge(a.root.eventType())
@@ -232,12 +233,12 @@ func (a *aggregator) aggregateEvent(event fs.Event, evTime time.Time) {
 				a.counts.add(merged, 1)
 				ev.evType = merged
 			}
-			l.Debugf("%v Parent %s (type %s) already tracked: %s", a, currPath, ev.evType, event.Name)
+			slog.DebugContext(a.ctx, "Parent already tracked", "folder", a.folderID, "parent", currPath, "type", ev.evType, "name", event.Name)
 			return
 		}
 
 		if parentDir.childCount() == localMaxFilesPerDir {
-			l.Debugf("%v Parent dir %s already has %d children, tracking it instead: %s", a, currPath, localMaxFilesPerDir, event.Name)
+			slog.DebugContext(a.ctx, "Parent dir at limit, tracking it instead", "folder", a.folderID, "parent", currPath, "children", localMaxFilesPerDir, "name", event.Name)
 			event.Name = filepath.Dir(currPath)
 			a.aggregateEvent(event, evTime)
 			return
@@ -248,7 +249,7 @@ func (a *aggregator) aggregateEvent(event fs.Event, evTime time.Time) {
 		if newParent, ok := parentDir.dirs[name]; ok {
 			parentDir = newParent
 		} else {
-			l.Debugln(a, "Creating eventDir at:", currPath)
+			slog.DebugContext(a.ctx, "Creating eventDir", "folder", a.folderID, "path", currPath)
 			newParent = newEventDir()
 			parentDir.dirs[name] = newParent
 			parentDir = newParent
@@ -269,7 +270,7 @@ func (a *aggregator) aggregateEvent(event fs.Event, evTime time.Time) {
 			a.counts.add(merged, 1)
 			ev.evType = merged
 		}
-		l.Debugf("%v Already tracked (type %v): %s", a, ev.evType, event.Name)
+		slog.DebugContext(a.ctx, "Already tracked", "folder", a.folderID, "type", ev.evType, "name", event.Name)
 		return
 	}
 
@@ -278,7 +279,7 @@ func (a *aggregator) aggregateEvent(event fs.Event, evTime time.Time) {
 	// If a dir existed at path, it would be removed from dirs, thus
 	// childCount would not increase.
 	if !ok && parentDir.childCount() == localMaxFilesPerDir {
-		l.Debugf("%v Parent dir already has %d children, tracking it instead: %s", a, localMaxFilesPerDir, event.Name)
+		slog.DebugContext(a.ctx, "Parent dir at limit, tracking it instead", "folder", a.folderID, "children", localMaxFilesPerDir, "name", event.Name)
 		event.Name = filepath.Dir(event.Name)
 		a.aggregateEvent(event, evTime)
 		return
@@ -293,7 +294,7 @@ func (a *aggregator) aggregateEvent(event fs.Event, evTime time.Time) {
 		}
 		delete(parentDir.dirs, name)
 	}
-	l.Debugf("%v Tracking (type %v): %s", a, event.Type, event.Name)
+	slog.DebugContext(a.ctx, "Tracking", "folder", a.folderID, "type", event.Type, "name", event.Name)
 	parentDir.events[name] = &aggregatedEvent{
 		firstModTime: firstModTime,
 		lastModTime:  evTime,
@@ -312,7 +313,7 @@ func (a *aggregator) resetNotifyTimerIfNeeded() {
 // resetNotifyTimer should only ever be called when notifyTimer has stopped
 // and notifyTimer.C been read from. Otherwise, call resetNotifyTimerIfNeeded.
 func (a *aggregator) resetNotifyTimer(duration time.Duration) {
-	l.Debugln(a, "Resetting notifyTimer to", duration.String())
+	slog.DebugContext(a.ctx, "Resetting notifyTimer", "folder", a.folderID, "duration", duration)
 	a.notifyTimerNeedsReset = false
 	a.notifyTimer.Reset(duration)
 }
@@ -320,7 +321,7 @@ func (a *aggregator) resetNotifyTimer(duration time.Duration) {
 func (a *aggregator) actOnTimer(out chan<- []string) {
 	c := a.counts.total()
 	if c == 0 {
-		l.Debugln(a, "No tracked events, waiting for new event.")
+		slog.DebugContext(a.ctx, "No tracked events, waiting for new event", "folder", a.folderID)
 		a.notifyTimerNeedsReset = true
 		return
 	}
@@ -331,7 +332,7 @@ func (a *aggregator) actOnTimer(out chan<- []string) {
 		a.popOldEventsTo(oldEvents, a.root, ".", time.Now(), false)
 	}
 	if len(oldEvents) == 0 {
-		l.Debugln(a, "No old fs events")
+		slog.DebugContext(a.ctx, "No old fs events", "folder", a.folderID)
 		a.resetNotifyTimer(a.notifyDelay)
 		return
 	}
@@ -344,7 +345,7 @@ func (a *aggregator) actOnTimer(out chan<- []string) {
 // afterwards to set up for the next scan scheduling.
 func (a *aggregator) notify(oldEvents map[string]*aggregatedEvent, out chan<- []string) {
 	timeBeforeSending := time.Now()
-	l.Debugf("%v Notifying about %d fs events", a, len(oldEvents))
+	slog.DebugContext(a.ctx, "Notifying about fs events", "folder", a.folderID, "count", len(oldEvents))
 	separatedBatches := make(map[fs.EventType][]string)
 	for path, event := range oldEvents {
 		separatedBatches[event.evType] = append(separatedBatches[event.evType], path)

@@ -9,9 +9,11 @@ package connections
 import (
 	"context"
 	"crypto/tls"
+	"log/slog"
 	"net/url"
 	"time"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
@@ -46,7 +48,7 @@ func (d *relayDialer) Dial(ctx context.Context, id protocol.DeviceID, uri *url.U
 
 	err = dialer.SetTrafficClass(conn, d.trafficClass)
 	if err != nil {
-		l.Debugln("Dial (BEP/relay): setting traffic class:", err)
+		slog.DebugContext(ctx, "Dial (BEP/relay): setting traffic class", slogutil.Error(err))
 	}
 
 	var tc *tls.Conn

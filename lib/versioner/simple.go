@@ -8,10 +8,12 @@ package versioner
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 	"strconv"
 	"time"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/fs"
 )
@@ -46,7 +48,7 @@ func newSimple(cfg config.FolderConfiguration) Versioner {
 		copyRangeMethod: cfg.CopyRangeMethod.ToFS(),
 	}
 
-	l.Debugf("instantiated %#v", s)
+	slog.Debug("Instantiated simple versioner", slog.Int("keep", keep), slog.Int("cleanout_days", cleanoutDays))
 	return s
 }
 
@@ -98,7 +100,7 @@ func (v simple) toRemove(versions []string, now time.Time) []string {
 	for _, version := range versions {
 		versionTime, err := time.ParseInLocation(TimeFormat, extractTag(version), time.Local)
 		if err != nil {
-			l.Debugf("Versioner: file name %q is invalid: %v", version, err)
+			slog.Debug("Versioner: file name is invalid", slogutil.FilePath(version), slogutil.Error(err))
 			continue
 		}
 

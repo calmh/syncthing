@@ -159,7 +159,7 @@ func (a *App) startup() error {
 
 	if len(a.opts.ProfilerAddr) > 0 {
 		go func() {
-			l.Debugln("Starting profiler on", a.opts.ProfilerAddr)
+			slog.Debug("Starting profiler", slog.String("addr", a.opts.ProfilerAddr))
 			runtime.SetBlockProfileRate(1)
 			err := http.ListenAndServe(a.opts.ProfilerAddr, nil)
 			if err != nil {

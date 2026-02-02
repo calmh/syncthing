@@ -9,9 +9,11 @@ package connections
 import (
 	"context"
 	"crypto/tls"
+	"log/slog"
 	"net/url"
 	"time"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/connections/registry"
 	"github.com/syncthing/syncthing/lib/dialer"
@@ -43,12 +45,12 @@ func (d *tcpDialer) Dial(ctx context.Context, _ protocol.DeviceID, uri *url.URL)
 
 	err = dialer.SetTCPOptions(conn)
 	if err != nil {
-		l.Debugln("Dial (BEP/tcp): setting tcp options:", err)
+		slog.DebugContext(ctx, "Dial (BEP/tcp): setting TCP options", slogutil.Error(err))
 	}
 
 	err = dialer.SetTrafficClass(conn, d.trafficClass)
 	if err != nil {
-		l.Debugln("Dial (BEP/tcp): setting traffic class:", err)
+		slog.DebugContext(ctx, "Dial (BEP/tcp): setting traffic class", slogutil.Error(err))
 	}
 
 	tc := tls.Client(conn, d.tlsCfg)

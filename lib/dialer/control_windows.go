@@ -10,7 +10,10 @@
 package dialer
 
 import (
+	"log/slog"
 	"syscall"
+
+	"github.com/syncthing/syncthing/internal/slogutil"
 )
 
 var SupportsReusePort = true
@@ -22,11 +25,11 @@ func ReusePortControl(_, _ string, c syscall.RawConn) error {
 		opErr = syscall.SetsockoptInt(syscall.Handle(fd), syscall.SOL_SOCKET, syscall.SO_REUSEADDR, 1)
 	})
 	if err != nil {
-		l.Debugln("ReusePortControl", err)
+		slog.Debug("ReusePortControl error", slogutil.Error(err))
 		return err
 	}
 	if opErr != nil {
-		l.Debugln("ReusePortControl", opErr)
+		slog.Debug("ReusePortControl op error", slogutil.Error(opErr))
 	}
 	return opErr
 }

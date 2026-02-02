@@ -39,7 +39,7 @@ func inWritableDir(fn func(string) error, targetFs fs.Filesystem, path string, i
 		// file or directory inside it.
 		parentErr = targetFs.Chmod(dir, mode|0o700)
 		if parentErr != nil {
-			l.Debugf("Failed to make parent directory writable: %v", parentErr)
+			slog.Debug("Failed to make parent directory writable", slogutil.Error(parentErr))
 		} else {
 			// Chmod succeeded, we should change the permissions back on the way
 			// out. If we fail we log the error as we have irrevocably messed up

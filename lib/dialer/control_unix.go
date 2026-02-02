@@ -13,6 +13,7 @@ import (
 	"log/slog"
 	"syscall"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"golang.org/x/sys/unix"
 )
 
@@ -21,7 +22,7 @@ var SupportsReusePort = false
 func init() {
 	fd, err := unix.Socket(unix.AF_INET, unix.SOCK_STREAM, unix.IPPROTO_IP)
 	if err != nil {
-		l.Debugln("Failed to create a socket", err)
+		slog.Debug("Failed to create a socket", slogutil.Error(err))
 		return
 	}
 	defer func() { _ = unix.Close(fd) }()
@@ -31,7 +32,7 @@ func init() {
 	case err == unix.ENOPROTOOPT || err == unix.EINVAL:
 		slog.Debug("SO_REUSEPORT not supported")
 	case err != nil:
-		l.Debugln("Unknown error when determining SO_REUSEPORT support", err)
+		slog.Debug("Unknown error when determining SO_REUSEPORT support", slogutil.Error(err))
 	default:
 		slog.Debug("SO_REUSEPORT supported")
 		SupportsReusePort = true

@@ -184,7 +184,7 @@ func (m *basicAuthAndSessionMiddleware) passwordAuthHandler(w http.ResponseWrite
 		StayLoggedIn bool
 	}
 	if err := unmarshalTo(http.MaxBytesReader(w, r.Body, maxLoginRequestSize), &req); err != nil {
-		l.Debugln("Failed to parse username and password:", err)
+		slog.Debug("Failed to parse username and password", slogutil.Error(err))
 		http.Error(w, "Failed to parse username and password.", http.StatusBadRequest)
 		return
 	}

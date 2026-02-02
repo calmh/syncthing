@@ -9,8 +9,10 @@ package scanner
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"sync"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
@@ -19,7 +21,7 @@ import (
 func HashFile(ctx context.Context, folderID string, fs fs.Filesystem, path string, blockSize int, counter Counter) ([]protocol.BlockInfo, error) {
 	fd, err := fs.Open(path)
 	if err != nil {
-		l.Debugln("open:", err)
+		slog.Debug("HashFile open failed", slogutil.Error(err))
 		return nil, err
 	}
 	defer fd.Close()
@@ -28,7 +30,7 @@ func HashFile(ctx context.Context, folderID string, fs fs.Filesystem, path strin
 
 	fi, err := fd.Stat()
 	if err != nil {
-		l.Debugln("stat before:", err)
+		slog.Debug("HashFile stat before failed", slogutil.Error(err))
 		return nil, err
 	}
 	size := fi.Size()
@@ -38,7 +40,7 @@ func HashFile(ctx context.Context, folderID string, fs fs.Filesystem, path strin
 
 	blocks, err := Blocks(ctx, fd, blockSize, size, counter)
 	if err != nil {
-		l.Debugln("blocks:", err)
+		slog.Debug("HashFile blocks failed", slogutil.Error(err))
 		return nil, err
 	}
 
@@ -49,7 +51,7 @@ func HashFile(ctx context.Context, folderID string, fs fs.Filesystem, path strin
 
 	fi, err = fd.Stat()
 	if err != nil {
-		l.Debugln("stat after:", err)
+		slog.Debug("HashFile stat after failed", slogutil.Error(err))
 		return nil, err
 	}
 	if size != fi.Size() || !modTime.Equal(fi.ModTime()) {
@@ -101,7 +103,7 @@ func (ph *parallelHasher) hashFiles(ctx context.Context) {
 				return
 			}
 
-			l.Debugln("started hashing:", f)
+			slog.Debug("Started hashing", slog.String("name", f.Name))
 
 			if f.IsDirectory() || f.IsDeleted() {
 				panic("Bug. Asked to hash a directory or a deleted file.")
@@ -125,7 +127,7 @@ func (ph *parallelHasher) hashFiles(ctx context.Context) {
 				f.Size += int64(b.Size)
 			}
 
-			l.Debugln("completed hashing:", f)
+			slog.Debug("Completed hashing", slog.String("name", f.Name))
 			select {
 			case ph.outbox <- ScanResult{File: f}:
 			case <-ctx.Done():

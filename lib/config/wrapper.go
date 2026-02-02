@@ -313,9 +313,9 @@ func (w *wrapper) replaceLocked(to Configuration) (Waiter, error) {
 		if !ok {
 			continue
 		}
-		l.Debugln(sub, "verifying configuration")
+		slog.Debug("Verifying configuration", slog.Any("subscriber", sub))
 		if err := sub.VerifyConfiguration(from.Copy(), to.Copy()); err != nil {
-			l.Debugln(sub, "rejected config:", err)
+			slog.Debug("Rejected config", slog.Any("subscriber", sub), slogutil.Error(err))
 			return noopWaiter{}, err
 		}
 	}
@@ -340,9 +340,9 @@ func (w *wrapper) notifyListeners(from, to Configuration) Waiter {
 }
 
 func (w *wrapper) notifyListener(sub Committer, from, to Configuration) {
-	l.Debugln(sub, "committing configuration")
+	slog.Debug("Committing configuration", slog.Any("subscriber", sub))
 	if !sub.CommitConfiguration(from, to) {
-		l.Debugln(sub, "requires restart")
+		slog.Debug("Requires restart", slog.Any("subscriber", sub))
 		w.requiresRestart.Store(true)
 	}
 }
@@ -509,18 +509,18 @@ func (w *wrapper) Save() error {
 
 	fd, err := osutil.CreateAtomic(w.path)
 	if err != nil {
-		l.Debugln("CreateAtomic:", err)
+		slog.Debug("CreateAtomic failed", slogutil.Error(err))
 		return err
 	}
 
 	if err := w.cfg.WriteXML(osutil.LineEndingsWriter(fd)); err != nil {
-		l.Debugln("WriteXML:", err)
+		slog.Debug("WriteXML failed", slogutil.Error(err))
 		fd.Close()
 		return err
 	}
 
 	if err := fd.Close(); err != nil {
-		l.Debugln("Close:", err)
+		slog.Debug("Close failed", slogutil.Error(err))
 		return err
 	}
 

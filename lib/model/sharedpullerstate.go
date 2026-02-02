@@ -10,12 +10,14 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log/slog"
 	"sync"
 	"time"
 
 	"google.golang.org/protobuf/proto"
 
 	"github.com/syncthing/syncthing/internal/protoutil"
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/osutil"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -112,7 +114,7 @@ func (w *lockedWriterAt) SyncClose(fsync bool) error {
 		if err := w.fd.Sync(); err != nil {
 			// Sync() is nice if it works but not worth failing the
 			// operation over if it fails.
-			l.Debugf("fsync failed: %v", err)
+			slog.Debug("fsync failed", slogutil.Error(err))
 		}
 	}
 	return w.fd.Close()
@@ -214,7 +216,7 @@ func (s *sharedPullerState) tempFileInWritableDir(_ string) error {
 				fd.Close()
 
 				if remErr := s.fs.Remove(s.tempName); remErr != nil {
-					l.Debugln("failed to remove temporary file:", remErr)
+					slog.Debug("Failed to remove temporary file", slogutil.Error(remErr))
 				}
 
 				return err
@@ -258,7 +260,7 @@ func (s *sharedPullerState) copyDone(block protocol.BlockInfo) {
 	s.updated = time.Now()
 	s.available = append(s.available, int(block.Offset/int64(s.file.BlockSize())))
 	s.availableUpdated = time.Now()
-	l.Debugln("sharedPullerState", s.folder, s.file.Name, "copyNeeded ->", s.copyNeeded)
+	slog.Debug("sharedPullerState copyNeeded", slog.String("folder", s.folder), slog.String("name", s.file.Name), slog.Int("copyNeeded", s.copyNeeded))
 	s.mut.Unlock()
 }
 
@@ -290,7 +292,7 @@ func (s *sharedPullerState) pullStarted() {
 	s.pullTotal++
 	s.pullNeeded++
 	s.updated = time.Now()
-	l.Debugln("sharedPullerState", s.folder, s.file.Name, "pullNeeded start ->", s.pullNeeded)
+	slog.Debug("sharedPullerState pullNeeded start", slog.String("folder", s.folder), slog.String("name", s.file.Name), slog.Int("pullNeeded", s.pullNeeded))
 	s.mut.Unlock()
 }
 
@@ -300,7 +302,7 @@ func (s *sharedPullerState) pullDone(block protocol.BlockInfo) {
 	s.updated = time.Now()
 	s.available = append(s.available, int(block.Offset/int64(s.file.BlockSize())))
 	s.availableUpdated = time.Now()
-	l.Debugln("sharedPullerState", s.folder, s.file.Name, "pullNeeded done ->", s.pullNeeded)
+	slog.Debug("sharedPullerState pullNeeded done", slog.String("folder", s.folder), slog.String("name", s.file.Name), slog.Int("pullNeeded", s.pullNeeded))
 	s.mut.Unlock()
 	metricFolderProcessedBytesTotal.WithLabelValues(s.folder, metricSourceNetwork).Add(float64(block.Size))
 }

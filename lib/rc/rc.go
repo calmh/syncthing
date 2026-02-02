@@ -324,7 +324,7 @@ func InSync(folder string, ps ...*Process) bool {
 		// If our latest FolderSummary didn't report 100%, then we are not done.
 
 		if !ps[i].done[folder] {
-			l.Debugf("done = ps[%d].done[%q] = false", i, folder)
+			slog.Debug("done = false", slog.Int("i", i), slog.String("folder", folder))
 			return false
 		}
 
@@ -334,12 +334,12 @@ func InSync(folder string, ps ...*Process) bool {
 
 		sourceID := ps[i].id.String()
 		sourceSeq := ps[i].sequence[folder][sourceID]
-		l.Debugf("sourceSeq = ps[%d].sequence[%q][%q] = %d", i, folder, sourceID, sourceSeq)
+		slog.Debug("sourceSeq", slog.Int("i", i), slog.String("folder", folder), slog.String("source_id", sourceID.String()), slog.Int64("seq", sourceSeq))
 		for j := range ps {
 			if i != j {
 				remoteSeq := ps[j].sequence[folder][sourceID]
 				if remoteSeq != sourceSeq {
-					l.Debugf("remoteSeq = ps[%d].sequence[%q][%q] = %d", j, folder, sourceID, remoteSeq)
+					slog.Debug("remoteSeq mismatch", slog.Int("j", j), slog.String("folder", folder), slog.String("source_id", sourceID.String()), slog.Int64("seq", remoteSeq))
 					return false
 				}
 			}
@@ -386,7 +386,7 @@ func (p *Process) Model(folder string) (Model, error) {
 		return Model{}, err
 	}
 
-	l.Debugf("%+v", res)
+	slog.Debug("Completion result", slog.Any("result", res))
 
 	return res, nil
 }
@@ -511,7 +511,7 @@ func (p *Process) eventLoop() {
 					notScanned[id] = struct{}{}
 				}
 
-				l.Debugln("Started", p.id)
+				slog.Debug("Started", slog.String("id", p.id))
 
 			case "StateChanged":
 				// When a folder changes to idle, we tick it off by removing
@@ -542,7 +542,7 @@ func (p *Process) eventLoop() {
 				p.eventMut.Lock()
 				m := p.updateSequenceLocked(folder, p.id.String(), data["sequence"])
 				p.done[folder] = false
-				l.Debugf("LocalIndexUpdated %v %v done=false\n\t%+v", p.id, folder, m)
+				slog.Debug("LocalIndexUpdated done=false", slog.String("id", p.id), slog.String("folder", folder), slog.Any("event", m))
 				p.eventMut.Unlock()
 
 			case "RemoteIndexUpdated":
@@ -552,7 +552,7 @@ func (p *Process) eventLoop() {
 				p.eventMut.Lock()
 				m := p.updateSequenceLocked(folder, device, data["sequence"])
 				p.done[folder] = false
-				l.Debugf("RemoteIndexUpdated %v %v done=false\n\t%+v", p.id, folder, m)
+				slog.Debug("RemoteIndexUpdated done=false", slog.String("id", p.id), slog.String("folder", folder), slog.Any("event", m))
 				p.eventMut.Unlock()
 
 			case "FolderSummary":
@@ -564,7 +564,7 @@ func (p *Process) eventLoop() {
 				p.eventMut.Lock()
 				m := p.updateSequenceLocked(folder, p.id.String(), summary["sequence"])
 				p.done[folder] = done
-				l.Debugf("FolderSummary %v %v\n\t%+v\n\t%+v", p.id, folder, p.done, m)
+				slog.Debug("FolderSummary", slog.String("id", p.id), slog.String("folder", folder), slog.Any("done", p.done), slog.Any("event", m))
 				p.eventMut.Unlock()
 
 			case "FolderCompletion":
@@ -573,7 +573,7 @@ func (p *Process) eventLoop() {
 				folder := data["folder"].(string)
 				p.eventMut.Lock()
 				m := p.updateSequenceLocked(folder, device, data["sequence"])
-				l.Debugln("FolderCompletion", p.id, folder, m)
+				slog.Debug("FolderCompletion", slog.String("id", p.id), slog.String("folder", folder), slog.Any("update", m))
 				p.eventMut.Unlock()
 			}
 		}

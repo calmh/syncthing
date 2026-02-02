@@ -8,7 +8,9 @@ package fs
 
 import (
 	"fmt"
+	"log/slog"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"golang.org/x/sys/windows"
 )
@@ -46,7 +48,7 @@ func (f *BasicFilesystem) PlatformData(name string, scanOwnership, _ bool, _ Xat
 		pd.OwnerName = gr.Name
 		pd.OwnerIsGroup = true
 	} else {
-		l.Debugf("Failed to resolve owner for %s: %v", rootedName, err)
+		slog.Debug("Failed to resolve owner", slogutil.FilePath(rootedName), slogutil.Error(err))
 	}
 
 	return protocol.PlatformData{Windows: pd}, nil

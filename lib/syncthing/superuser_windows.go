@@ -9,6 +9,8 @@ package syncthing
 import (
 	"log/slog"
 	"syscall"
+
+	"github.com/syncthing/syncthing/internal/slogutil"
 )
 
 // https://docs.microsoft.com/windows/win32/secauthz/well-known-sids
@@ -17,14 +19,14 @@ const securityLocalSystemRID = "S-1-5-18"
 func isSuperUser() bool {
 	tok, err := syscall.OpenCurrentProcessToken()
 	if err != nil {
-		l.Debugln("OpenCurrentProcessToken:", err)
+		slog.Debug("OpenCurrentProcessToken failed", slogutil.Error(err))
 		return false
 	}
 	defer tok.Close()
 
 	user, err := tok.GetTokenUser()
 	if err != nil {
-		l.Debugln("GetTokenUser:", err)
+		slog.Debug("GetTokenUser failed", slogutil.Error(err))
 		return false
 	}
 
@@ -35,10 +37,10 @@ func isSuperUser() bool {
 
 	sid, err := user.User.Sid.String()
 	if err != nil {
-		l.Debugln("Sid.String():", err)
+		slog.Debug("Sid.String failed", slogutil.Error(err))
 		return false
 	}
 
-	l.Debugf("SID: %q", sid)
+	slog.Debug("Got SID", slog.String("sid", sid))
 	return sid == securityLocalSystemRID
 }

@@ -8,6 +8,7 @@ package model
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 	"strings"
 	"time"
@@ -108,7 +109,7 @@ func (f *receiveOnlyFolder) revert(ctx context.Context) error {
 			return err
 		case !ok:
 			msg := "Unexpectedly missing global file that we have locally"
-			l.Debugf("%v revert: %v: %v", f, msg, fi.Name)
+			slog.Debug("Revert: unexpectedly missing global file", slog.Any("folder", f), slog.String("name", fi.Name))
 			f.evLogger.Log(events.Failure, msg)
 			continue
 		case gf.IsReceiveOnlyChanged():
@@ -119,7 +120,7 @@ func (f *receiveOnlyFolder) revert(ctx context.Context) error {
 				fi.Version = protocol.Vector{} // if this file ever resurfaces anywhere we want our delete to be strictly older
 				break
 			}
-			l.Debugf("Revert: deleting %s: %v\n", fi.Name, err)
+			slog.Debug("Revert: deleting", slog.String("name", fi.Name), slogutil.Error(err))
 			handled, err := delQueue.handle(fi)
 			if err != nil {
 				continue

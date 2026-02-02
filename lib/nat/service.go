@@ -238,16 +238,16 @@ func (s *Service) verifyExistingLocked(ctx context.Context, mapping *Mapping, na
 			// so this check is skipped.
 			localIP := nat.GetLocalIPv4Address()
 			if !mapping.validGateway(localIP) && nat.SupportsIPVersion(IPv4Only) {
-				l.Debugf("Skipping %s for %s because of IP mismatch. %s != %s", id, mapping, mapping.address.IP, localIP)
+				slog.DebugContext(ctx, "Skipping gateway due to IP mismatch", slog.String("id", id), slog.Any("mapping", mapping), slog.Any("mapping_ip", mapping.address.IP), slog.Any("local_ip", localIP))
 				continue
 			}
 
 			if !nat.SupportsIPVersion(mapping.ipVersion) {
-				l.Debugf("Skipping renew on gateway %s because it doesn't match the listener address family", nat.ID())
+				slog.DebugContext(ctx, "Skipping renew on gateway due to address family mismatch", slog.String("gateway", nat.ID()))
 				continue
 			}
 
-			l.Debugf("Renewing %s -> %v open port on %s", mapping, extAddrs, id)
+			slog.DebugContext(ctx, "Renewing open port", slog.Any("mapping", mapping), slog.Any("addresses", extAddrs), slog.String("id", id))
 			// extAddrs either contains one IPv4 address, or possibly several
 			// IPv6 addresses all using the same port.  Therefore the first
 			// entry always has the external port.
@@ -259,7 +259,7 @@ func (s *Service) verifyExistingLocked(ctx context.Context, mapping *Mapping, na
 				continue
 			}
 
-			l.Debugf("Renewed %s -> %v open port on %s", mapping, extAddrs, id)
+			slog.DebugContext(ctx, "Renewed open port", slog.Any("mapping", mapping), slog.Any("addresses", extAddrs), slog.String("id", id))
 
 			// We shouldn't rely on the order in which the addresses are returned.
 			// Therefore, we test for set equality and report change if there is any difference.
@@ -292,14 +292,14 @@ func (s *Service) acquireNewLocked(ctx context.Context, mapping *Mapping, nats m
 		// address
 		localIP := nat.GetLocalIPv4Address()
 		if !mapping.validGateway(localIP) && nat.SupportsIPVersion(IPv4Only) {
-			l.Debugf("Skipping %s for %s because of IP mismatch. %s != %s", id, mapping, mapping.address.IP, localIP)
+			slog.DebugContext(ctx, "Skipping gateway due to IP mismatch", slog.String("id", id), slog.Any("mapping", mapping), slog.Any("mapping_ip", mapping.address.IP), slog.Any("local_ip", localIP))
 			continue
 		}
 
-		l.Debugf("Trying to open port %s on %s", mapping, id)
+		slog.DebugContext(ctx, "Trying to open port", slog.Any("mapping", mapping), slog.String("id", id))
 
 		if !nat.SupportsIPVersion(mapping.ipVersion) {
-			l.Debugf("Skipping firewall traversal on gateway %s because it doesn't match the listener address family", nat.ID())
+			slog.DebugContext(ctx, "Skipping firewall traversal due to address family mismatch", slog.String("gateway", nat.ID()))
 			continue
 		}
 
@@ -309,7 +309,7 @@ func (s *Service) acquireNewLocked(ctx context.Context, mapping *Mapping, nats m
 			continue
 		}
 
-		l.Debugf("Opened port %s -> %v on %s", mapping, addrs, id)
+		slog.DebugContext(ctx, "Opened port", slog.Any("mapping", mapping), slog.Any("addresses", addrs), slog.String("id", id))
 		mapping.setAddressLocked(id, addrs)
 		change = true
 	}
@@ -336,7 +336,7 @@ func (s *Service) tryNATDevice(ctx context.Context, natd Device, intAddr Address
 		}
 
 		if err != nil {
-			l.Debugln("Error extending lease on", natd.ID(), err)
+			slog.DebugContext(ctx, "Error extending lease", slog.String("gateway", natd.ID()), slogutil.Error(err))
 		}
 		return addrs, err
 	}
@@ -353,7 +353,7 @@ func (s *Service) tryNATDevice(ctx context.Context, natd Device, intAddr Address
 			extPort = port
 			goto findIP
 		}
-		l.Debugf("Error extending lease on %v (external port %d -> internal port %d): %v", natd.ID(), extPort, intAddr.Port, err)
+		slog.DebugContext(ctx, "Error extending lease", slog.String("gateway", natd.ID()), slog.Int("ext_port", extPort), slog.Int("int_port", intAddr.Port), slogutil.Error(err))
 	}
 
 	for range 10 {
@@ -371,8 +371,8 @@ func (s *Service) tryNATDevice(ctx context.Context, natd Device, intAddr Address
 			extPort = port
 			goto findIP
 		}
+		slog.DebugContext(ctx, "Error getting new lease", slog.String("gateway", natd.ID()), slog.Int("ext_port", extPort), slog.Int("int_port", intAddr.Port), slogutil.Error(err))
 		err = fmt.Errorf("getting new lease on %s (external port %d -> internal port %d): %w", natd.ID(), extPort, intAddr.Port, err)
-		l.Debugf("Error %s", err)
 	}
 
 	return nil, err
@@ -380,7 +380,7 @@ func (s *Service) tryNATDevice(ctx context.Context, natd Device, intAddr Address
 findIP:
 	ip, err := natd.GetExternalIPv4Address(ctx)
 	if err != nil {
-		l.Debugf("Error getting external ip on %s: %s", natd.ID(), err)
+		slog.DebugContext(ctx, "Error getting external IP", slog.String("gateway", natd.ID()), slogutil.Error(err))
 		ip = nil
 	}
 	return []Address{

@@ -16,6 +16,7 @@ import (
 
 	natpmp "github.com/jackpal/go-nat-pmp"
 
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/nat"
 	"github.com/syncthing/syncthing/lib/netutil"
 	"github.com/syncthing/syncthing/lib/osutil"
@@ -34,14 +35,14 @@ func Discover(ctx context.Context, renewal, timeout time.Duration) []nat.Device 
 		return err
 	})
 	if err != nil {
-		l.Debugln("Failed to discover gateway", err)
+		slog.DebugContext(ctx, "Failed to discover gateway", slogutil.Error(err))
 		return nil
 	}
 	if ip == nil || ip.IsUnspecified() {
 		return nil
 	}
 
-	l.Debugln("Discovered gateway at", ip)
+	slog.DebugContext(ctx, "Discovered gateway", slogutil.Address(ip))
 
 	c := natpmp.NewClientWithTimeout(ip, timeout)
 	// Try contacting the gateway, if it does not respond, assume it does not
@@ -69,7 +70,7 @@ func Discover(ctx context.Context, renewal, timeout time.Duration) []nat.Device 
 		conn.Close()
 		localIP, err = osutil.IPFromAddr(conn.LocalAddr())
 		if localIP == nil {
-			l.Debugln("Failed to lookup local IP", err)
+			slog.DebugContext(ctx, "Failed to lookup local IP", slogutil.Error(err))
 		}
 	}
 
