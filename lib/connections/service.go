@@ -347,7 +347,7 @@ func (s *service) connectionCheckEarly(remoteID protocol.DeviceID, c internalCon
 	worstPrio := s.worstConnectionPriority(remoteID)
 	ourUpgradeThreshold := c.priority + s.cfg.Options().ConnectionPriorityUpgradeThreshold
 	if currentConns >= desiredConns && ourUpgradeThreshold >= worstPrio {
-		l.Debugf("Not accepting connection to %s at %s: already have %d connections, desire %d", remoteID, c, currentConns, desiredConns)
+		slog.Debug("Not accepting connection", slog.Any("remoteID", remoteID), slog.Any("connection", c), slog.Int("currentConns", currentConns), slog.Int("desiredConns", desiredConns))
 		return errDeviceAlreadyConnected
 	}
 
@@ -488,7 +488,7 @@ func (s *service) connect(ctx context.Context) error {
 			sleep = minConnectionLoopSleep
 		}
 
-		l.Debugln("Next connection loop in", sleep)
+		slog.Debug("Next connection loop", slog.Duration("sleep", sleep))
 
 		timeout := time.NewTimer(sleep)
 		select {
@@ -533,7 +533,7 @@ func (s *service) dialDevices(ctx context.Context, now time.Time, cfg config.Con
 		current := s.numConnectedDevices()
 		allowAdditional = connectionLimit - current
 		if allowAdditional <= 0 {
-			l.Debugf("Skipping dial because we've reached the connection limit, current %d >= limit %d", current, connectionLimit)
+			slog.Debug("Skipping dial due to connection limit", slog.Int("current", current), slog.Int("limit", connectionLimit))
 			return
 		}
 	}
@@ -570,7 +570,7 @@ func (s *service) dialDevices(ctx context.Context, now time.Time, cfg config.Con
 				// Our best dialer is not any better than what we already
 				// have, and we already have the desired number of
 				// connections to this device,so nothing to do here.
-				l.Debugf("Skipping dial to %s because we already have %d connections and our best dialer is not better than %d", deviceCfg.DeviceID.Short(), currentConns, priorityCutoff)
+				slog.Debug("Skipping dial due to sufficient connections", deviceCfg.DeviceID.LogAttr(), slog.Int("currentConns", currentConns), slog.Int("priorityCutoff", priorityCutoff))
 				continue
 			}
 		}
@@ -638,14 +638,14 @@ func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg con
 	deviceID := deviceCfg.DeviceID
 
 	addrs := s.resolveDeviceAddrs(ctx, deviceCfg)
-	l.Debugln("Resolved device", deviceID.Short(), "addresses:", addrs)
+	slog.Debug("Resolved device addresses", deviceID.LogAttr(), slog.Any("addresses", addrs))
 
 	dialTargets := make([]dialTarget, 0, len(addrs))
 	for _, addr := range addrs {
 		// Use both device and address, as you might have two devices connected
 		// to the same relay
 		if !initial && nextDialAt.get(deviceID, addr).After(now) {
-			l.Debugf("Not dialing %s via %v as it's not time yet", deviceID.Short(), addr)
+			slog.Debug("Skipping dial, not time yet", deviceID.LogAttr(), slog.String("address", addr))
 			continue
 		}
 
@@ -663,7 +663,7 @@ func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg con
 		if len(deviceCfg.AllowedNetworks) > 0 {
 			if !IsAllowedNetwork(uri.Host, deviceCfg.AllowedNetworks) {
 				s.setConnectionStatus(addr, errors.New("network disallowed"))
-				l.Debugln("Network for", uri, "is disallowed")
+				slog.Debug("Network disallowed", slogutil.URI(uri))
 				continue
 			}
 		}
@@ -673,7 +673,7 @@ func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg con
 			s.setConnectionStatus(addr, err)
 		}
 		if errors.Is(err, errUnsupported) {
-			l.Debugf("Dialer for %v: %v", uri, err)
+			slog.Debug("Dialer unsupported", slogutil.URI(uri), slogutil.Error(err))
 			continue
 		} else if err != nil {
 			slog.WarnContext(ctx, "Failed to get dialer", slogutil.URI(uri), slogutil.Error(err))
@@ -684,15 +684,15 @@ func (s *service) resolveDialTargets(ctx context.Context, now time.Time, cfg con
 		priority := dialer.Priority(uri.Host)
 		currentConns := s.numConnectionsForDevice(deviceCfg.DeviceID)
 		if priority > priorityCutoff {
-			l.Debugf("Not dialing %s at %s using %s as priority is worse than current connection (%d > %d)", deviceID.Short(), addr, dialerFactory, priority, priorityCutoff)
+			slog.Debug("Skipping dial due to worse priority", deviceID.LogAttr(), slog.String("address", addr), slog.Any("dialer", dialerFactory), slog.Int("priority", priority), slog.Int("priorityCutoff", priorityCutoff))
 			continue
 		}
 		if currentConns > 0 && !dialer.AllowsMultiConns() {
-			l.Debugf("Not dialing %s at %s using %s as it does not allow multiple connections and we already have a connection", deviceID.Short(), addr, dialerFactory)
+			slog.Debug("Skipping dial, dialer does not allow multiple connections", deviceID.LogAttr(), slog.String("address", addr), slog.Any("dialer", dialerFactory))
 			continue
 		}
 		if currentConns >= s.desiredConnectionsToDevice(deviceCfg.DeviceID) && priority == priorityCutoff {
-			l.Debugf("Not dialing %s at %s using %s as priority is equal and we already have %d/%d connections", deviceID.Short(), addr, dialerFactory, currentConns, deviceCfg.NumConnections())
+			slog.Debug("Skipping dial, already have sufficient connections at same priority", deviceID.LogAttr(), slog.String("address", addr), slog.Any("dialer", dialerFactory), slog.Int("currentConns", currentConns), slog.Int("desiredConns", deviceCfg.NumConnections()))
 			continue
 		}
 
@@ -771,7 +771,7 @@ func (s *lanChecker) isLAN(addr net.Addr) bool {
 	for _, lan := range s.cfg.Options().AlwaysLocalNets {
 		_, ipnet, err := net.ParseCIDR(lan)
 		if err != nil {
-			l.Debugln("Network", lan, "is malformed:", err)
+			slog.Debug("Failed to parse network CIDR", slog.String("network", lan), slogutil.Error(err))
 			continue
 		}
 		if ipnet.Contains(ip) {
@@ -781,9 +781,8 @@ func (s *lanChecker) isLAN(addr net.Addr) bool {
 
 	lans, err := osutil.GetInterfaceAddrs(false)
 	if err != nil {
-		l.Debugln("Failed to retrieve interface IPs:", err)
+		slog.Debug("Failed to retrieve interface IPs, assuming based on private status", slog.Any("ip", ip), slog.Bool("assumingLAN", ip.IsPrivate()), slogutil.Error(err))
 		priv := ip.IsPrivate()
-		l.Debugf("Assuming isLAN=%v for IP %v", priv, ip)
 		return priv
 	}
 
@@ -875,7 +874,7 @@ func (s *service) CommitConfiguration(from, to config.Configuration) bool {
 
 		factory, err := getListenerFactory(to, uri)
 		if errors.Is(err, errUnsupported) {
-			l.Debugf("Listener for %v: %v", uri, err)
+			slog.Debug("Listener unsupported", slogutil.URI(uri), slogutil.Error(err))
 			continue
 		} else if err != nil {
 			slog.Warn("Failed to get listener", slogutil.URI(uri), slogutil.Error(err))
@@ -888,7 +887,7 @@ func (s *service) CommitConfiguration(from, to config.Configuration) bool {
 
 	for addr, listener := range s.listeners {
 		if _, ok := seen[addr]; !ok || listener.Factory().Valid(to) != nil {
-			l.Debugln("Stopping listener", addr)
+			slog.Debug("Stopping listener", slogutil.Address(addr))
 			s.Remove(s.listenerTokens[addr])
 			delete(s.listenerTokens, addr)
 			delete(s.listeners, addr)
@@ -1131,9 +1130,9 @@ func (s *service) dialParallel(ctx context.Context, deviceID protocol.DeviceID, 
 				}
 				s.setConnectionStatus(tgt.addr, err)
 				if err != nil {
-					l.Debugln("dialing", deviceID, tgt.uri, "error:", err)
+					slog.Debug("Failed to dial", slog.Any("device", deviceID), slogutil.URI(tgt.uri), slogutil.Error(err))
 				} else {
-					l.Debugln("dialing", deviceID, tgt.uri, "success:", conn)
+					slog.Debug("Dial succeeded", slog.Any("device", deviceID), slogutil.URI(tgt.uri), slog.Any("connection", conn))
 					res <- conn
 				}
 			}(tgt)
@@ -1150,10 +1149,10 @@ func (s *service) dialParallel(ctx context.Context, deviceID protocol.DeviceID, 
 		if conn, ok := <-res; ok {
 			// Got a connection, means more might come back, hence spawn a
 			// routine that will do the discarding.
-			l.Debugln("connected to", deviceID, prio, "using", conn, conn.priority)
+			slog.Debug("Connected", slog.Any("device", deviceID), slog.Int("priority", prio), slog.Any("connection", conn), slog.Int("connPriority", conn.priority))
 			go func(deviceID protocol.DeviceID, prio int) {
 				wg.Wait()
-				l.Debugln("discarding", len(res), "connections while connecting to", deviceID, prio)
+				slog.Debug("Discarding extra connections", slog.Int("count", len(res)), slog.Any("device", deviceID), slog.Int("priority", prio))
 				for conn := range res {
 					conn.Close()
 				}
@@ -1161,7 +1160,7 @@ func (s *service) dialParallel(ctx context.Context, deviceID protocol.DeviceID, 
 			return conn, ok
 		}
 		// Failed to connect, report that fact.
-		l.Debugln("failed to connect to", deviceID, prio)
+		slog.Debug("Failed to connect", slog.Any("device", deviceID), slog.Int("priority", prio))
 	}
 	return internalConn{}, false
 }
@@ -1185,7 +1184,7 @@ func (s *service) validateIdentity(c internalConn, expectedID protocol.DeviceID)
 	// though, especially in the presence of NAT hairpinning, multiple
 	// clients between the same NAT gateway, and global discovery.
 	if remoteID == s.myID {
-		l.Debugf("Connected to myself (%s) at %s", remoteID, c)
+		slog.Debug("Connected to self", slog.Any("remoteID", remoteID), slog.Any("connection", c))
 		c.Close()
 		return errors.New("connected to self")
 	}
@@ -1341,7 +1340,7 @@ func (c *deviceConnectionTracker) accountAddedConnection(conn protocol.Connectio
 	d := conn.DeviceID()
 	c.connections[d] = append(c.connections[d], conn)
 	c.wantConnections[d] = h.NumConnections
-	l.Debugf("Added connection for %s (now %d), they want %d connections", d.Short(), len(c.connections[d]), h.NumConnections)
+	slog.Debug("Added connection", d.LogAttr(), slog.Int("totalConns", len(c.connections[d])), slog.Int("wantConns", h.NumConnections))
 
 	// Update active connections metric
 	metricDeviceActiveConnections.WithLabelValues(d.String()).Inc()
@@ -1371,7 +1370,7 @@ func (c *deviceConnectionTracker) accountRemovedConnection(conn protocol.Connect
 	// Update active connections metric
 	metricDeviceActiveConnections.WithLabelValues(d.String()).Dec()
 
-	l.Debugf("Removed connection for %s (now %d)", d.Short(), c.connections[d])
+	slog.Debug("Removed connection", d.LogAttr(), slog.Any("remainingConns", c.connections[d]))
 }
 
 func (c *deviceConnectionTracker) numConnectionsForDevice(d protocol.DeviceID) int {
@@ -1413,7 +1412,7 @@ func (c *deviceConnectionTracker) worstConnectionPriority(d protocol.DeviceID) i
 func (c *deviceConnectionTracker) closeWorsePriorityConnectionsLocked(d protocol.DeviceID, cutoff int) {
 	for _, conn := range c.connections[d] {
 		if p := conn.Priority(); p > cutoff {
-			l.Debugf("Closing connection %s to %s with priority %d (cutoff %d)", conn, d.Short(), p, cutoff)
+			slog.Debug("Closing connection due to worse priority", slog.Any("connection", conn), d.LogAttr(), slog.Int("priority", p), slog.Int("cutoff", cutoff))
 			go conn.Close(errReplacingConnection)
 		}
 	}

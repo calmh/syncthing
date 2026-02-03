@@ -124,7 +124,7 @@ type walker struct {
 // Walk returns the list of files found in the local folder by scanning the
 // file system. Files are blockwise hashed.
 func (w *walker) walk(ctx context.Context) chan ScanResult {
-	l.Debugln(w, "Walk", w.Subs, w.Matcher)
+	slog.DebugContext(ctx, "Walk", slog.String("folder", w.Folder), slog.Any("subs", w.Subs))
 
 	toHashChan := make(chan protocol.FileInfo)
 	finishedChan := make(chan ScanResult)
@@ -180,7 +180,7 @@ func (w *walker) walk(ctx context.Context) chan ScanResult {
 			emitProgressEvent := func() {
 				current := progress.Total()
 				rate := progress.Rate()
-				l.Debugf("%v: Walk %s %s current progress %d/%d at %.01f MiB/s (%d%%)", w, w.Folder, w.Subs, current, total, rate/1024/1024, current*100/total)
+				slog.Debug("Walk progress", slog.String("folder", w.Folder), slog.Any("subs", w.Subs), slog.Int64("current", current), slog.Int64("total", total), slog.Float64("rateMiBps", rate/1024/1024), slog.Int64("percent", current*100/total))
 				w.EventLogger.Log(events.FolderScanProgress, map[string]interface{}{
 					"folder":  w.Folder,
 					"current": current,
@@ -195,7 +195,7 @@ func (w *walker) walk(ctx context.Context) chan ScanResult {
 				select {
 				case <-done:
 					emitProgressEvent()
-					l.Debugln(w, "Walk progress done", w.Folder, w.Subs, w.Matcher)
+					slog.Debug("Walk progress done", slog.String("folder", w.Folder), slog.Any("subs", w.Subs))
 					return
 				case <-ticker.C:
 					emitProgressEvent()
@@ -207,7 +207,7 @@ func (w *walker) walk(ctx context.Context) chan ScanResult {
 
 	loop:
 		for _, file := range filesToHash {
-			l.Debugln(w, "real to hash:", file.Name)
+			slog.Debug("Real to hash", slogutil.FilePath(file.Name))
 			select {
 			case realToHashChan <- file:
 			case <-ctx.Done():
@@ -221,7 +221,7 @@ func (w *walker) walk(ctx context.Context) chan ScanResult {
 }
 
 func (w *walker) walkWithoutHashing(ctx context.Context) chan ScanResult {
-	l.Debugln(w, "Walk without hashing", w.Subs, w.Matcher)
+	slog.DebugContext(ctx, "Walk without hashing", slog.String("folder", w.Folder), slog.Any("subs", w.Subs))
 
 	toHashChan := make(chan protocol.FileInfo)
 	finishedChan := make(chan ScanResult)
@@ -252,7 +252,7 @@ func (w *walker) scan(ctx context.Context, toHashChan chan<- protocol.FileInfo, 
 	} else {
 		for _, sub := range w.Subs {
 			if err := osutil.TraversesSymlink(w.Filesystem, filepath.Dir(sub)); err != nil {
-				l.Debugf("%v: Skip walking %v as it is below a symlink", w, sub)
+				slog.DebugContext(ctx, "Skip walking path below symlink", slog.String("folder", w.Folder), slog.String("sub", sub))
 				continue
 			}
 			if err := w.Filesystem.Walk(sub, hashFiles); isWarnableError(err) {
@@ -299,16 +299,16 @@ func (w *walker) walkAndHashFiles(ctx context.Context, toHashChan chan<- protoco
 		}
 
 		if fs.IsTemporary(path) {
-			l.Debugln(w, "temporary:", path, "err:", err)
+			slog.Debug("Temporary file", slog.String("folder", w.Folder), slogutil.FilePath(path), slogutil.Error(err))
 			if err == nil && info.IsRegular() && info.ModTime().Add(w.TempLifetime).Before(now) {
 				w.Filesystem.Remove(path)
-				l.Debugln(w, "removing temporary:", path, info.ModTime())
+				slog.Debug("Removing old temporary file", slog.String("folder", w.Folder), slogutil.FilePath(path), slog.Time("modTime", info.ModTime()))
 			}
 			return nil
 		}
 
 		if fs.IsInternal(path) {
-			l.Debugln(w, "ignored (internal):", path)
+			slog.Debug("Ignored internal file", slog.String("folder", w.Folder), slogutil.FilePath(path))
 			return skip
 		}
 
@@ -318,7 +318,7 @@ func (w *walker) walkAndHashFiles(ctx context.Context, toHashChan chan<- protoco
 		path = normalizePath(path)
 
 		if m := w.Matcher.Match(path); m.IsIgnored() {
-			l.Debugln(w, "ignored (patterns):", path)
+			slog.Debug("Ignored by patterns", slog.String("folder", w.Folder), slogutil.FilePath(path))
 			// Only descend if matcher says so and the current file is not a symlink.
 			if err != nil || m.CanSkipDir() || info.IsSymlink() {
 				return skip
@@ -425,7 +425,7 @@ func (w *walker) handleItem(ctx context.Context, path string, info fs.FileInfo, 
 
 	default:
 		// A special file, socket, fifo, etc. -- do nothing, just skip and continue scanning.
-		l.Debugf("Skipping non-regular file %s (%s)", path, info.Mode())
+		slog.Debug("Skipping non-regular file", slogutil.FilePath(path), slog.Any("mode", info.Mode()))
 		return nil
 	}
 }
@@ -456,7 +456,7 @@ func (w *walker) walkRegular(ctx context.Context, relPath string, info fs.FileIn
 	f = w.updateFileInfo(f, curFile)
 	f.NoPermissions = w.IgnorePerms
 	f.RawBlockSize = int32(blockSize)
-	l.Debugln(w, "checking:", f)
+	slog.Debug("Checking file", slog.String("folder", w.Folder), f.LogAttr())
 
 	if hasCurFile {
 		if curFile.IsEquivalentOptional(f, protocol.FileInfoComparison{
@@ -467,7 +467,7 @@ func (w *walker) walkRegular(ctx context.Context, relPath string, info fs.FileIn
 			IgnoreOwnership: !w.ScanOwnership,
 			IgnoreXattrs:    !w.ScanXattrs,
 		}) {
-			l.Debugln(w, "unchanged:", curFile)
+			slog.Debug("File unchanged", slog.String("folder", w.Folder), curFile.LogAttr())
 			return nil
 		}
 		if curFile.ShouldConflict() && !f.ShouldConflict() {
@@ -480,10 +480,10 @@ func (w *walker) walkRegular(ctx context.Context, relPath string, info fs.FileIn
 			// of the cluster, but e.g. a local change.
 			f.Version = f.Version.DropOthers(w.ShortID)
 		}
-		l.Debugln(w, "rescan:", curFile)
+		slog.Debug("File needs rescan", slog.String("folder", w.Folder), curFile.LogAttr())
 	}
 
-	l.Debugln(w, "to hash:", relPath, f)
+	slog.Debug("File to hash", slog.String("folder", w.Folder), slogutil.FilePath(relPath), f.LogAttr())
 
 	select {
 	case toHashChan <- f:
@@ -503,7 +503,7 @@ func (w *walker) walkDir(ctx context.Context, relPath string, info fs.FileInfo, 
 	}
 	f = w.updateFileInfo(f, curFile)
 	f.NoPermissions = w.IgnorePerms
-	l.Debugln(w, "checking:", f)
+	slog.Debug("Checking directory", slog.String("folder", w.Folder), f.LogAttr())
 
 	if hasCurFile {
 		if curFile.IsEquivalentOptional(f, protocol.FileInfoComparison{
@@ -514,7 +514,7 @@ func (w *walker) walkDir(ctx context.Context, relPath string, info fs.FileInfo, 
 			IgnoreOwnership: !w.ScanOwnership,
 			IgnoreXattrs:    !w.ScanXattrs,
 		}) {
-			l.Debugln(w, "unchanged:", curFile)
+			slog.Debug("Directory unchanged", slog.String("folder", w.Folder), curFile.LogAttr())
 			return nil
 		}
 		if curFile.ShouldConflict() && !f.ShouldConflict() {
@@ -527,10 +527,10 @@ func (w *walker) walkDir(ctx context.Context, relPath string, info fs.FileInfo, 
 			// of the cluster, but e.g. a local change.
 			f.Version = f.Version.DropOthers(w.ShortID)
 		}
-		l.Debugln(w, "rescan:", curFile)
+		slog.Debug("Directory needs rescan", slog.String("folder", w.Folder), curFile.LogAttr())
 	}
 
-	l.Debugln(w, "dir:", relPath, f)
+	slog.Debug("Directory scanned", slog.String("folder", w.Folder), slogutil.FilePath(relPath), f.LogAttr())
 
 	select {
 	case finishedChan <- ScanResult{File: f}:
@@ -555,7 +555,7 @@ func (w *walker) walkSymlink(ctx context.Context, relPath string, info fs.FileIn
 
 	curFile, hasCurFile := w.CurrentFiler.CurrentFile(relPath)
 	f = w.updateFileInfo(f, curFile)
-	l.Debugln(w, "checking:", f)
+	slog.Debug("Checking symlink", slog.String("folder", w.Folder), f.LogAttr())
 
 	if hasCurFile {
 		if curFile.IsEquivalentOptional(f, protocol.FileInfoComparison{
@@ -566,7 +566,7 @@ func (w *walker) walkSymlink(ctx context.Context, relPath string, info fs.FileIn
 			IgnoreOwnership: !w.ScanOwnership,
 			IgnoreXattrs:    !w.ScanXattrs,
 		}) {
-			l.Debugln(w, "unchanged:", curFile, info.ModTime().Unix(), info.Mode()&fs.ModePerm)
+			slog.Debug("Symlink unchanged", slog.String("folder", w.Folder), curFile.LogAttr(), slog.Int64("modTime", info.ModTime().Unix()), slog.Any("mode", info.Mode()&fs.ModePerm))
 			return nil
 		}
 		if curFile.ShouldConflict() && !f.ShouldConflict() {
@@ -579,10 +579,10 @@ func (w *walker) walkSymlink(ctx context.Context, relPath string, info fs.FileIn
 			// of the cluster, but e.g. a local change.
 			f.Version = f.Version.DropOthers(w.ShortID)
 		}
-		l.Debugln(w, "rescan:", curFile)
+		slog.Debug("Symlink needs rescan", slog.String("folder", w.Folder), curFile.LogAttr())
 	}
 
-	l.Debugln(w, "symlink:", relPath, f)
+	slog.Debug("Symlink scanned", slog.String("folder", w.Folder), slogutil.FilePath(relPath), f.LogAttr())
 
 	select {
 	case finishedChan <- ScanResult{File: f}:
@@ -663,11 +663,11 @@ func (w *walker) updateFileInfo(dst, src protocol.FileInfo) protocol.FileInfo {
 	return dst
 }
 
-func handleError(ctx context.Context, context, path string, err error, finishedChan chan<- ScanResult) {
-	l.Debugf("handle error on '%v': %v: %v", path, context, err)
+func handleError(ctx context.Context, errContext, path string, err error, finishedChan chan<- ScanResult) {
+	slog.DebugContext(ctx, "Handling scan error", slogutil.FilePath(path), slog.String("context", errContext), slogutil.Error(err))
 	select {
 	case finishedChan <- ScanResult{
-		Err:  fmt.Errorf("%s: %w", context, err),
+		Err:  fmt.Errorf("%s: %w", errContext, err),
 		Path: path,
 	}:
 	case <-ctx.Done():

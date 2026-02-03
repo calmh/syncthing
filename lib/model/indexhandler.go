@@ -16,6 +16,7 @@ import (
 
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -82,12 +83,12 @@ func newIndexHandler(conn protocol.Connection, downloads *deviceDownloadState, f
 			slog.Warn("Peer is delta index compatible, but seems out of sync with reality", conn.DeviceID().LogAttr(), folder.LogAttr())
 			startSequence = 0
 		} else {
-			l.Debugf("Device %v folder %s is delta index compatible (mlv=%d)", conn.DeviceID().Short(), folder.Description(), startInfo.local.MaxSequence)
+			slog.Debug("Device is delta index compatible", conn.DeviceID().LogAttr(), folder.LogAttr(), slog.Int64("maxLocalVersion", startInfo.local.MaxSequence))
 			startSequence = startInfo.local.MaxSequence
 		}
 
 	case 0:
-		l.Debugf("Device %v folder %s has no index ID for us", conn.DeviceID().Short(), folder.Description())
+		slog.Debug("Device has no index ID for us", conn.DeviceID().LogAttr(), folder.LogAttr())
 
 	default:
 		// They say they've seen an index ID from us, but it's
@@ -109,7 +110,7 @@ func newIndexHandler(conn protocol.Connection, downloads *deviceDownloadState, f
 		// do not support delta indexes and we should clear any
 		// information we have from them before accepting their
 		// index, which will presumably be a full index.
-		l.Debugf("Device %v folder %s does not announce an index ID", conn.DeviceID().Short(), folder.Description())
+		slog.Debug("Device does not announce an index ID", conn.DeviceID().LogAttr(), folder.LogAttr())
 		if err := sdb.DropAllFiles(folder.ID, conn.DeviceID()); err != nil {
 			return nil, err
 		}
@@ -161,12 +162,12 @@ func (s *indexHandler) waitWhilePaused(ctx context.Context) error {
 }
 
 func (s *indexHandler) Serve(ctx context.Context) (err error) {
-	l.Debugf("Starting index handler for %s to %s at %s (localPrevSequence=%d)", s.folder, s.conn.DeviceID().Short(), s.conn, s.localPrevSequence)
+	slog.DebugContext(ctx, "Starting index handler", slog.String("folder", s.folder), s.conn.DeviceID().LogAttr(), slog.Any("connection", s.conn), slog.Int64("localPrevSequence", s.localPrevSequence))
 	stop := make(chan struct{})
 
 	defer func() {
 		err = svcutil.NoRestartErr(err)
-		l.Debugf("Exiting index handler for %s to %s at %s: %v", s.folder, s.conn.DeviceID().Short(), s.conn, err)
+		slog.DebugContext(ctx, "Exiting index handler", slog.String("folder", s.folder), s.conn.DeviceID().LogAttr(), slog.Any("connection", s.conn), slogutil.Error(err))
 		close(stop)
 	}()
 
@@ -276,7 +277,7 @@ func (s *indexHandler) sendIndexTo(ctx context.Context) error {
 			// can't happen, once an error is returned the index sender exits
 			panic(fmt.Sprintf("bug: once failed it should stay failed (%v)", batchError))
 		}
-		l.Debugf("%v: Sending %d files (<%d bytes)", s, len(fs), batch.Size())
+		slog.DebugContext(ctx, "Sending index batch", slog.String("folder", s.folder), s.conn.DeviceID().LogAttr(), slog.Int("files", len(fs)), slog.Int("maxBytes", batch.Size()))
 
 		lastSequence := fs[len(fs)-1].Sequence
 		var err error
@@ -376,7 +377,7 @@ func (s *indexHandler) receive(fs []protocol.FileInfo, update bool, op string, p
 		}
 	}
 
-	l.Debugf("Received %d files for %s from %s, prevSeq=%d, lastSeq=%d", len(fs), s.folder, deviceID.Short(), prevSequence, lastSequence)
+	slog.Debug("Received index", slog.Int("files", len(fs)), slog.String("folder", s.folder), deviceID.LogAttr(), slog.Int64("prevSeq", prevSequence), slog.Int64("lastSeq", lastSequence))
 
 	// Verify that the previous sequence number matches what we expected
 	exp, err := s.sdb.GetDeviceSequence(s.folder, deviceID)
@@ -556,11 +557,11 @@ func (r *indexHandlerRegistry) AddIndexInfo(folder string, startInfo *clusterCon
 	defer r.mut.Unlock()
 
 	if r.indexHandlers.RemoveAndWait(folder, 0) == nil {
-		l.Debugf("Removed index sender for device %v and folder %v due to added pending", r.conn.DeviceID().Short(), folder)
+		slog.Debug("Removed index sender due to added pending", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 	}
 	folderState, ok := r.folderStates[folder]
 	if !ok {
-		l.Debugf("Pending index handler for device %v and folder %v", r.conn.DeviceID().Short(), folder)
+		slog.Debug("Pending index handler", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 		r.startInfos[folder] = startInfo
 		return
 	}
@@ -573,10 +574,10 @@ func (r *indexHandlerRegistry) Remove(folder string) {
 	r.mut.Lock()
 	defer r.mut.Unlock()
 
-	l.Debugf("Removing index handler for device %v and folder %v", r.conn.DeviceID().Short(), folder)
+	slog.Debug("Removing index handler", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 	r.indexHandlers.RemoveAndWait(folder, 0)
 	delete(r.startInfos, folder)
-	l.Debugf("Removed index handler for device %v and folder %v", r.conn.DeviceID().Short(), folder)
+	slog.Debug("Removed index handler", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 }
 
 // RemoveAllExcept stops all running index handlers and removes those pending to be started,
@@ -589,14 +590,14 @@ func (r *indexHandlerRegistry) RemoveAllExcept(except map[string]remoteFolderSta
 	r.indexHandlers.Each(func(folder string, is *indexHandler) error {
 		if _, ok := except[folder]; !ok {
 			r.indexHandlers.RemoveAndWait(folder, 0)
-			l.Debugf("Removed index handler for device %v and folder %v (removeAllExcept)", r.conn.DeviceID().Short(), folder)
+			slog.Debug("Removed index handler (removeAllExcept)", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 		}
 		return nil
 	})
 	for folder := range r.startInfos {
 		if _, ok := except[folder]; !ok {
 			delete(r.startInfos, folder)
-			l.Debugf("Removed pending index handler for device %v and folder %v (removeAllExcept)", r.conn.DeviceID().Short(), folder)
+			slog.Debug("Removed pending index handler (removeAllExcept)", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 		}
 	}
 }
@@ -622,13 +623,13 @@ func (r *indexHandlerRegistry) RegisterFolderState(folder config.FolderConfigura
 // folderPausedLocked stops a running index handler.
 // It is a noop if the folder isn't known or has not been started yet.
 func (r *indexHandlerRegistry) folderPausedLocked(folder string) {
-	l.Debugf("Pausing index handler for device %v and folder %v", r.conn.DeviceID().Short(), folder)
+	slog.Debug("Pausing index handler", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 	delete(r.folderStates, folder)
 	if is, ok := r.indexHandlers.Get(folder); ok {
 		is.pause()
-		l.Debugf("Paused index handler for device %v and folder %v", r.conn.DeviceID().Short(), folder)
+		slog.Debug("Paused index handler", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 	} else {
-		l.Debugf("No index handler for device %v and folder %v to pause", r.conn.DeviceID().Short(), folder)
+		slog.Debug("No index handler to pause", r.conn.DeviceID().LogAttr(), slog.String("folder", folder))
 	}
 }
 
@@ -645,16 +646,16 @@ func (r *indexHandlerRegistry) folderRunningLocked(folder config.FolderConfigura
 	if info, ok := r.startInfos[folder.ID]; ok {
 		if isOk {
 			r.indexHandlers.RemoveAndWait(folder.ID, 0)
-			l.Debugf("Removed index handler for device %v and folder %v in resume", r.conn.DeviceID().Short(), folder.ID)
+			slog.Debug("Removed index handler in resume", r.conn.DeviceID().LogAttr(), slog.String("folder", folder.ID))
 		}
 		_ = r.startLocked(folder, runner, info) // XXX error handling...
 		delete(r.startInfos, folder.ID)
-		l.Debugf("Started index handler for device %v and folder %v in resume", r.conn.DeviceID().Short(), folder.ID)
+		slog.Debug("Started index handler in resume", r.conn.DeviceID().LogAttr(), slog.String("folder", folder.ID))
 	} else if isOk {
-		l.Debugf("Resuming index handler for device %v and folder %v", r.conn.DeviceID().Short(), folder)
+		slog.Debug("Resuming index handler", r.conn.DeviceID().LogAttr(), folder.LogAttr())
 		is.resume(runner)
 	} else {
-		l.Debugf("Not resuming index handler for device %v and folder %v as none is paused and there is no start info", r.conn.DeviceID().Short(), folder.ID)
+		slog.Debug("Not resuming index handler, none paused and no start info", r.conn.DeviceID().LogAttr(), slog.String("folder", folder.ID))
 	}
 }
 

@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"iter"
+	"log/slog"
 	mrand "math/rand"
 	"os"
 	"path/filepath"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/syncthing/syncthing/internal/db"
 	"github.com/syncthing/syncthing/internal/itererr"
+	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/events"
@@ -335,18 +337,18 @@ func TestDeviceRename(t *testing.T) {
 func saveConfig(ffs fs.Filesystem, path string, cfg config.Configuration) error {
 	fd, err := ffs.Create(path)
 	if err != nil {
-		l.Debugln("Create:", err)
+		slog.Debug("Failed to create config file", slogutil.Error(err))
 		return err
 	}
 
 	if err := cfg.WriteXML(osutil.LineEndingsWriter(fd)); err != nil {
-		l.Debugln("WriteXML:", err)
+		slog.Debug("Failed to write config XML", slogutil.Error(err))
 		fd.Close()
 		return err
 	}
 
 	if err := fd.Close(); err != nil {
-		l.Debugln("Close:", err)
+		slog.Debug("Failed to close config file", slogutil.Error(err))
 		return err
 	}
 	if _, err := ffs.Lstat(path); err != nil {

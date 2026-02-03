@@ -15,6 +15,7 @@ package fs
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"unicode/utf8"
 
 	"github.com/syncthing/notify"
@@ -79,7 +80,7 @@ func (f *BasicFilesystem) watchLoop(ctx context.Context, name string, roots []st
 			}
 			// When next scheduling a scan, do it on the entire folder as events have been lost.
 			outChan <- Event{Name: name, Type: NonRemove}
-			l.Debugln(f.Type(), f.URI(), "Watch: Event overflow, send \".\"")
+			slog.Debug("Watch event overflow, sending root", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()))
 		}
 
 		select {
@@ -87,7 +88,7 @@ func (f *BasicFilesystem) watchLoop(ctx context.Context, name string, roots []st
 			evPath := ev.Path()
 
 			if !utf8.ValidString(evPath) {
-				l.Debugln(f.Type(), f.URI(), "Watch: Ignoring invalid UTF-8")
+				slog.Debug("Watch ignoring invalid UTF-8 path", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()))
 				continue
 			}
 
@@ -95,30 +96,30 @@ func (f *BasicFilesystem) watchLoop(ctx context.Context, name string, roots []st
 			if err != nil {
 				select {
 				case errChan <- err:
-					l.Debugln(f.Type(), f.URI(), "Watch: Sending error", err)
+					slog.Debug("Watch sending error", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()), slog.Any("error", err))
 				case <-ctx.Done():
 				}
 				notify.Stop(backendChan)
-				l.Debugln(f.Type(), f.URI(), "Watch: Stopped due to", err)
+				slog.Debug("Watch stopped due to error", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()), slog.Any("error", err))
 				return
 			}
 
 			if ignore.Match(relPath).IsIgnored() {
-				l.Debugln(f.Type(), f.URI(), "Watch: Ignoring", relPath)
+				slog.Debug("Watch ignoring matched path", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()), slog.String("path", relPath))
 				continue
 			}
 			evType := f.eventType(ev.Event())
 			select {
 			case outChan <- Event{Name: relPath, Type: evType}:
-				l.Debugln(f.Type(), f.URI(), "Watch: Sending", relPath, evType)
+				slog.Debug("Watch sending event", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()), slog.String("path", relPath), slog.Any("eventType", evType))
 			case <-ctx.Done():
 				notify.Stop(backendChan)
-				l.Debugln(f.Type(), f.URI(), "Watch: Stopped")
+				slog.Debug("Watch stopped", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()))
 				return
 			}
 		case <-ctx.Done():
 			notify.Stop(backendChan)
-			l.Debugln(f.Type(), f.URI(), "Watch: Stopped")
+			slog.Debug("Watch stopped", slog.Any("fsType", f.Type()), slog.String("uri", f.URI()))
 			return
 		}
 	}

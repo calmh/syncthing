@@ -11,6 +11,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"log/slog"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -514,7 +515,7 @@ func TestParentDeletion(t *testing.T) {
 	// Wait for the child dir to be recreated and sent to the remote
 	select {
 	case fs := <-received:
-		l.Debugln("sent:", fs)
+		slog.Debug("Sent files", slog.Any("files", fs))
 		found := false
 		for _, f := range fs {
 			if f.Name == child {

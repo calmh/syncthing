@@ -281,10 +281,10 @@ func (m *model) serve(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			l.Debugln(m, "context closed, stopping", ctx.Err())
+			slog.DebugContext(ctx, "Context closed, stopping", slogutil.Error(ctx.Err()))
 			return ctx.Err()
 		case err := <-m.fatalChan:
-			l.Debugln(m, "fatal error, stopping", err)
+			slog.DebugContext(ctx, "Fatal error, stopping", slogutil.Error(err))
 			return svcutil.AsFatalErr(err, svcutil.ExitError)
 		case <-m.promotionTimer.C:
 			slog.Debug("Promotion timer fired")
@@ -370,7 +370,7 @@ func (m *model) addAndStartFolderLockedWithIgnores(cfg config.FolderConfiguratio
 	devs, _ := m.sdb.ListDevicesForFolder(cfg.ID)
 	for _, available := range devs {
 		if _, ok := expected[available]; !ok {
-			l.Debugln("dropping", folder, "state for", available)
+			slog.Debug("Dropping device state for folder", slog.String("folder", folder), slog.Any("device", available))
 			_ = m.sdb.DropAllFiles(folder, available)
 		}
 	}
@@ -944,7 +944,7 @@ func (m *model) folderCompletion(device protocol.DeviceID, folder string) (Folde
 	}
 	comp := newFolderCompletion(glob, need, seq, state)
 
-	l.Debugf("%v Completion(%s, %q): %v", m, device, folder, comp.Map())
+	slog.Debug("Folder completion", device.LogAttr(), slog.String("folder", folder), slog.Any("completion", comp.Map()))
 	return comp, nil
 }
 
@@ -1167,13 +1167,13 @@ func (m *model) handleIndex(conn protocol.Connection, folder string, fs []protoc
 	}
 
 	deviceID := conn.DeviceID()
-	l.Debugf("%v (in): %s / %q: %d files", op, deviceID, folder, len(fs))
+	slog.Debug("Received index operation", slog.String("op", op), deviceID.LogAttr(), slog.String("folder", folder), slog.Int("files", len(fs)))
 
 	if cfg, ok := m.cfg.Folder(folder); !ok || !cfg.SharedWith(deviceID) {
 		slog.Warn(`Operation for unexpected folder ID; ensure that the folder exists and that this device is selected under "Share With" in the folder configuration.`, slog.String("operation", op), cfg.LogAttr(), deviceID.LogAttr())
 		return fmt.Errorf("%s: %w", folder, ErrFolderMissing)
 	} else if cfg.Paused {
-		l.Debugf("%v for paused folder (ID %q) sent from device %q.", op, folder, deviceID)
+		slog.Debug("Received index operation for paused folder", slog.String("op", op), slog.String("folder", folder), deviceID.LogAttr())
 		return fmt.Errorf("%s: %w", folder, ErrFolderPaused)
 	}
 
@@ -1185,7 +1185,7 @@ func (m *model) handleIndex(conn protocol.Connection, folder string, fs []protoc
 		// we send a cluster config, and that is what triggers index
 		// sending.
 		m.evLogger.Log(events.Failure, "index sender does not exist for connection on which indexes were received")
-		l.Debugf("%v for folder (ID %q) sent from device %q: missing index handler", op, folder, deviceID)
+		slog.Debug("Received index operation for folder without index handler", slog.String("op", op), slog.String("folder", folder), deviceID.LogAttr())
 		return fmt.Errorf("%s: %w", folder, ErrFolderNotRunning)
 	}
 
@@ -1206,7 +1206,7 @@ func (m *model) ClusterConfig(conn protocol.Connection, cm *protocol.ClusterConf
 	if cm.Secondary {
 		// No handling of secondary connection ClusterConfigs; they merely
 		// indicate the connection is ready to start.
-		l.Debugf("Skipping secondary ClusterConfig from %v at %s", deviceID.Short(), conn)
+		slog.Debug("Skipping secondary ClusterConfig", deviceID.LogAttr(), slog.Any("connection", conn))
 		return nil
 	}
 
@@ -1215,12 +1215,12 @@ func (m *model) ClusterConfig(conn protocol.Connection, cm *protocol.ClusterConf
 	// Also, collect a list of folders we do share, and if he's interested in
 	// temporary indexes, subscribe the connection.
 
-	l.Debugf("Handling ClusterConfig from %v at %s", deviceID.Short(), conn)
+	slog.Debug("Handling ClusterConfig", deviceID.LogAttr(), slog.Any("connection", conn))
 	indexHandlerRegistry := m.ensureIndexHandler(conn)
 
 	deviceCfg, ok := m.cfg.Device(deviceID)
 	if !ok {
-		l.Debugf("Device %s disappeared from config while processing cluster-config", deviceID.Short())
+		slog.Debug("Device disappeared from config while processing cluster-config", deviceID.LogAttr())
 		return errDeviceUnknown
 	}
 
@@ -1364,7 +1364,7 @@ func (m *model) ensureIndexHandler(conn protocol.Connection) *indexHandlerRegist
 	// Create a new index handler for this device.
 	indexHandlerRegistry = newIndexHandlerRegistry(conn, m.sdb, m.deviceDownloads[deviceID], m.evLogger)
 	for id, fcfg := range m.folderCfgs {
-		l.Debugln("Registering folder", id, "for", deviceID.Short())
+		slog.Debug("Registering folder for device", slog.String("folder", id), deviceID.LogAttr())
 		runner, _ := m.folderRunners.Get(id)
 		indexHandlerRegistry.RegisterFolderState(fcfg, runner)
 	}
@@ -1497,7 +1497,7 @@ func (m *model) ccHandleFolders(folders []protocol.Folder, deviceCfg config.Devi
 	// Explicitly mark folders we offer, but the remote has not accepted
 	for folderID, cfg := range m.cfg.Folders() {
 		if _, seen := seenFolders[folderID]; !seen && cfg.SharedWith(deviceID) {
-			l.Debugf("Remote device %v has not accepted sharing folder %s", deviceID.Short(), cfg.Description())
+			slog.Debug("Remote device has not accepted sharing folder", deviceID.LogAttr(), cfg.LogAttr())
 			seenFolders[folderID] = remoteFolderNotSharing
 		}
 	}
@@ -1975,7 +1975,7 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 	if !ok {
 		// The folder might be already unpaused in the config, but not yet
 		// in the model.
-		l.Debugf("Request from %s for file %s in unstarted folder %q", deviceID.Short(), req.Name, req.Folder)
+		slog.Debug("Request for file in unstarted folder", deviceID.LogAttr(), slogutil.FilePath(req.Name), slog.String("folder", req.Folder))
 		return nil, protocol.ErrGeneric
 	}
 
@@ -1984,29 +1984,29 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 		return nil, protocol.ErrGeneric
 	}
 	if folderCfg.Paused {
-		l.Debugf("Request from %s for file %s in paused folder %q", deviceID.Short(), req.Name, req.Folder)
+		slog.Debug("Request for file in paused folder", deviceID.LogAttr(), slogutil.FilePath(req.Name), slog.String("folder", req.Folder))
 		return nil, protocol.ErrGeneric
 	}
 
 	// Make sure the path is valid and in canonical form
 	if name, err := fs.Canonicalize(req.Name); err != nil {
-		l.Debugf("Request from %s in folder %q for invalid filename %s", deviceID.Short(), req.Folder, req.Name)
+		slog.Debug("Request for invalid filename", deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name))
 		return nil, protocol.ErrGeneric
 	} else {
 		req.Name = name
 	}
 
 	if deviceID != protocol.LocalDeviceID {
-		l.Debugf("%v REQ(in): %s: %q / %q o=%d s=%d t=%v", m, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size, req.FromTemporary)
+		slog.Debug("Incoming request", deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size), slog.Bool("fromTemporary", req.FromTemporary))
 	}
 
 	if fs.IsInternal(req.Name) {
-		l.Debugf("%v REQ(in) for internal file: %s: %q / %q o=%d s=%d", m, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("Request for internal file", deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrInvalid
 	}
 
 	if folderIgnores.Match(req.Name).IsIgnored() {
-		l.Debugf("%v REQ(in) for ignored file: %s: %q / %q o=%d s=%d", m, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("Request for ignored file", deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrInvalid
 	}
 
@@ -2033,7 +2033,7 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 	folderFs := folderCfg.Filesystem()
 
 	if err := osutil.TraversesSymlink(folderFs, filepath.Dir(req.Name)); err != nil {
-		l.Debugf("%v REQ(in) traversal check: %s - %s: %q / %q o=%d s=%d", m, err, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("Request traversal check failed", slogutil.Error(err), deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrNoSuchFile
 	}
 
@@ -2045,7 +2045,7 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 		if info, err := folderFs.Lstat(tempFn); err != nil || !info.IsRegular() {
 			// Reject reads for anything that doesn't exist or is something
 			// other than a regular file.
-			l.Debugf("%v REQ(in) failed stating temp file (%v): %s: %q / %q o=%d s=%d", m, err, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+			slog.Debug("Failed to stat temp file for request", slogutil.Error(err), deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 			return nil, protocol.ErrNoSuchFile
 		}
 		_, err := readOffsetIntoBuf(folderFs, tempFn, req.Offset, res.data)
@@ -2059,14 +2059,14 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 	if info, err := folderFs.Lstat(req.Name); err != nil || !info.IsRegular() {
 		// Reject reads for anything that doesn't exist or is something
 		// other than a regular file.
-		l.Debugf("%v REQ(in) failed stating file (%v): %s: %q / %q o=%d s=%d", m, err, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("Failed to stat file for request", slogutil.Error(err), deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrNoSuchFile
 	}
 
 	n, err := readOffsetIntoBuf(folderFs, req.Name, req.Offset, res.data)
 	switch {
 	case fs.IsNotExist(err):
-		l.Debugf("%v REQ(in) file doesn't exist: %s: %q / %q o=%d s=%d", m, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("File does not exist for request", deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrNoSuchFile
 	case errors.Is(err, io.EOF):
 		// Read beyond end of file. This might indicate a problem, or it
@@ -2075,13 +2075,13 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 		// next step take care of it, by only hashing the part we actually
 		// managed to read.
 	case err != nil:
-		l.Debugf("%v REQ(in) failed reading file (%v): %s: %q / %q o=%d s=%d", m, err, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("Failed to read file for request", slogutil.Error(err), deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrGeneric
 	}
 
 	if folderCfg.Type != config.FolderTypeReceiveEncrypted && len(req.Hash) > 0 && !scanner.Validate(res.data[:n], req.Hash) {
 		m.recheckFile(deviceID, req.Folder, req.Name, req.Offset, req.Hash)
-		l.Debugf("%v REQ(in) failed validating data: %s: %q / %q o=%d s=%d", m, deviceID.Short(), req.Folder, req.Name, req.Offset, req.Size)
+		slog.Debug("Failed to validate data for request", deviceID.LogAttr(), slog.String("folder", req.Folder), slogutil.FilePath(req.Name), slog.Int64("offset", req.Offset), slog.Int("size", req.Size))
 		return nil, protocol.ErrNoSuchFile
 	}
 
@@ -2109,22 +2109,22 @@ func newLimitedRequestResponse(size int, limiters ...*semaphore.Semaphore) *requ
 func (m *model) recheckFile(deviceID protocol.DeviceID, folder, name string, offset int64, hash []byte) {
 	cf, ok, err := m.CurrentFolderFile(folder, name)
 	if err != nil {
-		l.Debugf("%v recheckFile: %s: %q / %q: current file error: %v", m, deviceID, folder, name, err)
+		slog.Debug("recheckFile: current file error", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name), slogutil.Error(err))
 		return
 	}
 	if !ok {
-		l.Debugf("%v recheckFile: %s: %q / %q: no current file", m, deviceID, folder, name)
+		slog.Debug("recheckFile: no current file", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name))
 		return
 	}
 
 	if cf.IsDeleted() || cf.IsInvalid() || cf.IsSymlink() || cf.IsDirectory() {
-		l.Debugf("%v recheckFile: %s: %q / %q: not a regular file", m, deviceID, folder, name)
+		slog.Debug("recheckFile: not a regular file", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name))
 		return
 	}
 
 	blockIndex := int(offset / int64(cf.BlockSize()))
 	if blockIndex >= len(cf.Blocks) {
-		l.Debugf("%v recheckFile: %s: %q / %q i=%d: block index too far", m, deviceID, folder, name, blockIndex)
+		slog.Debug("recheckFile: block index too far", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name), slog.Int("blockIndex", blockIndex))
 		return
 	}
 
@@ -2132,7 +2132,7 @@ func (m *model) recheckFile(deviceID protocol.DeviceID, folder, name string, off
 
 	// Seems to want a different version of the file, whatever.
 	if !bytes.Equal(block.Hash, hash) {
-		l.Debugf("%v recheckFile: %s: %q / %q i=%d: hash mismatch %x != %x", m, deviceID, folder, name, blockIndex, block.Hash, hash)
+		slog.Debug("recheckFile: hash mismatch", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name), slog.Int("blockIndex", blockIndex), slog.Any("blockHash", block.Hash), slog.Any("requestHash", hash))
 		return
 	}
 
@@ -2144,13 +2144,13 @@ func (m *model) recheckFile(deviceID protocol.DeviceID, folder, name string, off
 	runner, ok := m.folderRunners.Get(folder)
 	m.mut.RUnlock()
 	if !ok {
-		l.Debugf("%v recheckFile: %s: %q / %q: Folder stopped before rescan could be scheduled", m, deviceID, folder, name)
+		slog.Debug("recheckFile: folder stopped before rescan could be scheduled", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name))
 		return
 	}
 
 	runner.ScheduleForceRescan(name)
 
-	l.Debugf("%v recheckFile: %s: %q / %q", m, deviceID, folder, name)
+	slog.Debug("recheckFile: scheduled rescan", deviceID.LogAttr(), slog.String("folder", folder), slogutil.FilePath(name))
 }
 
 func (m *model) CurrentFolderFile(folder string, file string) (protocol.FileInfo, bool, error) {
@@ -2379,7 +2379,7 @@ func (m *model) promoteConnections() {
 			// messages there. (On our side, we manage index handlers based
 			// on where we get ClusterConfigs from the peer.)
 			conn := m.connections[connIDs[0]]
-			l.Debugf("Promoting connection to %s at %s", deviceID.Short(), conn)
+			slog.Debug("Promoting connection", deviceID.LogAttr(), slog.Any("connection", conn))
 			postLockActions = append(postLockActions, func() {
 				if conn.Statistics().StartedAt.IsZero() {
 					conn.Start()
@@ -2457,7 +2457,7 @@ func (m *model) RequestGlobal(ctx context.Context, deviceID protocol.DeviceID, f
 		return nil, fmt.Errorf("requestGlobal: no connection to device: %s", deviceID.Short())
 	}
 
-	l.Debugf("%v REQ(out): %s (%s): %q / %q b=%d o=%d s=%d h=%x ft=%t", m, deviceID.Short(), conn, folder, name, blockNo, offset, size, hash, fromTemporary)
+	slog.DebugContext(ctx, "Outgoing request", deviceID.LogAttr(), slog.Any("connection", conn), slog.String("folder", folder), slogutil.FilePath(name), slog.Int("blockNo", blockNo), slog.Int64("offset", offset), slog.Int("size", size), slog.Any("hash", hash), slog.Bool("fromTemporary", fromTemporary))
 	return conn.Request(ctx, &protocol.Request{Folder: folder, Name: name, BlockNo: blockNo, Offset: offset, Size: size, Hash: hash, FromTemporary: fromTemporary})
 }
 
@@ -3123,7 +3123,7 @@ func (m *model) CommitConfiguration(from, to config.Configuration) bool {
 	// by themselves. Compare the options structs containing only the
 	// attributes that require restart and act appropriately.
 	if !reflect.DeepEqual(from.Options.RequiresRestartOnly(), to.Options.RequiresRestartOnly()) {
-		l.Debugln(m, "requires restart, options differ")
+		slog.Debug("Requires restart, options differ")
 		return false
 	}
 
@@ -3155,7 +3155,7 @@ func (m *model) cleanPending(existingDevices map[protocol.DeviceID]config.Device
 			// Forget pending folder device associations for recently removed
 			// folders as well, assuming the folder is no longer of interest
 			// at all (but might become pending again).
-			l.Debugf("Discarding pending removed folder %v from all devices", folderID)
+			slog.Debug("Discarding pending removed folder from all devices", slog.String("folder", folderID))
 			if err := m.observed.RemovePendingFolder(folderID); err != nil {
 				const msg = "Failed to remove pending folder entry"
 				slog.Warn(msg, slog.String("folder", folderID), slogutil.Error(err))
@@ -3169,15 +3169,15 @@ func (m *model) cleanPending(existingDevices map[protocol.DeviceID]config.Device
 		}
 		for deviceID := range pf.OfferedBy {
 			if dev, ok := existingDevices[deviceID]; !ok {
-				l.Debugf("Discarding pending folder %v from unknown device %v", folderID, deviceID)
+				slog.Debug("Discarding pending folder from unknown device", slog.String("folder", folderID), deviceID.LogAttr())
 				goto removeFolderForDevice
 			} else if dev.IgnoredFolder(folderID) {
-				l.Debugf("Discarding now ignored pending folder %v for device %v", folderID, deviceID)
+				slog.Debug("Discarding now ignored pending folder", slog.String("folder", folderID), deviceID.LogAttr())
 				goto removeFolderForDevice
 			}
 			if folderCfg, ok := existingFolders[folderID]; ok {
 				if folderCfg.SharedWith(deviceID) {
-					l.Debugf("Discarding now shared pending folder %v for device %v", folderID, deviceID)
+					slog.Debug("Discarding now shared pending folder", slog.String("folder", folderID), deviceID.LogAttr())
 					goto removeFolderForDevice
 				}
 			}
@@ -3211,11 +3211,11 @@ func (m *model) cleanPending(existingDevices map[protocol.DeviceID]config.Device
 	}
 	for deviceID := range pendingDevices {
 		if _, ok := ignoredDevices[deviceID]; ok {
-			l.Debugf("Discarding now ignored pending device %v", deviceID)
+			slog.Debug("Discarding now ignored pending device", deviceID.LogAttr())
 			goto removeDevice
 		}
 		if _, ok := existingDevices[deviceID]; ok {
-			l.Debugf("Discarding now added pending device %v", deviceID)
+			slog.Debug("Discarding now added pending device", deviceID.LogAttr())
 			goto removeDevice
 		}
 		continue
@@ -3269,7 +3269,7 @@ func (m *model) PendingFolders(device protocol.DeviceID) (map[string]db.PendingF
 
 // DismissPendingDevices removes the record of a specific pending device.
 func (m *model) DismissPendingDevice(device protocol.DeviceID) error {
-	l.Debugf("Discarding pending device %v", device)
+	slog.Debug("Discarding pending device", device.LogAttr())
 	err := m.observed.RemovePendingDevice(device)
 	if err != nil {
 		return err
@@ -3289,7 +3289,7 @@ func (m *model) DismissPendingDevice(device protocol.DeviceID) error {
 func (m *model) DismissPendingFolder(device protocol.DeviceID, folder string) error {
 	var removedPendingFolders []map[string]string
 	if device == protocol.EmptyDeviceID {
-		l.Debugf("Discarding pending removed folder %s from all devices", folder)
+		slog.Debug("Discarding pending folder from all devices", slog.String("folder", folder))
 		err := m.observed.RemovePendingFolder(folder)
 		if err != nil {
 			return err
@@ -3298,7 +3298,7 @@ func (m *model) DismissPendingFolder(device protocol.DeviceID, folder string) er
 			{"folderID": folder},
 		}
 	} else {
-		l.Debugf("Discarding pending folder %s from device %v", folder, device)
+		slog.Debug("Discarding pending folder from device", slog.String("folder", folder), device.LogAttr())
 		err := m.observed.RemovePendingFolderForDevice(folder, device)
 		if err != nil {
 			return err
@@ -3346,17 +3346,17 @@ func observedDeviceSet(devices []config.ObservedDevice) deviceIDSet {
 	return res
 }
 
-func readOffsetIntoBuf(fs fs.Filesystem, file string, offset int64, buf []byte) (int, error) {
-	fd, err := fs.Open(file)
+func readOffsetIntoBuf(ffs fs.Filesystem, file string, offset int64, buf []byte) (int, error) {
+	fd, err := ffs.Open(file)
 	if err != nil {
-		l.Debugln("readOffsetIntoBuf.Open", file, err)
+		slog.Debug("Failed to open file for read", slogutil.FilePath(file), slogutil.Error(err))
 		return 0, err
 	}
 
 	defer fd.Close()
 	n, err := fd.ReadAt(buf, offset)
 	if err != nil {
-		l.Debugln("readOffsetIntoBuf.ReadAt", file, err)
+		slog.Debug("Failed to read from file", slogutil.FilePath(file), slogutil.Error(err))
 	}
 	return n, err
 }

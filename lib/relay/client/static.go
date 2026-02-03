@@ -112,7 +112,7 @@ func (c *staticClient) serve(ctx context.Context) error {
 			}
 
 		case <-ctx.Done():
-			l.Debugln(c, "stopping")
+			slog.DebugContext(ctx, "Relay client stopping", slogutil.Error(ctx.Err()))
 			return ctx.Err()
 
 		case err := <-errorsc:
