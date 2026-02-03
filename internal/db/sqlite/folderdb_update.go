@@ -43,7 +43,7 @@ func (s *folderDB) Update(device protocol.DeviceID, fs []protocol.FileInfo) erro
 	if err != nil {
 		return wrap(err)
 	}
-	defer tx.Rollback() //nolint:errcheck
+	defer tx.Rollback()
 	txp := &txPreparedStmts{Tx: tx}
 
 	//nolint:sqlclosecheck
@@ -199,7 +199,7 @@ func (s *folderDB) DropDevice(device protocol.DeviceID) error {
 	if err != nil {
 		return wrap(err)
 	}
-	defer tx.Rollback() //nolint:errcheck
+	defer tx.Rollback()
 	txp := &txPreparedStmts{Tx: tx}
 
 	// Drop the device, which cascades to delete all files etc for it
@@ -231,7 +231,7 @@ func (s *folderDB) DropAllFiles(device protocol.DeviceID) error {
 	if err != nil {
 		return wrap(err)
 	}
-	defer tx.Rollback() //nolint:errcheck
+	defer tx.Rollback()
 	txp := &txPreparedStmts{Tx: tx}
 
 	// Drop all the file entries
