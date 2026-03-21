@@ -7,7 +7,7 @@ on:
       - infra-*
 
 env:
-  GO_VERSION: "~1.25.0"
+  GO_VERSION: "~1.26.0"
   CGO_ENABLED: "0"
   BUILD_USER: docker
   BUILD_HOST: github.syncthing.net
@@ -58,6 +58,9 @@ jobs:
             go run build.go -goos linux -goarch "$arch" build ${{ matrix.pkg }}
             mv ${{ matrix.pkg }} ${{ matrix.pkg }}-linux-"$arch"
           done
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
