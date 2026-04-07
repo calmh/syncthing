@@ -483,6 +483,9 @@ func (c *rawConnection) dispatcherLoop() (err error) {
 			if err := checkFilename(msg.Name); err != nil {
 				return newProtocolError(err, msgContext)
 			}
+			if msg.Size <= 0 {
+				return newProtocolError(fmt.Errorf("request size %d too small", msg.Size), msgContext)
+			}
 			if msg.Size > MaxRequestSize {
 				return newProtocolError(fmt.Errorf("request size %d exceeds maximum allowed", msg.Size), msgContext)
 			}
