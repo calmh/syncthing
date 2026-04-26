@@ -133,18 +133,11 @@ func (f *remoteFilesystem) globalFile(name string) (protocol.FileInfo, error) {
 // per-open timeout configured at construction (if any), layered on top
 // of the filesystem's lifetime context.
 func (f *remoteFilesystem) openForReading(name string) (File, error) {
-	slog.DebugContext(f.ctx, "Opening remote file",
-		slog.String("folder", f.folderId),
-		slog.String("name", name),
-	)
+	slog.DebugContext(f.ctx, "Opening remote file", slog.String("folder", f.folderId), slog.String("name", name))
 
 	pf, err := f.globalFile(name)
 	if err != nil {
-		slog.DebugContext(f.ctx, "Failed to look up remote file",
-			slog.String("folder", f.folderId),
-			slog.String("name", name),
-			slogutil.Error(err),
-		)
+		slog.DebugContext(f.ctx, "Failed to look up remote file", slog.String("folder", f.folderId), slog.String("name", name), slogutil.Error(err))
 		return nil, err
 	}
 	if pf.Type != protocol.FileInfoTypeFile {
@@ -158,27 +151,15 @@ func (f *remoteFilesystem) openForReading(name string) (File, error) {
 
 	content, err := f.fetchBlocks(ctx, pf)
 	if err != nil {
-		slog.DebugContext(f.ctx, "Failed to fetch remote file blocks",
-			slog.String("folder", f.folderId),
-			pf.LogAttr(),
-			slogutil.Error(err),
-		)
+		slog.DebugContext(f.ctx, "Failed to fetch remote file blocks", slog.String("folder", f.folderId), pf.LogAttr(), slogutil.Error(err))
 		return nil, err
 	}
-	slog.DebugContext(f.ctx, "Loaded remote file",
-		slog.String("folder", f.folderId),
-		pf.LogAttr(),
-		slog.Int("bytes", len(content)),
-	)
 
 	file := &remoteFile{
 		info:   pf,
 		reader: bytes.NewReader(content),
 	}
-	slog.DebugContext(f.ctx, "Returning remote file",
-		slog.String("folder", f.folderId),
-		slog.String("name", name),
-	)
+
 	return file, nil
 }
 
