@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9b653245_f9cbe4f5",
+        "filename": "lib/fs/layeredfs.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1006735
+      },
+      "writtenOn": "2026-04-27T14:16:49Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "a1ff6f1e_b5586e9e",
+      "range": {
+        "startLine": 47,
+        "startChar": 2,
+        "endLine": 50,
+        "endChar": 2
+      },
+      "revId": "25ad75fc35c190842db155d1a204e77d0bba9e4b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "ab2232e6_2e9057e1",
@@ -37,6 +61,30 @@
       "writtenOn": "2026-04-27T14:07:40Z",
       "side": 1,
       "message": "Turn this around, device in the outer loop",
+      "range": {
+        "startLine": 202,
+        "startChar": 1,
+        "endLine": 208,
+        "endChar": 2
+      },
+      "revId": "25ad75fc35c190842db155d1a204e77d0bba9e4b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b645ce65_52afb1bf",
+        "filename": "lib/fs/remotefs.go",
+        "patchSetId": 1
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 1006735
+      },
+      "writtenOn": "2026-04-27T14:16:49Z",
+      "side": 1,
+      "message": "Acknowledged",
+      "parentUuid": "ab2232e6_2e9057e1",
       "range": {
         "startLine": 202,
         "startChar": 1,
