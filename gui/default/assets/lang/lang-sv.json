@@ -71,7 +71,7 @@
     "Connection Management": "Anslutningshantering",
     "Connection Type": "Anslutningstyp",
     "Connections": "Anslutningar",
-    "Connections via relays might be rate limited by the relay": "Anslutningar via reläer kan begränsas av reläet",
+    "Connections via relays might be rate limited by the relay": "Anslutningar via reläer kan begränsas av reläen",
     "Continuously watching for changes is now available within Syncthing. This will detect changes on disk and issue a scan on only the modified paths. The benefits are that changes are propagated quicker and that less full scans are required.": "Kontinuerlig bevakning av ändringar är nu tillgängligt i Syncthing. Detta kommer att upptäcka ändringar på disken och utfärda en skanning på endast de ändrade sökvägarna. Fördelarna är att ändringar delas snabbare och att mindre fullständiga skanningar krävs.",
     "Copied from elsewhere": "Kopierat från annanstans",
     "Copied from original": "Kopierat från original",

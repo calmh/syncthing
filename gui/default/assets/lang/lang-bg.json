@@ -281,6 +281,8 @@
     "Off": "Изключено",
     "Oldest First": "Първо най-старите",
     "Optional descriptive label for the folder. Can be different on each device.": "Незадължително име на папката. Може да бъде различно на всяко устройство.",
+    "Optional group for the device. Can be different on each device.": "Незадължителна група за устройството. Може да е различна за всяко устройство.",
+    "Optional group for the folder. Can be different on each device.": "Незадължителна група за папката. Може да е различна на всяко устройство.",
     "Options": "Настройки",
     "Out of Sync": "Несинхронизирано",
     "Out of Sync Items": "Несинхронизирани елементи",
