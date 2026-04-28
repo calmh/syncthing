@@ -172,7 +172,12 @@ func (f *remoteFilesystem) openContext() (context.Context, context.CancelFunc) {
 
 // fetchBlocks downloads every block of pf from a remote device that has the
 // global version available, concatenating the result. For each block the
-// available devices are tried in order; the first successful response wins.
+// available devices are tried in order; devices that fail to provide a
+// block are removed from the list for next iteration.
+//
+// This is a deliberately naive implementation that optimises for small
+// files available in their entirety from a single device, often consisting
+// of a single block.
 func (f *remoteFilesystem) fetchBlocks(ctx context.Context, pf protocol.FileInfo) ([]byte, error) {
 	if len(pf.Blocks) == 0 {
 		return nil, nil
@@ -187,26 +192,29 @@ func (f *remoteFilesystem) fetchBlocks(ctx context.Context, pf protocol.FileInfo
 	}
 
 	buf := make([]byte, 0, pf.Size)
-	for i, block := range pf.Blocks {
-		data, err := f.fetchBlock(ctx, devices, pf.Name, i, block)
+	skip := make(map[protocol.DeviceID]struct{})
+	for idx, block := range pf.Blocks {
+		var err error
+		for _, dev := range devices {
+			if _, ok := skip[dev]; ok {
+				// skip devices that failed to provide a previous block, as
+				// it is likely offline or experiencing some issue
+				continue
+			}
+			var data []byte
+			data, err = f.req.RequestGlobal(ctx, dev, f.folderId, pf.Name, idx, block.Offset, block.Size, block.Hash, false)
+			if err != nil {
+				skip[dev] = struct{}{}
+				continue
+			}
+			buf = append(buf, data...)
+		}
 		if err != nil {
+			// No device had the block
 			return nil, err
 		}
-		buf = append(buf, data...)
 	}
 	return buf, nil
-}
-
-func (f *remoteFilesystem) fetchBlock(ctx context.Context, devices []protocol.DeviceID, name string, blockNo int, block protocol.BlockInfo) ([]byte, error) {
-	var lastErr error
-	for _, dev := range devices {
-		data, err := f.req.RequestGlobal(ctx, dev, f.folderId, name, blockNo, block.Offset, block.Size, block.Hash, false)
-		if err == nil {
-			return data, nil
-		}
-		lastErr = err
-	}
-	return nil, lastErr
 }
 
 func (*remoteFilesystem) Chmod(_ string, _ FileMode) error { return errRemoteReadOnly }

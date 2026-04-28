@@ -16,16 +16,17 @@ import (
 const FilesystemTypeLayered FilesystemType = "layered"
 
 // NewLayeredFilesystem stacks several filesystems on top of one another.
-// Layers are listed top-down: index 0 is the topmost layer, later
-// indices are progressively lower. At least one layer is required.
+// Layers are listed top-down: index 0 is the topmost layer, later indices
+// are progressively lower. At least one layer is required.
 //
-// Writes are always directed at the topmost layer. Reads consult layers
-// in order and skip past "does not exist" errors so that lower layers
-// can supply paths missing from higher ones; any other error is surfaced
+// Writes are always directed at the topmost layer. Reads consult layers in
+// order and skip past "does not exist" errors so that lower layers can
+// supply paths missing from higher ones; any other error is surfaced
 // immediately without consulting further layers.
 //
-// Walks, globs and directory listings are not merged across layers — the
-// first layer whose call succeeds returns its own view.
+// Globs and directory listings are not merged across layers — the first
+// layer whose call succeeds returns its own view. Walks always target the
+// top layer.
 func NewLayeredFilesystem(layers ...Filesystem) Filesystem {
 	if len(layers) == 0 {
 		panic("fs: NewLayeredFilesystem requires at least one layer")
@@ -44,10 +45,8 @@ func (f *layeredFilesystem) top() Filesystem { return f.layers[0] }
 // return immediately. If every layer reports ENOENT, the last such error
 // is returned so callers see the usual [ErrNotExist].
 func readCascade[T any](f *layeredFilesystem, op func(Filesystem) (T, error)) (T, error) {
-	var (
-		zero T
-		last error
-	)
+	var zero T
+	var last error
 	for _, layer := range f.layers {
 		v, err := op(layer)
 		if err == nil {
