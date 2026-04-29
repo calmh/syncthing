@@ -309,13 +309,6 @@ func authLDAP(username string, password string, cfg config.LDAPConfiguration) bo
 	return true
 }
 
-func escapeRunes(value string, runes []rune) string {
-	for _, e := range runes {
-		value = strings.ReplaceAll(value, string(e), fmt.Sprintf("\\%X", e))
-	}
-	return value
-}
-
 func formatOptionalPercentS(template string, username string) string {
 	var replacements []any
 	nReps := strings.Count(template, "%s") - strings.Count(template, "%%s")
