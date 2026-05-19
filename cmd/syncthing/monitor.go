@@ -520,6 +520,10 @@ func childEnv() []string {
 		env = append(env, str)
 	}
 	env = append(env, "STMONITORED=yes")
+	if build.IsBeta || build.IsCandidate {
+		slog.Info("Additional debugging enabled for beta / release candidate builds")
+		env = append(env, "GODEBUG=invalidptr=2")
+	}
 	return env
 }
 
