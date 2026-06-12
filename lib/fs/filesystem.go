@@ -285,7 +285,7 @@ func NewFilesystem(fsType FilesystemType, uri string, opts ...Option) Filesystem
 
 // fs cannot import config or versioner, so we hard code .stfolder
 // (config.DefaultMarkerName) and .stversions (versioner.DefaultPath)
-var internals = []string{".stfolder", ".stignore", ".stversions"}
+var internals = []string{".stfolder", ".stignore", ".stversions", ".syncthing"}
 
 // IsInternal returns true if the file, as a path relative to the folder
 // root, represents an internal file that should always be ignored. The file

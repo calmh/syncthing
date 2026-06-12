@@ -21,19 +21,24 @@ func TestIsInternal(t *testing.T) {
 		internal bool
 	}{
 		{".stfolder", true},
+		{".syncthing", true},
 		{".stignore", true},
 		{".stversions", true},
 		{".stfolder/foo", true},
+		{".syncthing/foo", true},
 		{".stignore/foo", true},
 		{".stversions/foo", true},
 
 		{".stfolderfoo", false},
+		{".syncthingfoo", false},
 		{".stignorefoo", false},
 		{".stversionsfoo", false},
 		{"foo.stfolder", false},
+		{"foo.syncthing", false},
 		{"foo.stignore", false},
 		{"foo.stversions", false},
 		{"foo/.stfolder", false},
+		{"foo/.syncthing", false},
 		{"foo/.stignore", false},
 		{"foo/.stversions", false},
 	}

@@ -253,15 +253,15 @@ func createTestDir(t *testing.T) (string, bool) {
 
 	testDir := t.TempDir()
 
-	if fd, err := os.Create(filepath.Join(testDir, ".stfolder")); err != nil {
-		t.Fatalf("could not create .stfolder: %s", err)
+	if fd, err := os.Create(filepath.Join(testDir, ".syncthing")); err != nil {
+		t.Fatalf("could not create .syncthing: %s", err)
 	} else {
 		fd.Close()
 	}
 
 	var sensitive bool
 
-	if f, err := os.Open(filepath.Join(testDir, ".STfolder")); err != nil {
+	if f, err := os.Open(filepath.Join(testDir, ".SYncthinG")); err != nil {
 		sensitive = true
 	} else {
 		defer f.Close()
@@ -367,7 +367,7 @@ func assertDir(t *testing.T, fs Filesystem, directory string, filenames []string
 	}
 
 	if path.Clean(directory) == "/" {
-		filenames = append(filenames, ".stfolder")
+		filenames = append(filenames, ".syncthing")
 	}
 	slices.Sort(filenames)
 	slices.Sort(got)

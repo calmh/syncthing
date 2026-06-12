@@ -119,7 +119,7 @@ func TestDefaultValues(t *testing.T) {
 					Params:           map[string]string{},
 				},
 				MaxConflicts:        10,
-				MarkerName:          ".stfolder",
+				MarkerName:          ".syncthing",
 				MaxConcurrentWrites: maxConcurrentWritesDefault,
 				XattrFilter: XattrFilter{
 					Entries:            []XattrFilterEntry{},

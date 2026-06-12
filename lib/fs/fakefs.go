@@ -61,7 +61,7 @@ const randomBlockShift = 14 // 128k
 //     insens=b   "true" makes filesystem case-insensitive Windows- or OSX-style (default false)
 //     latency=d  to set the amount of time each "disk" operation takes, where d is time.ParseDuration format
 //     content=true to save actual file contents instead of generating pseudorandomly; n.b. memory usage
-//     nostfolder=true skip the creation of .stfolder
+//     nostfolder=true skip the creation of the folder marker
 //     timeprecisionsecond=true Modification times are stored with only second precision
 //
 // - Two fakeFS:s pointing at the same root path see the same files.
@@ -169,7 +169,7 @@ func newFakeFilesystem(rootURI string, _ ...Option) *fakeFS {
 
 	if !nostfolder {
 		// Also create a default folder marker for good measure
-		_ = fs.Mkdir(".stfolder", ModePerm)
+		_ = fs.Mkdir(".syncthing", ModePerm) // cannot import lib/config
 	}
 
 	// We only set the latency after doing the operations required to create

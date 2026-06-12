@@ -35,7 +35,7 @@ var (
 )
 
 const (
-	DefaultMarkerName          = ".stfolder"
+	DefaultMarkerName          = ".syncthing"
 	EncryptionTokenName        = "syncthing-encryption_password_token" //nolint: gosec
 	maxConcurrentWritesDefault = 16
 	maxConcurrentWritesLimit   = 256
