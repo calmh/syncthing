@@ -916,7 +916,7 @@ func TestReadWriteContent(t *testing.T) {
 func cleanup(fs Filesystem) error {
 	filenames, _ := fs.DirNames("/")
 	for _, filename := range filenames {
-		if filename != ".stfolder" {
+		if filename != ".syncthing" {
 			if err := fs.RemoveAll(filename); err != nil {
 				return err
 			}

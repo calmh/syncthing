@@ -546,7 +546,7 @@ func TestFolderPath(t *testing.T) {
 
 func TestFolderCheckPath(t *testing.T) {
 	tmpFs := fs.NewFilesystem(fs.FilesystemTypeFake, rand.String(16)+"?nostfolder=true")
-	_ = tmpFs.MkdirAll(filepath.Join("dir", ".stfolder"), 0o777)
+	_ = tmpFs.MkdirAll(filepath.Join("dir", ".syncthing"), 0o777)
 
 	testcases := []struct {
 		path string

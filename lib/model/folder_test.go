@@ -67,7 +67,7 @@ func unifySubsCases() []unifySubsCase {
 			[]string{"usr/lib"},
 		},
 		{
-			// 6. .stignore and .stfolder are special and are passed on
+			// 6. .stignore and .syncthing are special and are passed on
 			// verbatim even though they are unknown
 			[]string{config.DefaultMarkerName, ".stignore"},
 			[]string{},
@@ -121,6 +121,7 @@ func unifySubsCases() []unifySubsCase {
 func TestUnifySubs(t *testing.T) {
 	cases := unifySubsCases()
 	for i, tc := range cases {
+		slices.Sort(tc.out)
 		exists := func(f string) bool {
 			return slices.Contains(tc.exists, f)
 		}
