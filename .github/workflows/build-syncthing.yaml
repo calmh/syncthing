@@ -136,10 +136,8 @@ jobs:
       - name: Smoke test
         run: |
           set -x
-          ls -l bin/syncthing
-          file bin/syncthing
-          export
-          bash -c ./bin/syncthing version
+          ./bin/syncthing --help
+          ./bin/syncthing version
           go test -v ./integration
 
       - name: Install go-test-json-to-loki
