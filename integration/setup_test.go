@@ -15,7 +15,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/config"
@@ -27,8 +26,7 @@ import (
 // integration package directory (the working directory of `go test`).
 const syncthingBinary = "../bin/syncthing"
 
-// instance represents one Syncthing process under test, with its own home
-// directory and a single shared folder backed by an in-memory fakefs.
+// instance represents one Syncthing process under test
 type instance struct {
 	index     int
 	home      string
@@ -134,29 +132,13 @@ func (i *instance) start(t *testing.T) {
 	}
 	i.process = p
 
-	awaitStartup(t, p)
+	p.AwaitStartup(t.Context())
 
 	t.Cleanup(func() {
 		if _, err := p.Stop(); err != nil {
 			t.Logf("stop instance %d: %v (log: %s)", i.index, err, logFile)
 		}
 	})
-}
-
-// awaitStartup wraps rc.Process.AwaitStartup with a timeout so a stuck
-// instance fails the test rather than hanging it.
-func awaitStartup(t *testing.T, p *rc.Process) {
-	t.Helper()
-	done := make(chan struct{})
-	go func() {
-		p.AwaitStartup()
-		close(done)
-	}()
-	select {
-	case <-done:
-	case <-time.After(30 * time.Second):
-		t.Fatal("timed out waiting for Syncthing to start")
-	}
 }
 
 // connectTo pushes a configuration update via the REST API that adds peer

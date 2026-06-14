@@ -50,7 +50,7 @@ func TestSyncAtoB(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// model data should be the same, except for timestamp and version number
+	// model data should be the same, except for timestamp and version counter
 	am.Version, bm.Version = 0, 0
 	am.StateChanged, bm.StateChanged = time.Time{}, time.Time{}
 	if am != bm {

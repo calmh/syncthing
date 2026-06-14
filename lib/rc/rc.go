@@ -146,10 +146,14 @@ func (p *Process) signalStopping() {
 
 // AwaitStartup waits for the Syncthing process to start and perform initial
 // scans of all folders.
-func (p *Process) AwaitStartup() {
+func (p *Process) AwaitStartup(ctx context.Context) error {
 	select {
 	case <-p.startComplete:
+		return nil
 	case <-p.stopped:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
 }
 
