@@ -100,7 +100,11 @@ func (p *Process) Start(bin string, args ...string) error {
 		cmd.Stdout = p.logfd
 		cmd.Stderr = p.logfd
 	}
-	cmd.Env = append(os.Environ(), "STNORESTART=1", "STGUIAPIKEY="+APIKey)
+	cmd.Env = append(os.Environ(),
+		"STNORESTART=1",
+		"STMONITORED=1",
+		"STGUIAPIKEY="+APIKey,
+	)
 
 	err := cmd.Start()
 	if err != nil {
@@ -465,6 +469,7 @@ func (p *Process) eventLoop() {
 		if err != nil {
 			if time.Since(start) < 5*time.Second {
 				// The API has probably not started yet, lets give it some time.
+				time.Sleep(100 * time.Millisecond)
 				continue
 			}
 
@@ -476,6 +481,7 @@ func (p *Process) eventLoop() {
 			}
 
 			log.Println("eventLoop: events:", err)
+			time.Sleep(100 * time.Millisecond)
 			continue
 		}
 

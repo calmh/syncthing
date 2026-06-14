@@ -55,8 +55,6 @@ func newInstance(t *testing.T, index int, fakefs string) *instance {
 	home := filepath.Join(t.TempDir(), "home")
 
 	gen := exec.Command(syncthingBinary, "generate", "--home", home, "--no-port-probing")
-	gen.Stdout = os.Stdout
-	gen.Stderr = os.Stderr
 	if err := gen.Run(); err != nil {
 		t.Fatalf("syncthing generate (instance %d): %v", index, err)
 	}
