@@ -45,7 +45,9 @@ type Process struct {
 	id            protocol.DeviceID
 	folders       []string
 	startComplete chan struct{}
-	stopped       chan struct{}
+	stopping      chan struct{} // closed when Stop() is invoked (or the process exits on its own)
+	stoppingOnce  sync.Once
+	stopped       chan struct{} // closed when the process has actually exited
 	stopErr       error
 	sequence      map[string]map[string]int64 // Folder ID => Device ID => Sequence
 	done          map[string]bool             // Folder ID => 100%
@@ -62,6 +64,7 @@ func NewProcess(addr string) *Process {
 		sequence:      make(map[string]map[string]int64),
 		done:          make(map[string]bool),
 		startComplete: make(chan struct{}),
+		stopping:      make(chan struct{}),
 		stopped:       make(chan struct{}),
 	}
 	return p
@@ -121,11 +124,23 @@ func (p *Process) Start(bin string, args ...string) error {
 func (p *Process) wait() {
 	p.cmd.Wait()
 
+	// Make sure shutdown is signalled even if the process exited on its own.
+	p.signalStopping()
+
 	if p.logfd != nil {
 		p.stopErr = p.checkForProblems(p.logfd)
 	}
 
 	close(p.stopped)
+}
+
+// signalStopping closes the stopping channel exactly once, signalling to
+// the event loop and other goroutines that no further requests against
+// the Syncthing API are expected to succeed.
+func (p *Process) signalStopping() {
+	p.stoppingOnce.Do(func() {
+		close(p.stopping)
+	})
 }
 
 // AwaitStartup waits for the Syncthing process to start and perform initial
@@ -147,6 +162,10 @@ func (p *Process) Stop() (*os.ProcessState, error) {
 		return p.cmd.ProcessState, p.stopErr
 	default:
 	}
+
+	// Signal shutdown before issuing the API call so the event loop
+	// stops logging the connection errors that follow.
+	p.signalStopping()
 
 	if _, err := p.Post("/rest/system/shutdown", nil); err != nil && !errors.Is(err, io.ErrUnexpectedEOF) {
 		// Unexpected EOF is somewhat expected here, as we may exit before
@@ -460,7 +479,7 @@ func (p *Process) eventLoop() {
 	start := time.Now()
 	for {
 		select {
-		case <-p.stopped:
+		case <-p.stopping:
 			return
 		default:
 		}
@@ -475,7 +494,7 @@ func (p *Process) eventLoop() {
 
 			// If we're stopping, no need to print the error.
 			select {
-			case <-p.stopped:
+			case <-p.stopping:
 				return
 			default:
 			}
