@@ -9,6 +9,7 @@
 package integration
 
 import (
+	"bytes"
 	"crypto/tls"
 	"fmt"
 	"os"
@@ -61,10 +62,18 @@ func binaryMustExist(t *testing.T) {
 func newInstance(t *testing.T, index int, fakefs string) *instance {
 	t.Helper()
 
+	gen := exec.Command(syncthingBinary, "version")
+	if bs, err := gen.CombinedOutput(); err != nil {
+		t.Log(string(bs))
+		t.Fatalf("syncthing version (instance %d): %v", index, err)
+	} else {
+		t.Log(string(bytes.TrimSpace(bs)))
+	}
+
 	home := filepath.Join(t.TempDir(), "home")
 	t.Logf("Instance %d in %s", index, home)
 
-	gen := exec.Command(syncthingBinary, "generate", "--home", home, "--no-port-probing")
+	gen = exec.Command(syncthingBinary, "generate", "--home", home, "--no-port-probing")
 	if bs, err := gen.CombinedOutput(); err != nil {
 		t.Log(string(bs))
 		t.Fatalf("syncthing generate (instance %d): %v", index, err)
