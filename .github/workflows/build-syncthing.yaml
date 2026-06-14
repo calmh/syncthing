@@ -151,7 +151,7 @@ jobs:
 
       - name: Smoke test
         run: |
-          go test -v -tags integration ./integration
+          go test -v ./integration
 
   #
   # The basic checks job is a virtual one that depends on the matrix tests,
