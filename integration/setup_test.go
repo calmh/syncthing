@@ -69,7 +69,8 @@ func newInstance(t *testing.T, index int, fakefs string) *instance {
 	t.Logf("Instance %d in %s", index, home)
 
 	gen := exec.Command(syncthingBinary, "generate", "--home", home, "--no-port-probing")
-	if err := gen.Run(); err != nil {
+	if bs, err := gen.CombinedOutput(); err != nil {
+		t.Log(string(bs))
 		t.Fatalf("syncthing generate (instance %d): %v", index, err)
 	}
 
