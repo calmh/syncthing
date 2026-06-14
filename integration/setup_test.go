@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-//go:build integration
+// xxgo:build integration
 
 // Package integration contains end-to-end tests that drive real Syncthing
 // processes via the REST API.
@@ -53,6 +53,7 @@ func newInstance(t *testing.T, index int, fakefs string) *instance {
 	t.Helper()
 
 	home := filepath.Join(t.TempDir(), "home")
+	t.Logf("Instance %d in %s", index, home)
 
 	gen := exec.Command(syncthingBinary, "generate", "--home", home, "--no-port-probing")
 	if err := gen.Run(); err != nil {
@@ -143,22 +144,6 @@ func awaitStartup(t *testing.T, p *rc.Process) {
 	case <-done:
 	case <-time.After(30 * time.Second):
 		t.Fatal("timed out waiting for Syncthing to start")
-	}
-}
-
-// awaitSync waits until rc.InSync reports both processes are in sync on
-// the named folder, or fails the test on timeout.
-func awaitSync(t *testing.T, folder string, ps ...*rc.Process) {
-	t.Helper()
-	done := make(chan struct{})
-	go func() {
-		rc.AwaitSync(folder, ps...)
-		close(done)
-	}()
-	select {
-	case <-done:
-	case <-time.After(120 * time.Second):
-		t.Fatalf("timed out waiting for folder %q to sync", folder)
 	}
 }
 

@@ -10,6 +10,7 @@ package rc
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -372,12 +373,17 @@ func InSync(folder string, ps ...*Process) bool {
 	return true
 }
 
-func AwaitSync(folder string, ps ...*Process) {
+func AwaitSync(ctx context.Context, folder string, ps ...*Process) error {
 	for {
-		time.Sleep(250 * time.Millisecond)
-		if InSync(folder, ps...) {
-			return
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
 		}
+		if InSync(folder, ps...) {
+			return nil
+		}
+		time.Sleep(250 * time.Millisecond)
 	}
 }
 

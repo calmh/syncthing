@@ -4,13 +4,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-//go:build integration
+//xxgo:build integration
 
 package integration
 
 import (
 	"fmt"
 	"testing"
+
+	"github.com/syncthing/syncthing/lib/rc"
 )
 
 // TestSyncAtoB starts two Syncthing instances backed by an in-memory
@@ -29,7 +31,7 @@ func TestSyncAtoB(t *testing.T) {
 	a.connectTo(t, b)
 	b.connectTo(t, a)
 
-	awaitSync(t, "default", a.process, b.process)
+	rc.AwaitSync(t.Context(), "default", a.process, b.process)
 
 	model, err := b.process.Model("default")
 	if err != nil {
