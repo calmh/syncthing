@@ -11,6 +11,7 @@ package integration
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/syncthing/syncthing/lib/rc"
 )
@@ -33,14 +34,28 @@ func TestSyncAtoB(t *testing.T) {
 
 	rc.AwaitSync(t.Context(), "default", a.process, b.process)
 
-	model, err := b.process.Model("default")
+	bm, err := b.process.Model("default")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if model.LocalFiles != numFiles {
-		t.Fatalf("instance b ended up with %d files, want %d", model.LocalFiles, numFiles)
+	if bm.LocalFiles != numFiles {
+		t.Fatalf("instance b ended up with %d files, want %d", bm.LocalFiles, numFiles)
 	}
-	if model.NeedFiles != 0 {
-		t.Fatalf("instance b still needs %d files", model.NeedFiles)
+	if bm.NeedFiles != 0 {
+		t.Fatalf("instance b still needs %d files", bm.NeedFiles)
+	}
+
+	am, err := a.process.Model("default")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// model data should be the same, except for timestamp and version number
+	am.Version, bm.Version = 0, 0
+	am.StateChanged, bm.StateChanged = time.Time{}, time.Time{}
+	if am != bm {
+		t.Logf("%+v", am)
+		t.Logf("%+v", bm)
+		t.Error("model data should be identical")
 	}
 }
