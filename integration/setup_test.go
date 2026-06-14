@@ -19,6 +19,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"github.com/syncthing/syncthing/lib/rc"
@@ -38,6 +39,18 @@ type instance struct {
 	guiAddr   string // host:port
 	listenURL string // tcp://host:port
 	process   *rc.Process
+}
+
+func binaryMustExist(t *testing.T) {
+	bin := syncthingBinary
+	if build.IsWindows {
+		bin += ".exe"
+	}
+	if _, err := os.Lstat(bin); os.IsNotExist(err) {
+		t.Skip("not built")
+	} else if err != nil {
+		t.Fatalf("checking binary: %v", err)
+	}
 }
 
 // newInstance creates a fresh Syncthing home, runs `syncthing generate`,
