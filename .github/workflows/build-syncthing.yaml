@@ -151,6 +151,7 @@ jobs:
 
       - name: Smoke test
         run: |
+          ./bin/syncthing version
           go test -v ./integration
 
   #
