@@ -151,11 +151,13 @@ type model struct {
 	// folderIOLimiter limits the number of concurrent I/O heavy operations,
 	// such as scans and pulls.
 	folderIOLimiter *semaphore.Semaphore
-	fatalChan       chan error
-	started         chan struct{}
-	keyGen          *protocol.KeyGenerator
-	promotionTimer  *time.Timer
-	observed        *db.ObservedDB
+	// folderRateLimiter enforces the per-folder send and receive rate limits.
+	folderRateLimiter *folderRateLimiter
+	fatalChan         chan error
+	started           chan struct{}
+	keyGen            *protocol.KeyGenerator
+	promotionTimer    *time.Timer
+	observed          *db.ObservedDB
 
 	// fields protected by mut
 	mut                            sync.RWMutex
@@ -229,6 +231,7 @@ func NewModel(cfg config.Wrapper, id protocol.DeviceID, sdb db.DB, protectedFile
 		shortID:              id.Short(),
 		globalRequestLimiter: semaphore.New(1024 * cfg.Options().MaxConcurrentIncomingRequestKiB()),
 		folderIOLimiter:      semaphore.New(cfg.Options().MaxFolderConcurrency()),
+		folderRateLimiter:    newFolderRateLimiter(),
 		fatalChan:            make(chan error),
 		started:              make(chan struct{}),
 		keyGen:               keyGen,
@@ -257,6 +260,7 @@ func NewModel(cfg config.Wrapper, id protocol.DeviceID, sdb db.DB, protectedFile
 		m.deviceStatRefs[devID] = stats.NewDeviceStatisticsReference(db.NewTyped(sdb, "devicestats/"+devID.String()))
 		m.setConnRequestLimitersLocked(cfg)
 	}
+	m.folderRateLimiter.setLimits(cfg.FolderList())
 	m.Add(m.folderRunners)
 	m.Add(m.progressEmitter)
 	m.Add(m.indexHandlers)
@@ -2027,6 +2031,13 @@ func (m *model) Request(conn protocol.Connection, req *protocol.Request) (out pr
 		}
 	}()
 
+	// Rate limit the outgoing data for this folder.
+	if !conn.IsLocal() || m.cfg.Options().LimitBandwidthInLan {
+		if err := m.folderRateLimiter.waitSend(context.Background(), req.Folder, req.Size); err != nil {
+			return nil, err
+		}
+	}
+
 	// Grab the FS after limiting, as it causes I/O and we want to minimize
 	// the race time between the symlink check and the read.
 
@@ -2458,6 +2469,14 @@ func (m *model) RequestGlobal(ctx context.Context, deviceID protocol.DeviceID, f
 	}
 
 	l.Debugf("%v REQ(out): %s (%s): %q / %q b=%d o=%d s=%d h=%x ft=%t", m, deviceID.Short(), conn, folder, name, blockNo, offset, size, hash, fromTemporary)
+
+	// Rate limit the incoming data for this folder.
+	if !conn.IsLocal() || m.cfg.Options().LimitBandwidthInLan {
+		if err := m.folderRateLimiter.waitRecv(ctx, folder, size); err != nil {
+			return nil, err
+		}
+	}
+
 	return conn.Request(ctx, &protocol.Request{Folder: folder, Name: name, BlockNo: blockNo, Offset: offset, Size: size, Hash: hash, FromTemporary: fromTemporary})
 }
 
@@ -3105,6 +3124,7 @@ func (m *model) CommitConfiguration(from, to config.Configuration) bool {
 
 	m.globalRequestLimiter.SetCapacity(1024 * to.Options.MaxConcurrentIncomingRequestKiB())
 	m.folderIOLimiter.SetCapacity(to.Options.MaxFolderConcurrency())
+	m.folderRateLimiter.setLimits(to.Folders)
 
 	// Some options don't require restart as those components handle it fine
 	// by themselves. Compare the options structs containing only the

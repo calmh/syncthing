@@ -88,6 +88,8 @@ type FolderConfiguration struct {
 	SendXattrs              bool                        `json:"sendXattrs" xml:"sendXattrs"`
 	BlockIndexing           bool                        `json:"blockIndexing" xml:"blockIndexing" default:"true"`
 	XattrFilter             XattrFilter                 `json:"xattrFilter" xml:"xattrFilter"`
+	MaxSendKbps             int                         `json:"maxSendKbps" xml:"maxSendKbps" restart:"false"`
+	MaxRecvKbps             int                         `json:"maxRecvKbps" xml:"maxRecvKbps" restart:"false"`
 	// Legacy deprecated
 	DeprecatedReadOnly       bool    `json:"-" xml:"ro,attr,omitempty"`        // Deprecated: Do not use.
 	DeprecatedMinDiskFreePct float64 `json:"-" xml:"minDiskFreePct,omitempty"` // Deprecated: Do not use.
