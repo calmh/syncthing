@@ -5,5 +5,6 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 // Package config provides handling of the protobuf based Syncthing
-// configuration, which is stored in YAML format.
+// configuration, which is stored in YAML format, as well as conversion
+// from the legacy configuration in lib/config.
 package config

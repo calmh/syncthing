@@ -20,8 +20,6 @@ message Configuration {
   LDAPConfiguration ldap = 5;
   OptionsConfiguration options = 6;
   repeated ObservedDevice remote_ignored_devices = 7;
-  // Deprecated: Do not use.
-  repeated ObservedDevice deprecated_pending_devices = 8 [deprecated = true];
   Defaults defaults = 9;
 }
 
@@ -79,14 +77,6 @@ message FolderConfiguration {
   bool send_xattrs = 39;
   bool block_indexing = 40 [default = true];
   XattrFilter xattr_filter = 41;
-  // Deprecated: Do not use.
-  bool deprecated_read_only = 42 [deprecated = true];
-  // Deprecated: Do not use.
-  double deprecated_min_disk_free_pct = 43 [deprecated = true];
-  // Deprecated: Do not use.
-  int32 deprecated_pullers = 44 [deprecated = true];
-  // Deprecated: Do not use.
-  bool deprecated_scan_ownership = 45 [deprecated = true];
 }
 
 // A device that a folder is shared with.
@@ -139,8 +129,6 @@ message DeviceConfiguration {
   int32 max_send_kbps = 12;
   int32 max_recv_kbps = 13;
   repeated ObservedFolder ignored_folders = 14;
-  // Deprecated: Do not use.
-  repeated ObservedFolder deprecated_pending_folders = 15 [deprecated = true];
   int32 max_request_ki_b = 16;
   bool untrusted = 17;
   int32 remote_gui_port = 18;
@@ -234,8 +222,6 @@ message OptionsConfiguration {
   int32 temp_index_min_blocks = 32;
   repeated string unacked_notification_ids = 33;
   int32 traffic_class = 34;
-  // Deprecated: Do not use.
-  string deprecated_default_folder_path = 35 [deprecated = true];
   bool set_low_priority = 36 [default = true];
   int32 max_folder_concurrency = 37;
   string cr_url = 38 [default = "https://crash.syncthing.net/newcrash"];
@@ -262,20 +248,6 @@ message OptionsConfiguration {
   int32 connection_priority_quic_wan = 54 [default = 40];
   int32 connection_priority_relay = 55 [default = 50];
   int32 connection_priority_upgrade_threshold = 56;
-  // Deprecated: Do not use.
-  bool deprecated_upnp_enabled = 57 [deprecated = true];
-  // Deprecated: Do not use.
-  int32 deprecated_upnp_lease_minutes = 58 [deprecated = true];
-  // Deprecated: Do not use.
-  int32 deprecated_upnp_renewal_minutes = 59 [deprecated = true];
-  // Deprecated: Do not use.
-  int32 deprecated_upnp_timeout_seconds = 60 [deprecated = true];
-  // Deprecated: Do not use.
-  repeated string deprecated_relay_servers = 61 [deprecated = true];
-  // Deprecated: Do not use.
-  double deprecated_min_home_disk_free_pct = 62 [deprecated = true];
-  // Deprecated: Do not use.
-  int32 deprecated_max_concurrent_scans = 63 [deprecated = true];
 }
 
 // --- Miscellaneous ---
