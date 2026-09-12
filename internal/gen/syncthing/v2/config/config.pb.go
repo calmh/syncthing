@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: config/config.proto
+// source: syncthing/v2/config/config.proto
 
 package config
 
@@ -54,11 +54,11 @@ func (x AuthMode) String() string {
 }
 
 func (AuthMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[0].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[0].Descriptor()
 }
 
 func (AuthMode) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[0]
+	return &file_syncthing_v2_config_config_proto_enumTypes[0]
 }
 
 func (x AuthMode) Number() protoreflect.EnumNumber {
@@ -109,11 +109,11 @@ func (x BlockPullOrder) String() string {
 }
 
 func (BlockPullOrder) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[1].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[1].Descriptor()
 }
 
 func (BlockPullOrder) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[1]
+	return &file_syncthing_v2_config_config_proto_enumTypes[1]
 }
 
 func (x BlockPullOrder) Number() protoreflect.EnumNumber {
@@ -159,11 +159,11 @@ func (x Compression) String() string {
 }
 
 func (Compression) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[2].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[2].Descriptor()
 }
 
 func (Compression) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[2]
+	return &file_syncthing_v2_config_config_proto_enumTypes[2]
 }
 
 func (x Compression) Number() protoreflect.EnumNumber {
@@ -212,11 +212,11 @@ func (x CopyRangeMethod) String() string {
 }
 
 func (CopyRangeMethod) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[3].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[3].Descriptor()
 }
 
 func (CopyRangeMethod) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[3]
+	return &file_syncthing_v2_config_config_proto_enumTypes[3]
 }
 
 func (x CopyRangeMethod) Number() protoreflect.EnumNumber {
@@ -256,11 +256,11 @@ func (x FilesystemType) String() string {
 }
 
 func (FilesystemType) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[4].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[4].Descriptor()
 }
 
 func (FilesystemType) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[4]
+	return &file_syncthing_v2_config_config_proto_enumTypes[4]
 }
 
 func (x FilesystemType) Number() protoreflect.EnumNumber {
@@ -312,11 +312,11 @@ func (x FolderType) String() string {
 }
 
 func (FolderType) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[5].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[5].Descriptor()
 }
 
 func (FolderType) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[5]
+	return &file_syncthing_v2_config_config_proto_enumTypes[5]
 }
 
 func (x FolderType) Number() protoreflect.EnumNumber {
@@ -359,11 +359,11 @@ func (x LDAPTransport) String() string {
 }
 
 func (LDAPTransport) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[6].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[6].Descriptor()
 }
 
 func (LDAPTransport) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[6]
+	return &file_syncthing_v2_config_config_proto_enumTypes[6]
 }
 
 func (x LDAPTransport) Number() protoreflect.EnumNumber {
@@ -419,11 +419,11 @@ func (x PullOrder) String() string {
 }
 
 func (PullOrder) Descriptor() protoreflect.EnumDescriptor {
-	return file_config_config_proto_enumTypes[7].Descriptor()
+	return file_syncthing_v2_config_config_proto_enumTypes[7].Descriptor()
 }
 
 func (PullOrder) Type() protoreflect.EnumType {
-	return &file_config_config_proto_enumTypes[7]
+	return &file_syncthing_v2_config_config_proto_enumTypes[7]
 }
 
 func (x PullOrder) Number() protoreflect.EnumNumber {
@@ -449,7 +449,7 @@ type Configuration struct {
 
 func (x *Configuration) Reset() {
 	*x = Configuration{}
-	mi := &file_config_config_proto_msgTypes[0]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -461,7 +461,7 @@ func (x *Configuration) String() string {
 func (*Configuration) ProtoMessage() {}
 
 func (x *Configuration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[0]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -679,7 +679,7 @@ type Defaults struct {
 
 func (x *Defaults) Reset() {
 	*x = Defaults{}
-	mi := &file_config_config_proto_msgTypes[1]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -691,7 +691,7 @@ func (x *Defaults) String() string {
 func (*Defaults) ProtoMessage() {}
 
 func (x *Defaults) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[1]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -806,7 +806,7 @@ type Ignores struct {
 
 func (x *Ignores) Reset() {
 	*x = Ignores{}
-	mi := &file_config_config_proto_msgTypes[2]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -818,7 +818,7 @@ func (x *Ignores) String() string {
 func (*Ignores) ProtoMessage() {}
 
 func (x *Ignores) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[2]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -860,9 +860,9 @@ type FolderConfiguration struct {
 	state                              protoimpl.MessageState        `protogen:"opaque.v1"`
 	xxx_hidden_Id                      *string                       `protobuf:"bytes,1,opt,name=id"`
 	xxx_hidden_Label                   *string                       `protobuf:"bytes,2,opt,name=label"`
-	xxx_hidden_FilesystemType          FilesystemType                `protobuf:"varint,3,opt,name=filesystem_type,json=filesystemType,enum=config.FilesystemType,def=0"`
+	xxx_hidden_FilesystemType          FilesystemType                `protobuf:"varint,3,opt,name=filesystem_type,json=filesystemType,enum=syncthing.v2.config.FilesystemType,def=0"`
 	xxx_hidden_Path                    *string                       `protobuf:"bytes,4,opt,name=path"`
-	xxx_hidden_Type                    FolderType                    `protobuf:"varint,5,opt,name=type,enum=config.FolderType"`
+	xxx_hidden_Type                    FolderType                    `protobuf:"varint,5,opt,name=type,enum=syncthing.v2.config.FolderType"`
 	xxx_hidden_Devices                 *[]*FolderDeviceConfiguration `protobuf:"bytes,6,rep,name=devices"`
 	xxx_hidden_Group                   *string                       `protobuf:"bytes,7,opt,name=group"`
 	xxx_hidden_RescanIntervalS         int32                         `protobuf:"varint,8,opt,name=rescan_interval_s,json=rescanIntervalS,def=3600"`
@@ -876,7 +876,7 @@ type FolderConfiguration struct {
 	xxx_hidden_Copiers                 int32                         `protobuf:"varint,16,opt,name=copiers"`
 	xxx_hidden_PullerMaxPendingKiB     int32                         `protobuf:"varint,17,opt,name=puller_max_pending_ki_b,json=pullerMaxPendingKiB"`
 	xxx_hidden_Hashers                 int32                         `protobuf:"varint,18,opt,name=hashers"`
-	xxx_hidden_Order                   PullOrder                     `protobuf:"varint,19,opt,name=order,enum=config.PullOrder"`
+	xxx_hidden_Order                   PullOrder                     `protobuf:"varint,19,opt,name=order,enum=syncthing.v2.config.PullOrder"`
 	xxx_hidden_IgnoreDelete            bool                          `protobuf:"varint,20,opt,name=ignore_delete,json=ignoreDelete"`
 	xxx_hidden_ScanProgressIntervalS   int32                         `protobuf:"varint,21,opt,name=scan_progress_interval_s,json=scanProgressIntervalS"`
 	xxx_hidden_PullerPauseS            int32                         `protobuf:"varint,22,opt,name=puller_pause_s,json=pullerPauseS"`
@@ -889,8 +889,8 @@ type FolderConfiguration struct {
 	xxx_hidden_ModTimeWindowS          int32                         `protobuf:"varint,29,opt,name=mod_time_window_s,json=modTimeWindowS"`
 	xxx_hidden_MaxConcurrentWrites     int32                         `protobuf:"varint,30,opt,name=max_concurrent_writes,json=maxConcurrentWrites"`
 	xxx_hidden_DisableFsync            bool                          `protobuf:"varint,31,opt,name=disable_fsync,json=disableFsync"`
-	xxx_hidden_BlockPullOrder          BlockPullOrder                `protobuf:"varint,32,opt,name=block_pull_order,json=blockPullOrder,enum=config.BlockPullOrder"`
-	xxx_hidden_CopyRangeMethod         CopyRangeMethod               `protobuf:"varint,33,opt,name=copy_range_method,json=copyRangeMethod,enum=config.CopyRangeMethod,def=0"`
+	xxx_hidden_BlockPullOrder          BlockPullOrder                `protobuf:"varint,32,opt,name=block_pull_order,json=blockPullOrder,enum=syncthing.v2.config.BlockPullOrder"`
+	xxx_hidden_CopyRangeMethod         CopyRangeMethod               `protobuf:"varint,33,opt,name=copy_range_method,json=copyRangeMethod,enum=syncthing.v2.config.CopyRangeMethod,def=0"`
 	xxx_hidden_CaseSensitiveFs         bool                          `protobuf:"varint,34,opt,name=case_sensitive_fs,json=caseSensitiveFs"`
 	xxx_hidden_JunctionsAsDirs         bool                          `protobuf:"varint,35,opt,name=junctions_as_dirs,json=junctionsAsDirs"`
 	xxx_hidden_SyncOwnership           bool                          `protobuf:"varint,36,opt,name=sync_ownership,json=syncOwnership"`
@@ -920,7 +920,7 @@ const (
 
 func (x *FolderConfiguration) Reset() {
 	*x = FolderConfiguration{}
-	mi := &file_config_config_proto_msgTypes[3]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -932,7 +932,7 @@ func (x *FolderConfiguration) String() string {
 func (*FolderConfiguration) ProtoMessage() {}
 
 func (x *FolderConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[3]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2270,7 +2270,7 @@ type FolderDeviceConfiguration struct {
 
 func (x *FolderDeviceConfiguration) Reset() {
 	*x = FolderDeviceConfiguration{}
-	mi := &file_config_config_proto_msgTypes[4]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2282,7 +2282,7 @@ func (x *FolderDeviceConfiguration) String() string {
 func (*FolderDeviceConfiguration) ProtoMessage() {}
 
 func (x *FolderDeviceConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[4]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2419,7 +2419,7 @@ type VersioningConfiguration struct {
 	xxx_hidden_Params           map[string]string      `protobuf:"bytes,2,rep,name=params" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	xxx_hidden_CleanupIntervalS int32                  `protobuf:"varint,3,opt,name=cleanup_interval_s,json=cleanupIntervalS,def=3600"`
 	xxx_hidden_FsPath           *string                `protobuf:"bytes,4,opt,name=fs_path,json=fsPath"`
-	xxx_hidden_FsType           FilesystemType         `protobuf:"varint,5,opt,name=fs_type,json=fsType,enum=config.FilesystemType,def=0"`
+	xxx_hidden_FsType           FilesystemType         `protobuf:"varint,5,opt,name=fs_type,json=fsType,enum=syncthing.v2.config.FilesystemType,def=0"`
 	XXX_raceDetectHookData      protoimpl.RaceDetectHookData
 	XXX_presence                [1]uint32
 	unknownFields               protoimpl.UnknownFields
@@ -2434,7 +2434,7 @@ const (
 
 func (x *VersioningConfiguration) Reset() {
 	*x = VersioningConfiguration{}
-	mi := &file_config_config_proto_msgTypes[5]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2446,7 +2446,7 @@ func (x *VersioningConfiguration) String() string {
 func (*VersioningConfiguration) ProtoMessage() {}
 
 func (x *VersioningConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[5]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2641,7 +2641,7 @@ const (
 
 func (x *XattrFilter) Reset() {
 	*x = XattrFilter{}
-	mi := &file_config_config_proto_msgTypes[6]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2653,7 +2653,7 @@ func (x *XattrFilter) String() string {
 func (*XattrFilter) ProtoMessage() {}
 
 func (x *XattrFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[6]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2767,7 +2767,7 @@ type XattrFilterEntry struct {
 
 func (x *XattrFilterEntry) Reset() {
 	*x = XattrFilterEntry{}
-	mi := &file_config_config_proto_msgTypes[7]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2779,7 +2779,7 @@ func (x *XattrFilterEntry) String() string {
 func (*XattrFilterEntry) ProtoMessage() {}
 
 func (x *XattrFilterEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[7]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2871,7 +2871,7 @@ type DeviceConfiguration struct {
 	xxx_hidden_DeviceId                 *string                `protobuf:"bytes,1,opt,name=device_id,json=deviceId"`
 	xxx_hidden_Name                     *string                `protobuf:"bytes,2,opt,name=name"`
 	xxx_hidden_Addresses                []string               `protobuf:"bytes,3,rep,name=addresses"`
-	xxx_hidden_Compression              Compression            `protobuf:"varint,4,opt,name=compression,enum=config.Compression"`
+	xxx_hidden_Compression              Compression            `protobuf:"varint,4,opt,name=compression,enum=syncthing.v2.config.Compression"`
 	xxx_hidden_CertName                 *string                `protobuf:"bytes,5,opt,name=cert_name,json=certName"`
 	xxx_hidden_Introducer               bool                   `protobuf:"varint,6,opt,name=introducer"`
 	xxx_hidden_SkipIntroductionRemovals bool                   `protobuf:"varint,7,opt,name=skip_introduction_removals,json=skipIntroductionRemovals"`
@@ -2895,7 +2895,7 @@ type DeviceConfiguration struct {
 
 func (x *DeviceConfiguration) Reset() {
 	*x = DeviceConfiguration{}
-	mi := &file_config_config_proto_msgTypes[8]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2907,7 +2907,7 @@ func (x *DeviceConfiguration) String() string {
 func (*DeviceConfiguration) ProtoMessage() {}
 
 func (x *DeviceConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[8]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3516,7 +3516,7 @@ type ObservedFolder struct {
 
 func (x *ObservedFolder) Reset() {
 	*x = ObservedFolder{}
-	mi := &file_config_config_proto_msgTypes[9]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3528,7 +3528,7 @@ func (x *ObservedFolder) String() string {
 func (*ObservedFolder) ProtoMessage() {}
 
 func (x *ObservedFolder) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[9]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3658,7 +3658,7 @@ type ObservedDevice struct {
 
 func (x *ObservedDevice) Reset() {
 	*x = ObservedDevice{}
-	mi := &file_config_config_proto_msgTypes[10]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3670,7 +3670,7 @@ func (x *ObservedDevice) String() string {
 func (*ObservedDevice) ProtoMessage() {}
 
 func (x *ObservedDevice) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[10]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3825,7 +3825,7 @@ type GUIConfiguration struct {
 	xxx_hidden_UnixSocketPermissions     *string                `protobuf:"bytes,3,opt,name=unix_socket_permissions,json=unixSocketPermissions"`
 	xxx_hidden_User                      *string                `protobuf:"bytes,4,opt,name=user"`
 	xxx_hidden_Password                  *string                `protobuf:"bytes,5,opt,name=password"`
-	xxx_hidden_AuthMode                  AuthMode               `protobuf:"varint,6,opt,name=auth_mode,json=authMode,enum=config.AuthMode"`
+	xxx_hidden_AuthMode                  AuthMode               `protobuf:"varint,6,opt,name=auth_mode,json=authMode,enum=syncthing.v2.config.AuthMode"`
 	xxx_hidden_MetricsWithoutAuth        bool                   `protobuf:"varint,7,opt,name=metrics_without_auth,json=metricsWithoutAuth"`
 	xxx_hidden_UseTls                    bool                   `protobuf:"varint,8,opt,name=use_tls,json=useTls"`
 	xxx_hidden_ApiKey                    *string                `protobuf:"bytes,9,opt,name=api_key,json=apiKey"`
@@ -3853,7 +3853,7 @@ const (
 
 func (x *GUIConfiguration) Reset() {
 	*x = GUIConfiguration{}
-	mi := &file_config_config_proto_msgTypes[11]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3865,7 +3865,7 @@ func (x *GUIConfiguration) String() string {
 func (*GUIConfiguration) ProtoMessage() {}
 
 func (x *GUIConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[11]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4418,7 +4418,7 @@ type LDAPConfiguration struct {
 	state                         protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Address            *string                `protobuf:"bytes,1,opt,name=address"`
 	xxx_hidden_BindDn             *string                `protobuf:"bytes,2,opt,name=bind_dn,json=bindDn"`
-	xxx_hidden_Transport          LDAPTransport          `protobuf:"varint,3,opt,name=transport,enum=config.LDAPTransport"`
+	xxx_hidden_Transport          LDAPTransport          `protobuf:"varint,3,opt,name=transport,enum=syncthing.v2.config.LDAPTransport"`
 	xxx_hidden_InsecureSkipVerify bool                   `protobuf:"varint,4,opt,name=insecure_skip_verify,json=insecureSkipVerify"`
 	xxx_hidden_SearchBaseDn       *string                `protobuf:"bytes,5,opt,name=search_base_dn,json=searchBaseDn"`
 	xxx_hidden_SearchFilter       *string                `protobuf:"bytes,6,opt,name=search_filter,json=searchFilter"`
@@ -4430,7 +4430,7 @@ type LDAPConfiguration struct {
 
 func (x *LDAPConfiguration) Reset() {
 	*x = LDAPConfiguration{}
-	mi := &file_config_config_proto_msgTypes[12]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4442,7 +4442,7 @@ func (x *LDAPConfiguration) String() string {
 func (*LDAPConfiguration) ProtoMessage() {}
 
 func (x *LDAPConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[12]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4758,7 +4758,7 @@ const (
 
 func (x *OptionsConfiguration) Reset() {
 	*x = OptionsConfiguration{}
-	mi := &file_config_config_proto_msgTypes[13]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4770,7 +4770,7 @@ func (x *OptionsConfiguration) String() string {
 func (*OptionsConfiguration) ProtoMessage() {}
 
 func (x *OptionsConfiguration) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[13]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6463,7 +6463,7 @@ type Size struct {
 
 func (x *Size) Reset() {
 	*x = Size{}
-	mi := &file_config_config_proto_msgTypes[14]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6475,7 +6475,7 @@ func (x *Size) String() string {
 func (*Size) ProtoMessage() {}
 
 func (x *Size) ProtoReflect() protoreflect.Message {
-	mi := &file_config_config_proto_msgTypes[14]
+	mi := &file_syncthing_v2_config_config_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6666,7 +6666,7 @@ func (b0 Size_builder) Build() *Size {
 type case_Size_Size protoreflect.FieldNumber
 
 func (x case_Size_Size) String() string {
-	md := file_config_config_proto_msgTypes[14].Descriptor()
+	md := file_syncthing_v2_config_config_proto_msgTypes[14].Descriptor()
 	if x == 0 {
 		return "not set"
 	}
@@ -6705,33 +6705,33 @@ func (*size_Mib) isSize_Size() {}
 
 func (*size_Gib) isSize_Size() {}
 
-var File_config_config_proto protoreflect.FileDescriptor
+var File_syncthing_v2_config_config_proto protoreflect.FileDescriptor
 
-const file_config_config_proto_rawDesc = "" +
+const file_syncthing_v2_config_config_proto_rawDesc = "" +
 	"\n" +
-	"\x13config/config.proto\x12\x06config\x1a\x1bbuf/validate/validate.proto\x1a\x14config/options.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa6\x03\n" +
+	" syncthing/v2/config/config.proto\x12\x13syncthing.v2.config\x1a\x1bbuf/validate/validate.proto\x1a!syncthing/v2/config/options.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x81\x04\n" +
 	"\rConfiguration\x12\x18\n" +
-	"\aversion\x18\x01 \x01(\x05R\aversion\x125\n" +
-	"\afolders\x18\x02 \x03(\v2\x1b.config.FolderConfigurationR\afolders\x125\n" +
-	"\adevices\x18\x03 \x03(\v2\x1b.config.DeviceConfigurationR\adevices\x12*\n" +
-	"\x03gui\x18\x04 \x01(\v2\x18.config.GUIConfigurationR\x03gui\x12-\n" +
-	"\x04ldap\x18\x05 \x01(\v2\x19.config.LDAPConfigurationR\x04ldap\x126\n" +
-	"\aoptions\x18\x06 \x01(\v2\x1c.config.OptionsConfigurationR\aoptions\x12L\n" +
-	"\x16remote_ignored_devices\x18\a \x03(\v2\x16.config.ObservedDeviceR\x14remoteIgnoredDevices\x12,\n" +
-	"\bdefaults\x18\t \x01(\v2\x10.config.DefaultsR\bdefaults\"\x9f\x01\n" +
-	"\bDefaults\x123\n" +
-	"\x06folder\x18\x01 \x01(\v2\x1b.config.FolderConfigurationR\x06folder\x123\n" +
-	"\x06device\x18\x02 \x01(\v2\x1b.config.DeviceConfigurationR\x06device\x12)\n" +
-	"\aignores\x18\x03 \x01(\v2\x0f.config.IgnoresR\aignores\"\x1f\n" +
+	"\aversion\x18\x01 \x01(\x05R\aversion\x12B\n" +
+	"\afolders\x18\x02 \x03(\v2(.syncthing.v2.config.FolderConfigurationR\afolders\x12B\n" +
+	"\adevices\x18\x03 \x03(\v2(.syncthing.v2.config.DeviceConfigurationR\adevices\x127\n" +
+	"\x03gui\x18\x04 \x01(\v2%.syncthing.v2.config.GUIConfigurationR\x03gui\x12:\n" +
+	"\x04ldap\x18\x05 \x01(\v2&.syncthing.v2.config.LDAPConfigurationR\x04ldap\x12C\n" +
+	"\aoptions\x18\x06 \x01(\v2).syncthing.v2.config.OptionsConfigurationR\aoptions\x12Y\n" +
+	"\x16remote_ignored_devices\x18\a \x03(\v2#.syncthing.v2.config.ObservedDeviceR\x14remoteIgnoredDevices\x129\n" +
+	"\bdefaults\x18\t \x01(\v2\x1d.syncthing.v2.config.DefaultsR\bdefaults\"\xc6\x01\n" +
+	"\bDefaults\x12@\n" +
+	"\x06folder\x18\x01 \x01(\v2(.syncthing.v2.config.FolderConfigurationR\x06folder\x12@\n" +
+	"\x06device\x18\x02 \x01(\v2(.syncthing.v2.config.DeviceConfigurationR\x06device\x126\n" +
+	"\aignores\x18\x03 \x01(\v2\x1c.syncthing.v2.config.IgnoresR\aignores\"\x1f\n" +
 	"\aIgnores\x12\x14\n" +
-	"\x05lines\x18\x01 \x03(\tR\x05lines\"\xb2\x0e\n" +
+	"\x05lines\x18\x01 \x03(\tR\x05lines\"\xa7\x0f\n" +
 	"\x13FolderConfiguration\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\x12V\n" +
-	"\x0ffilesystem_type\x18\x03 \x01(\x0e2\x16.config.FilesystemType:\x15FILESYSTEM_TYPE_BASICR\x0efilesystemType\x12\x12\n" +
-	"\x04path\x18\x04 \x01(\tR\x04path\x12&\n" +
-	"\x04type\x18\x05 \x01(\x0e2\x12.config.FolderTypeR\x04type\x12;\n" +
-	"\adevices\x18\x06 \x03(\v2!.config.FolderDeviceConfigurationR\adevices\x12\x14\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12c\n" +
+	"\x0ffilesystem_type\x18\x03 \x01(\x0e2#.syncthing.v2.config.FilesystemType:\x15FILESYSTEM_TYPE_BASICR\x0efilesystemType\x12\x12\n" +
+	"\x04path\x18\x04 \x01(\tR\x04path\x123\n" +
+	"\x04type\x18\x05 \x01(\x0e2\x1f.syncthing.v2.config.FolderTypeR\x04type\x12H\n" +
+	"\adevices\x18\x06 \x03(\v2..syncthing.v2.config.FolderDeviceConfigurationR\adevices\x12\x14\n" +
 	"\x05group\x18\a \x01(\tR\x05group\x120\n" +
 	"\x11rescan_interval_s\x18\b \x01(\x05:\x043600R\x0frescanIntervalS\x122\n" +
 	"\x12fs_watcher_enabled\x18\t \x01(\b:\x04trueR\x10fsWatcherEnabled\x12/\n" +
@@ -6739,15 +6739,15 @@ const file_config_config_proto_rawDesc = "" +
 	" \x01(\x01:\x0210R\x0ffsWatcherDelayS\x12/\n" +
 	"\x14fs_watcher_timeout_s\x18\v \x01(\x01R\x11fsWatcherTimeoutS\x12!\n" +
 	"\fignore_perms\x18\f \x01(\bR\vignorePerms\x12+\n" +
-	"\x0eauto_normalize\x18\r \x01(\b:\x04trueR\rautoNormalize\x120\n" +
-	"\rmin_disk_free\x18\x0e \x01(\v2\f.config.SizeR\vminDiskFree\x12?\n" +
+	"\x0eauto_normalize\x18\r \x01(\b:\x04trueR\rautoNormalize\x12=\n" +
+	"\rmin_disk_free\x18\x0e \x01(\v2\x19.syncthing.v2.config.SizeR\vminDiskFree\x12L\n" +
 	"\n" +
-	"versioning\x18\x0f \x01(\v2\x1f.config.VersioningConfigurationR\n" +
+	"versioning\x18\x0f \x01(\v2,.syncthing.v2.config.VersioningConfigurationR\n" +
 	"versioning\x12\x18\n" +
 	"\acopiers\x18\x10 \x01(\x05R\acopiers\x124\n" +
 	"\x17puller_max_pending_ki_b\x18\x11 \x01(\x05R\x13pullerMaxPendingKiB\x12\x18\n" +
-	"\ahashers\x18\x12 \x01(\x05R\ahashers\x12'\n" +
-	"\x05order\x18\x13 \x01(\x0e2\x11.config.PullOrderR\x05order\x12#\n" +
+	"\ahashers\x18\x12 \x01(\x05R\ahashers\x124\n" +
+	"\x05order\x18\x13 \x01(\x0e2\x1e.syncthing.v2.config.PullOrderR\x05order\x12#\n" +
 	"\rignore_delete\x18\x14 \x01(\bR\fignoreDelete\x127\n" +
 	"\x18scan_progress_interval_s\x18\x15 \x01(\x05R\x15scanProgressIntervalS\x12$\n" +
 	"\x0epuller_pause_s\x18\x16 \x01(\x05R\fpullerPauseS\x12'\n" +
@@ -6760,9 +6760,9 @@ const file_config_config_proto_rawDesc = "" +
 	"\x1acopy_ownership_from_parent\x18\x1c \x01(\bR\x17copyOwnershipFromParent\x12)\n" +
 	"\x11mod_time_window_s\x18\x1d \x01(\x05R\x0emodTimeWindowS\x122\n" +
 	"\x15max_concurrent_writes\x18\x1e \x01(\x05R\x13maxConcurrentWrites\x12#\n" +
-	"\rdisable_fsync\x18\x1f \x01(\bR\fdisableFsync\x12@\n" +
-	"\x10block_pull_order\x18  \x01(\x0e2\x16.config.BlockPullOrderR\x0eblockPullOrder\x12_\n" +
-	"\x11copy_range_method\x18! \x01(\x0e2\x17.config.CopyRangeMethod:\x1aCOPY_RANGE_METHOD_STANDARDR\x0fcopyRangeMethod\x12*\n" +
+	"\rdisable_fsync\x18\x1f \x01(\bR\fdisableFsync\x12M\n" +
+	"\x10block_pull_order\x18  \x01(\x0e2#.syncthing.v2.config.BlockPullOrderR\x0eblockPullOrder\x12l\n" +
+	"\x11copy_range_method\x18! \x01(\x0e2$.syncthing.v2.config.CopyRangeMethod:\x1aCOPY_RANGE_METHOD_STANDARDR\x0fcopyRangeMethod\x12*\n" +
 	"\x11case_sensitive_fs\x18\" \x01(\bR\x0fcaseSensitiveFs\x12*\n" +
 	"\x11junctions_as_dirs\x18# \x01(\bR\x0fjunctionsAsDirs\x12%\n" +
 	"\x0esync_ownership\x18$ \x01(\bR\rsyncOwnership\x12%\n" +
@@ -6771,33 +6771,33 @@ const file_config_config_proto_rawDesc = "" +
 	"syncXattrs\x12\x1f\n" +
 	"\vsend_xattrs\x18' \x01(\bR\n" +
 	"sendXattrs\x12+\n" +
-	"\x0eblock_indexing\x18( \x01(\b:\x04trueR\rblockIndexing\x126\n" +
-	"\fxattr_filter\x18) \x01(\v2\x13.config.XattrFilterR\vxattrFilter\"\x9a\x01\n" +
+	"\x0eblock_indexing\x18( \x01(\b:\x04trueR\rblockIndexing\x12C\n" +
+	"\fxattr_filter\x18) \x01(\v2 .syncthing.v2.config.XattrFilterR\vxattrFilter\"\x9a\x01\n" +
 	"\x19FolderDeviceConfiguration\x12!\n" +
 	"\tdevice_id\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01R\bdeviceId\x12)\n" +
 	"\rintroduced_by\x18\x02 \x01(\tB\x04\x80\xb5\x18\x01R\fintroducedBy\x12/\n" +
-	"\x13encryption_password\x18\x03 \x01(\tR\x12encryptionPassword\"\xc2\x02\n" +
+	"\x13encryption_password\x18\x03 \x01(\tR\x12encryptionPassword\"\xdc\x02\n" +
 	"\x17VersioningConfiguration\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12C\n" +
-	"\x06params\x18\x02 \x03(\v2+.config.VersioningConfiguration.ParamsEntryR\x06params\x122\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12P\n" +
+	"\x06params\x18\x02 \x03(\v28.syncthing.v2.config.VersioningConfiguration.ParamsEntryR\x06params\x122\n" +
 	"\x12cleanup_interval_s\x18\x03 \x01(\x05:\x043600R\x10cleanupIntervalS\x12\x17\n" +
-	"\afs_path\x18\x04 \x01(\tR\x06fsPath\x12F\n" +
-	"\afs_type\x18\x05 \x01(\x0e2\x16.config.FilesystemType:\x15FILESYSTEM_TYPE_BASICR\x06fsType\x1a9\n" +
+	"\afs_path\x18\x04 \x01(\tR\x06fsPath\x12S\n" +
+	"\afs_type\x18\x05 \x01(\x0e2#.syncthing.v2.config.FilesystemType:\x15FILESYSTEM_TYPE_BASICR\x06fsType\x1a9\n" +
 	"\vParamsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa6\x01\n" +
-	"\vXattrFilter\x122\n" +
-	"\aentries\x18\x01 \x03(\v2\x18.config.XattrFilterEntryR\aentries\x127\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb3\x01\n" +
+	"\vXattrFilter\x12?\n" +
+	"\aentries\x18\x01 \x03(\v2%.syncthing.v2.config.XattrFilterEntryR\aentries\x127\n" +
 	"\x15max_single_entry_size\x18\x02 \x01(\x05:\x041024R\x12maxSingleEntrySize\x12*\n" +
 	"\x0emax_total_size\x18\x03 \x01(\x05:\x044096R\fmaxTotalSize\"@\n" +
 	"\x10XattrFilterEntry\x12\x14\n" +
 	"\x05match\x18\x01 \x01(\tR\x05match\x12\x16\n" +
-	"\x06permit\x18\x02 \x01(\bR\x06permit\"\xf1\x05\n" +
+	"\x06permit\x18\x02 \x01(\bR\x06permit\"\x8b\x06\n" +
 	"\x13DeviceConfiguration\x12!\n" +
 	"\tdevice_id\x18\x01 \x01(\tB\x04\x80\xb5\x18\x01R\bdeviceId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1c\n" +
-	"\taddresses\x18\x03 \x03(\tR\taddresses\x125\n" +
-	"\vcompression\x18\x04 \x01(\x0e2\x13.config.CompressionR\vcompression\x12\x1b\n" +
+	"\taddresses\x18\x03 \x03(\tR\taddresses\x12B\n" +
+	"\vcompression\x18\x04 \x01(\x0e2 .syncthing.v2.config.CompressionR\vcompression\x12\x1b\n" +
 	"\tcert_name\x18\x05 \x01(\tR\bcertName\x12\x1e\n" +
 	"\n" +
 	"introducer\x18\x06 \x01(\bR\n" +
@@ -6809,8 +6809,8 @@ const file_config_config_proto_rawDesc = "" +
 	" \x03(\tR\x0fallowedNetworks\x12.\n" +
 	"\x13auto_accept_folders\x18\v \x01(\bR\x11autoAcceptFolders\x12\"\n" +
 	"\rmax_send_kbps\x18\f \x01(\x05R\vmaxSendKbps\x12\"\n" +
-	"\rmax_recv_kbps\x18\r \x01(\x05R\vmaxRecvKbps\x12?\n" +
-	"\x0fignored_folders\x18\x0e \x03(\v2\x16.config.ObservedFolderR\x0eignoredFolders\x12'\n" +
+	"\rmax_recv_kbps\x18\r \x01(\x05R\vmaxRecvKbps\x12L\n" +
+	"\x0fignored_folders\x18\x0e \x03(\v2#.syncthing.v2.config.ObservedFolderR\x0eignoredFolders\x12'\n" +
 	"\x10max_request_ki_b\x18\x10 \x01(\x05R\rmaxRequestKiB\x12\x1c\n" +
 	"\tuntrusted\x18\x11 \x01(\bR\tuntrusted\x12&\n" +
 	"\x0fremote_gui_port\x18\x12 \x01(\x05R\rremoteGuiPort\x12'\n" +
@@ -6824,14 +6824,14 @@ const file_config_config_proto_rawDesc = "" +
 	"\x04time\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x04time\x12!\n" +
 	"\tdevice_id\x18\x02 \x01(\tB\x04\x80\xb5\x18\x01R\bdeviceId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x18\n" +
-	"\aaddress\x18\x04 \x01(\tR\aaddress\"\xce\x05\n" +
+	"\aaddress\x18\x04 \x01(\tR\aaddress\"\xdb\x05\n" +
 	"\x10GUIConfiguration\x12\x1e\n" +
 	"\aenabled\x18\x01 \x01(\b:\x04trueR\aenabled\x12(\n" +
 	"\aaddress\x18\x02 \x01(\t:\x0e127.0.0.1:8384R\aaddress\x126\n" +
 	"\x17unix_socket_permissions\x18\x03 \x01(\tR\x15unixSocketPermissions\x12\x12\n" +
 	"\x04user\x18\x04 \x01(\tR\x04user\x12\x1a\n" +
-	"\bpassword\x18\x05 \x01(\tR\bpassword\x12-\n" +
-	"\tauth_mode\x18\x06 \x01(\x0e2\x10.config.AuthModeR\bauthMode\x120\n" +
+	"\bpassword\x18\x05 \x01(\tR\bpassword\x12:\n" +
+	"\tauth_mode\x18\x06 \x01(\x0e2\x1d.syncthing.v2.config.AuthModeR\bauthMode\x120\n" +
 	"\x14metrics_without_auth\x18\a \x01(\bR\x12metricsWithoutAuth\x12\x17\n" +
 	"\ause_tls\x18\b \x01(\bR\x06useTls\x12\x17\n" +
 	"\aapi_key\x18\t \x01(\tR\x06apiKey\x122\n" +
@@ -6842,14 +6842,14 @@ const file_config_config_proto_rawDesc = "" +
 	"\x1cinsecure_allow_frame_loading\x18\r \x01(\bR\x19insecureAllowFrameLoading\x123\n" +
 	"\x16send_basic_auth_prompt\x18\x0e \x01(\bR\x13sendBasicAuthPrompt\x12A\n" +
 	"\x19session_cookie_duration_s\x18\x0f \x01(\x05:\x06604800R\x16sessionCookieDurationS\x121\n" +
-	"\x13session_cookie_path\x18\x10 \x01(\t:\x01/R\x11sessionCookiePath\"\xf8\x01\n" +
+	"\x13session_cookie_path\x18\x10 \x01(\t:\x01/R\x11sessionCookiePath\"\x85\x02\n" +
 	"\x11LDAPConfiguration\x12\x18\n" +
 	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x17\n" +
-	"\abind_dn\x18\x02 \x01(\tR\x06bindDn\x123\n" +
-	"\ttransport\x18\x03 \x01(\x0e2\x15.config.LDAPTransportR\ttransport\x120\n" +
+	"\abind_dn\x18\x02 \x01(\tR\x06bindDn\x12@\n" +
+	"\ttransport\x18\x03 \x01(\x0e2\".syncthing.v2.config.LDAPTransportR\ttransport\x120\n" +
 	"\x14insecure_skip_verify\x18\x04 \x01(\bR\x12insecureSkipVerify\x12$\n" +
 	"\x0esearch_base_dn\x18\x05 \x01(\tR\fsearchBaseDn\x12#\n" +
-	"\rsearch_filter\x18\x06 \x01(\tR\fsearchFilter\"\xa9\x17\n" +
+	"\rsearch_filter\x18\x06 \x01(\tR\fsearchFilter\"\xb6\x17\n" +
 	"\x14OptionsConfiguration\x12)\n" +
 	"\x10listen_addresses\x18\x01 \x03(\tR\x0flistenAddresses\x126\n" +
 	"\x17global_announce_servers\x18\x02 \x03(\tR\x15globalAnnounceServers\x12<\n" +
@@ -6881,8 +6881,8 @@ const file_config_config_proto_rawDesc = "" +
 	"\x17upgrade_to_pre_releases\x18\x18 \x01(\bR\x14upgradeToPreReleases\x120\n" +
 	"\x12keep_temporaries_h\x18\x19 \x01(\x05:\x0224R\x10keepTemporariesH\x12>\n" +
 	"\x1aprogress_update_interval_s\x18\x1a \x01(\x05:\x015R\x17progressUpdateIntervalS\x123\n" +
-	"\x16limit_bandwidth_in_lan\x18\x1b \x01(\bR\x13limitBandwidthInLan\x129\n" +
-	"\x12min_home_disk_free\x18\x1c \x01(\v2\f.config.SizeR\x0fminHomeDiskFree\x12K\n" +
+	"\x16limit_bandwidth_in_lan\x18\x1b \x01(\bR\x13limitBandwidthInLan\x12F\n" +
+	"\x12min_home_disk_free\x18\x1c \x01(\v2\x19.syncthing.v2.config.SizeR\x0fminHomeDiskFree\x12K\n" +
 	"\freleases_url\x18\x1d \x01(\t:(https://upgrades.syncthing.net/meta.jsonR\vreleasesUrl\x12*\n" +
 	"\x11always_local_nets\x18\x1e \x03(\tR\x0falwaysLocalNets\x12U\n" +
 	"(overwrite_remote_device_names_on_connect\x18\x1f \x01(\bR#overwriteRemoteDeviceNamesOnConnect\x121\n" +
@@ -6954,69 +6954,68 @@ const file_config_config_proto_rawDesc = "" +
 	"\x19PULL_ORDER_SMALLEST_FIRST\x10\x02\x12\x1c\n" +
 	"\x18PULL_ORDER_LARGEST_FIRST\x10\x03\x12\x1b\n" +
 	"\x17PULL_ORDER_OLDEST_FIRST\x10\x04\x12\x1b\n" +
-	"\x17PULL_ORDER_NEWEST_FIRST\x10\x05B\x85\x01\n" +
-	"\n" +
-	"com.configB\vConfigProtoP\x01Z2github.com/syncthing/syncthing/internal/gen/config\xa2\x02\x03CXX\xaa\x02\x06Config\xca\x02\x06Config\xe2\x02\x12Config\\GPBMetadata\xea\x02\x06Configb\beditionsp\xe9\a"
+	"\x17PULL_ORDER_NEWEST_FIRST\x10\x05B\xd5\x01\n" +
+	"\x17com.syncthing.v2.configB\vConfigProtoP\x01Z?github.com/syncthing/syncthing/internal/gen/syncthing/v2/config\xa2\x02\x03SVC\xaa\x02\x13Syncthing.V2.Config\xca\x02\x13Syncthing\\V2\\Config\xe2\x02\x1fSyncthing\\V2\\Config\\GPBMetadata\xea\x02\x15Syncthing::V2::Configb\beditionsp\xe9\a"
 
-var file_config_config_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
-var file_config_config_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
-var file_config_config_proto_goTypes = []any{
-	(AuthMode)(0),                     // 0: config.AuthMode
-	(BlockPullOrder)(0),               // 1: config.BlockPullOrder
-	(Compression)(0),                  // 2: config.Compression
-	(CopyRangeMethod)(0),              // 3: config.CopyRangeMethod
-	(FilesystemType)(0),               // 4: config.FilesystemType
-	(FolderType)(0),                   // 5: config.FolderType
-	(LDAPTransport)(0),                // 6: config.LDAPTransport
-	(PullOrder)(0),                    // 7: config.PullOrder
-	(*Configuration)(nil),             // 8: config.Configuration
-	(*Defaults)(nil),                  // 9: config.Defaults
-	(*Ignores)(nil),                   // 10: config.Ignores
-	(*FolderConfiguration)(nil),       // 11: config.FolderConfiguration
-	(*FolderDeviceConfiguration)(nil), // 12: config.FolderDeviceConfiguration
-	(*VersioningConfiguration)(nil),   // 13: config.VersioningConfiguration
-	(*XattrFilter)(nil),               // 14: config.XattrFilter
-	(*XattrFilterEntry)(nil),          // 15: config.XattrFilterEntry
-	(*DeviceConfiguration)(nil),       // 16: config.DeviceConfiguration
-	(*ObservedFolder)(nil),            // 17: config.ObservedFolder
-	(*ObservedDevice)(nil),            // 18: config.ObservedDevice
-	(*GUIConfiguration)(nil),          // 19: config.GUIConfiguration
-	(*LDAPConfiguration)(nil),         // 20: config.LDAPConfiguration
-	(*OptionsConfiguration)(nil),      // 21: config.OptionsConfiguration
-	(*Size)(nil),                      // 22: config.Size
-	nil,                               // 23: config.VersioningConfiguration.ParamsEntry
+var file_syncthing_v2_config_config_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
+var file_syncthing_v2_config_config_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_syncthing_v2_config_config_proto_goTypes = []any{
+	(AuthMode)(0),                     // 0: syncthing.v2.config.AuthMode
+	(BlockPullOrder)(0),               // 1: syncthing.v2.config.BlockPullOrder
+	(Compression)(0),                  // 2: syncthing.v2.config.Compression
+	(CopyRangeMethod)(0),              // 3: syncthing.v2.config.CopyRangeMethod
+	(FilesystemType)(0),               // 4: syncthing.v2.config.FilesystemType
+	(FolderType)(0),                   // 5: syncthing.v2.config.FolderType
+	(LDAPTransport)(0),                // 6: syncthing.v2.config.LDAPTransport
+	(PullOrder)(0),                    // 7: syncthing.v2.config.PullOrder
+	(*Configuration)(nil),             // 8: syncthing.v2.config.Configuration
+	(*Defaults)(nil),                  // 9: syncthing.v2.config.Defaults
+	(*Ignores)(nil),                   // 10: syncthing.v2.config.Ignores
+	(*FolderConfiguration)(nil),       // 11: syncthing.v2.config.FolderConfiguration
+	(*FolderDeviceConfiguration)(nil), // 12: syncthing.v2.config.FolderDeviceConfiguration
+	(*VersioningConfiguration)(nil),   // 13: syncthing.v2.config.VersioningConfiguration
+	(*XattrFilter)(nil),               // 14: syncthing.v2.config.XattrFilter
+	(*XattrFilterEntry)(nil),          // 15: syncthing.v2.config.XattrFilterEntry
+	(*DeviceConfiguration)(nil),       // 16: syncthing.v2.config.DeviceConfiguration
+	(*ObservedFolder)(nil),            // 17: syncthing.v2.config.ObservedFolder
+	(*ObservedDevice)(nil),            // 18: syncthing.v2.config.ObservedDevice
+	(*GUIConfiguration)(nil),          // 19: syncthing.v2.config.GUIConfiguration
+	(*LDAPConfiguration)(nil),         // 20: syncthing.v2.config.LDAPConfiguration
+	(*OptionsConfiguration)(nil),      // 21: syncthing.v2.config.OptionsConfiguration
+	(*Size)(nil),                      // 22: syncthing.v2.config.Size
+	nil,                               // 23: syncthing.v2.config.VersioningConfiguration.ParamsEntry
 	(*timestamppb.Timestamp)(nil),     // 24: google.protobuf.Timestamp
 }
-var file_config_config_proto_depIdxs = []int32{
-	11, // 0: config.Configuration.folders:type_name -> config.FolderConfiguration
-	16, // 1: config.Configuration.devices:type_name -> config.DeviceConfiguration
-	19, // 2: config.Configuration.gui:type_name -> config.GUIConfiguration
-	20, // 3: config.Configuration.ldap:type_name -> config.LDAPConfiguration
-	21, // 4: config.Configuration.options:type_name -> config.OptionsConfiguration
-	18, // 5: config.Configuration.remote_ignored_devices:type_name -> config.ObservedDevice
-	9,  // 6: config.Configuration.defaults:type_name -> config.Defaults
-	11, // 7: config.Defaults.folder:type_name -> config.FolderConfiguration
-	16, // 8: config.Defaults.device:type_name -> config.DeviceConfiguration
-	10, // 9: config.Defaults.ignores:type_name -> config.Ignores
-	4,  // 10: config.FolderConfiguration.filesystem_type:type_name -> config.FilesystemType
-	5,  // 11: config.FolderConfiguration.type:type_name -> config.FolderType
-	12, // 12: config.FolderConfiguration.devices:type_name -> config.FolderDeviceConfiguration
-	22, // 13: config.FolderConfiguration.min_disk_free:type_name -> config.Size
-	13, // 14: config.FolderConfiguration.versioning:type_name -> config.VersioningConfiguration
-	7,  // 15: config.FolderConfiguration.order:type_name -> config.PullOrder
-	1,  // 16: config.FolderConfiguration.block_pull_order:type_name -> config.BlockPullOrder
-	3,  // 17: config.FolderConfiguration.copy_range_method:type_name -> config.CopyRangeMethod
-	14, // 18: config.FolderConfiguration.xattr_filter:type_name -> config.XattrFilter
-	23, // 19: config.VersioningConfiguration.params:type_name -> config.VersioningConfiguration.ParamsEntry
-	4,  // 20: config.VersioningConfiguration.fs_type:type_name -> config.FilesystemType
-	15, // 21: config.XattrFilter.entries:type_name -> config.XattrFilterEntry
-	2,  // 22: config.DeviceConfiguration.compression:type_name -> config.Compression
-	17, // 23: config.DeviceConfiguration.ignored_folders:type_name -> config.ObservedFolder
-	24, // 24: config.ObservedFolder.time:type_name -> google.protobuf.Timestamp
-	24, // 25: config.ObservedDevice.time:type_name -> google.protobuf.Timestamp
-	0,  // 26: config.GUIConfiguration.auth_mode:type_name -> config.AuthMode
-	6,  // 27: config.LDAPConfiguration.transport:type_name -> config.LDAPTransport
-	22, // 28: config.OptionsConfiguration.min_home_disk_free:type_name -> config.Size
+var file_syncthing_v2_config_config_proto_depIdxs = []int32{
+	11, // 0: syncthing.v2.config.Configuration.folders:type_name -> syncthing.v2.config.FolderConfiguration
+	16, // 1: syncthing.v2.config.Configuration.devices:type_name -> syncthing.v2.config.DeviceConfiguration
+	19, // 2: syncthing.v2.config.Configuration.gui:type_name -> syncthing.v2.config.GUIConfiguration
+	20, // 3: syncthing.v2.config.Configuration.ldap:type_name -> syncthing.v2.config.LDAPConfiguration
+	21, // 4: syncthing.v2.config.Configuration.options:type_name -> syncthing.v2.config.OptionsConfiguration
+	18, // 5: syncthing.v2.config.Configuration.remote_ignored_devices:type_name -> syncthing.v2.config.ObservedDevice
+	9,  // 6: syncthing.v2.config.Configuration.defaults:type_name -> syncthing.v2.config.Defaults
+	11, // 7: syncthing.v2.config.Defaults.folder:type_name -> syncthing.v2.config.FolderConfiguration
+	16, // 8: syncthing.v2.config.Defaults.device:type_name -> syncthing.v2.config.DeviceConfiguration
+	10, // 9: syncthing.v2.config.Defaults.ignores:type_name -> syncthing.v2.config.Ignores
+	4,  // 10: syncthing.v2.config.FolderConfiguration.filesystem_type:type_name -> syncthing.v2.config.FilesystemType
+	5,  // 11: syncthing.v2.config.FolderConfiguration.type:type_name -> syncthing.v2.config.FolderType
+	12, // 12: syncthing.v2.config.FolderConfiguration.devices:type_name -> syncthing.v2.config.FolderDeviceConfiguration
+	22, // 13: syncthing.v2.config.FolderConfiguration.min_disk_free:type_name -> syncthing.v2.config.Size
+	13, // 14: syncthing.v2.config.FolderConfiguration.versioning:type_name -> syncthing.v2.config.VersioningConfiguration
+	7,  // 15: syncthing.v2.config.FolderConfiguration.order:type_name -> syncthing.v2.config.PullOrder
+	1,  // 16: syncthing.v2.config.FolderConfiguration.block_pull_order:type_name -> syncthing.v2.config.BlockPullOrder
+	3,  // 17: syncthing.v2.config.FolderConfiguration.copy_range_method:type_name -> syncthing.v2.config.CopyRangeMethod
+	14, // 18: syncthing.v2.config.FolderConfiguration.xattr_filter:type_name -> syncthing.v2.config.XattrFilter
+	23, // 19: syncthing.v2.config.VersioningConfiguration.params:type_name -> syncthing.v2.config.VersioningConfiguration.ParamsEntry
+	4,  // 20: syncthing.v2.config.VersioningConfiguration.fs_type:type_name -> syncthing.v2.config.FilesystemType
+	15, // 21: syncthing.v2.config.XattrFilter.entries:type_name -> syncthing.v2.config.XattrFilterEntry
+	2,  // 22: syncthing.v2.config.DeviceConfiguration.compression:type_name -> syncthing.v2.config.Compression
+	17, // 23: syncthing.v2.config.DeviceConfiguration.ignored_folders:type_name -> syncthing.v2.config.ObservedFolder
+	24, // 24: syncthing.v2.config.ObservedFolder.time:type_name -> google.protobuf.Timestamp
+	24, // 25: syncthing.v2.config.ObservedDevice.time:type_name -> google.protobuf.Timestamp
+	0,  // 26: syncthing.v2.config.GUIConfiguration.auth_mode:type_name -> syncthing.v2.config.AuthMode
+	6,  // 27: syncthing.v2.config.LDAPConfiguration.transport:type_name -> syncthing.v2.config.LDAPTransport
+	22, // 28: syncthing.v2.config.OptionsConfiguration.min_home_disk_free:type_name -> syncthing.v2.config.Size
 	29, // [29:29] is the sub-list for method output_type
 	29, // [29:29] is the sub-list for method input_type
 	29, // [29:29] is the sub-list for extension type_name
@@ -7024,13 +7023,13 @@ var file_config_config_proto_depIdxs = []int32{
 	0,  // [0:29] is the sub-list for field type_name
 }
 
-func init() { file_config_config_proto_init() }
-func file_config_config_proto_init() {
-	if File_config_config_proto != nil {
+func init() { file_syncthing_v2_config_config_proto_init() }
+func file_syncthing_v2_config_config_proto_init() {
+	if File_syncthing_v2_config_config_proto != nil {
 		return
 	}
-	file_config_options_proto_init()
-	file_config_config_proto_msgTypes[14].OneofWrappers = []any{
+	file_syncthing_v2_config_options_proto_init()
+	file_syncthing_v2_config_config_proto_msgTypes[14].OneofWrappers = []any{
 		(*size_Percent)(nil),
 		(*size_Bytes)(nil),
 		(*size_Mib)(nil),
@@ -7040,18 +7039,18 @@ func file_config_config_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_config_config_proto_rawDesc), len(file_config_config_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_syncthing_v2_config_config_proto_rawDesc), len(file_syncthing_v2_config_config_proto_rawDesc)),
 			NumEnums:      8,
 			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_config_config_proto_goTypes,
-		DependencyIndexes: file_config_config_proto_depIdxs,
-		EnumInfos:         file_config_config_proto_enumTypes,
-		MessageInfos:      file_config_config_proto_msgTypes,
+		GoTypes:           file_syncthing_v2_config_config_proto_goTypes,
+		DependencyIndexes: file_syncthing_v2_config_config_proto_depIdxs,
+		EnumInfos:         file_syncthing_v2_config_config_proto_enumTypes,
+		MessageInfos:      file_syncthing_v2_config_config_proto_msgTypes,
 	}.Build()
-	File_config_config_proto = out.File
-	file_config_config_proto_goTypes = nil
-	file_config_config_proto_depIdxs = nil
+	File_syncthing_v2_config_config_proto = out.File
+	file_syncthing_v2_config_config_proto_goTypes = nil
+	file_syncthing_v2_config_config_proto_depIdxs = nil
 }

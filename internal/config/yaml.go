@@ -12,7 +12,7 @@ import (
 	"buf.build/go/protoyaml"
 	"google.golang.org/protobuf/proto"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/config"
+	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
 )
 
 // Marshal returns the configuration in YAML format.

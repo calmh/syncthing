@@ -14,7 +14,7 @@ import (
 	"buf.build/go/protoyaml"
 	"google.golang.org/protobuf/proto"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/config"
+	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
 	config "github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 )

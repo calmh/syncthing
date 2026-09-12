@@ -1,10 +1,10 @@
 edition = "2024";
 
-package config;
+package syncthing.v2.config;
 
 import "buf/validate/validate.proto";
-import "config/options.proto";
 import "google/protobuf/timestamp.proto";
+import "syncthing/v2/config/options.proto";
 
 // Singular fields have explicit presence: "unset" is distinct from the
 // zero value.

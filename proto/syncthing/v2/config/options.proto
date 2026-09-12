@@ -1,6 +1,6 @@
 edition = "2023";
 
-package config;
+package syncthing.v2.config;
 
 import "google/protobuf/descriptor.proto";
 

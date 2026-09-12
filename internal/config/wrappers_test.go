@@ -9,7 +9,7 @@ package config
 import (
 	"testing"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/config"
+	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
