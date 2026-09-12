@@ -10,7 +10,7 @@ managed:
       module: buf.build/bufbuild/protovalidate
       value: buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate
 plugins:
-  - remote: buf.build/protocolbuffers/go:v1.35.1
+  - remote: buf.build/protocolbuffers/go:v1.36.12
     out: .
     opt: module=github.com/syncthing/syncthing
 inputs:

@@ -94,12 +94,13 @@ func TestFromLegacy(t *testing.T) {
 	got := FromLegacy(legacy)
 
 	// Explicit zeros must remain set, not fall back to defaults.
-	if folder := got.GetFolders()[0]; folder.RescanIntervalS == nil || *folder.RescanIntervalS != 0 {
-		t.Errorf("explicit rescanIntervalS 0 not preserved: %v", folder.RescanIntervalS)
-	} else if folder.Versioning.CleanupIntervalS == nil || *folder.Versioning.CleanupIntervalS != 0 {
-		t.Errorf("explicit cleanupIntervalS 0 not preserved: %v", folder.Versioning.CleanupIntervalS)
-	} else if folder.MaxConflicts == nil || *folder.MaxConflicts != 0 {
-		t.Errorf("explicit maxConflicts 0 not preserved: %v", folder.MaxConflicts)
+	folder := got.GetFolders()[0]
+	if !folder.HasRescanIntervalS() || folder.GetRescanIntervalS() != 0 {
+		t.Errorf("explicit rescanIntervalS 0 not preserved: %v", folder.GetRescanIntervalS())
+	} else if !folder.GetVersioning().HasCleanupIntervalS() || folder.GetVersioning().GetCleanupIntervalS() != 0 {
+		t.Errorf("explicit cleanupIntervalS 0 not preserved: %v", folder.GetVersioning().GetCleanupIntervalS())
+	} else if !folder.HasMaxConflicts() || folder.GetMaxConflicts() != 0 {
+		t.Errorf("explicit maxConflicts 0 not preserved: %v", folder.GetMaxConflicts())
 	}
 
 	tests := []struct {

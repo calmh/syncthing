@@ -46,7 +46,7 @@ func TestYAMLRoundTrip(t *testing.T) {
 	}
 
 	// Fields explicitly set to their zero value must remain set.
-	if folder := parsed.GetFolders()[0]; folder.Paused == nil {
+	if folder := parsed.GetFolders()[0]; !folder.HasPaused() {
 		t.Errorf("explicitly set paused=false lost its presence in round trip")
 	}
 
@@ -65,7 +65,7 @@ func TestYAMLRoundTrip(t *testing.T) {
 // TestYAMLMarshalPresence tests that marshalling emits set fields and
 // omits unset ones, so that defaults are not materialised into the file.
 func TestYAMLMarshalPresence(t *testing.T) {
-	cfg := &configpb.Configuration{Version: proto.Int32(52)}
+	cfg := configpb.Configuration_builder{Version: proto.Int32(52)}.Build()
 	data, err := protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -78,7 +78,7 @@ func TestYAMLMarshalPresence(t *testing.T) {
 	}
 
 	// An explicitly set zero value is emitted.
-	cfg = &configpb.Configuration{Version: proto.Int32(0)}
+	cfg = configpb.Configuration_builder{Version: proto.Int32(0)}.Build()
 	data, err = protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -111,7 +111,7 @@ folders:
 		t.Fatalf("unmarshal: %v", err)
 	}
 
-	if cfg.Gui != nil || cfg.Options != nil {
+	if cfg.HasGui() || cfg.HasOptions() {
 		t.Errorf("unset messages should remain unset")
 	}
 
@@ -142,7 +142,7 @@ folders:
 	}
 
 	folder := cfg.GetFolders()[0]
-	if folder.RescanIntervalS != nil {
+	if folder.HasRescanIntervalS() {
 		t.Errorf("rescanIntervalS should remain unset")
 	}
 	if got := folder.GetRescanIntervalS(); got != 3600 {
@@ -216,14 +216,14 @@ func TestYAMLUnmarshalSize(t *testing.T) {
 		}
 		size := cfg.GetFolders()[0].GetMinDiskFree()
 		var got float64
-		switch size.GetSize().(type) {
-		case *configpb.Size_Percent:
+		switch {
+		case size.HasPercent():
 			got = size.GetPercent()
-		case *configpb.Size_Bytes:
+		case size.HasBytes():
 			got = size.GetBytes()
-		case *configpb.Size_Mib:
+		case size.HasMib():
 			got = size.GetMib()
-		case *configpb.Size_Gib:
+		case size.HasGib():
 			got = size.GetGib()
 		default:
 			t.Errorf("size for %s not set", test.unit)
@@ -329,9 +329,9 @@ func TestYAMLUnmarshalDeviceIDValidation(t *testing.T) {
 // testConfiguration returns a configuration populated with a
 // representative spread of fields and values.
 func testConfiguration() *configpb.Configuration {
-	return &configpb.Configuration{
+	return configpb.Configuration_builder{
 		Version: proto.Int32(52),
-		Folders: []*configpb.FolderConfiguration{{
+		Folders: []*configpb.FolderConfiguration{configpb.FolderConfiguration_builder{
 			Id:               proto.String("test1"),
 			Label:            proto.String("Test One"),
 			Path:             proto.String("/srv/sync/test1"),
@@ -339,40 +339,40 @@ func testConfiguration() *configpb.Configuration {
 			RescanIntervalS:  proto.Int32(7200),
 			FsWatcherEnabled: proto.Bool(false), // explicit zero value
 			FsWatcherDelayS:  proto.Float64(12.5),
-			MinDiskFree:      &configpb.Size{Size: &configpb.Size_Gib{Gib: 5}},
+			MinDiskFree:      configpb.Size_builder{Gib: proto.Float64(5)}.Build(),
 			MaxConflicts:     proto.Int32(0), // explicit zero value
 			Paused:           proto.Bool(false),
 			CopyRangeMethod:  configpb.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL.Enum(),
 			BlockPullOrder:   configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER.Enum(),
 			Order:            configpb.PullOrder_PULL_ORDER_NEWEST_FIRST.Enum(),
-			Versioning: &configpb.VersioningConfiguration{
+			Versioning: configpb.VersioningConfiguration_builder{
 				Type:             proto.String("simple"),
 				Params:           map[string]string{"keep": "5", "cleanoutDays": "30"},
 				CleanupIntervalS: proto.Int32(3600),
 				FsPath:           proto.String("/srv/sync/test1/.stversions"),
 				FsType:           configpb.FilesystemType_FILESYSTEM_TYPE_FAKE.Enum(),
-			},
-			XattrFilter: &configpb.XattrFilter{
+			}.Build(),
+			XattrFilter: configpb.XattrFilter_builder{
 				Entries: []*configpb.XattrFilterEntry{
-					{Match: proto.String("user.sync.*"), Permit: proto.Bool(true)},
-					{Match: proto.String("*"), Permit: proto.Bool(false)},
+					configpb.XattrFilterEntry_builder{Match: proto.String("user.sync.*"), Permit: proto.Bool(true)}.Build(),
+					configpb.XattrFilterEntry_builder{Match: proto.String("*"), Permit: proto.Bool(false)}.Build(),
 				},
 				MaxSingleEntrySize: proto.Int32(2048),
 				MaxTotalSize:       proto.Int32(8192),
-			},
+			}.Build(),
 			Devices: []*configpb.FolderDeviceConfiguration{
-				{
+				configpb.FolderDeviceConfiguration_builder{
 					DeviceId:           proto.String("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
 					IntroducedBy:       proto.String("BYR4TZD-LFDLPXV-KLS4HPL-XK25UQG-BUF6TCD-6FLFXCO-YV3FQXZ-DQ7SPQU"),
 					EncryptionPassword: proto.String("hunter2"),
-				},
-				{
+				}.Build(),
+				configpb.FolderDeviceConfiguration_builder{
 					DeviceId: proto.String("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
-				},
+				}.Build(),
 			},
-		}},
+		}.Build()},
 		Devices: []*configpb.DeviceConfiguration{
-			{
+			configpb.DeviceConfiguration_builder{
 				DeviceId:        proto.String("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
 				Name:            proto.String("Alpha"),
 				Addresses:       []string{"dynamic", "tcp://192.0.2.1:22000"},
@@ -383,18 +383,18 @@ func testConfiguration() *configpb.Configuration {
 				MaxRecvKbps:     proto.Int32(2000),
 				NumConnections:  proto.Int32(2),
 				AllowedNetworks: []string{"192.168.0.0/16"},
-				IgnoredFolders: []*configpb.ObservedFolder{{
+				IgnoredFolders: []*configpb.ObservedFolder{configpb.ObservedFolder_builder{
 					Time:  timestamppb.New(time.Date(2026, 8, 1, 12, 0, 0, 0, time.UTC)),
 					Id:    proto.String("ignored-folder"),
 					Label: proto.String("Ignored Folder"),
-				}},
-			},
-			{
+				}.Build()},
+			}.Build(),
+			configpb.DeviceConfiguration_builder{
 				DeviceId: proto.String("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
 				Name:     proto.String("Beta"),
-			},
+			}.Build(),
 		},
-		Gui: &configpb.GUIConfiguration{
+		Gui: configpb.GUIConfiguration_builder{
 			Enabled:  proto.Bool(true),
 			Address:  proto.String("127.0.0.1:8384"),
 			User:     proto.String("admin"),
@@ -403,16 +403,16 @@ func testConfiguration() *configpb.Configuration {
 			UseTls:   proto.Bool(true),
 			ApiKey:   proto.String("kO8nJgP7tY2wZq4x"),
 			Theme:    proto.String("dark"),
-		},
-		Ldap: &configpb.LDAPConfiguration{
+		}.Build(),
+		Ldap: configpb.LDAPConfiguration_builder{
 			Address:            proto.String("ldap.example.com:389"),
 			BindDn:             proto.String("cn=admin,dc=example,dc=com"),
 			Transport:          configpb.LDAPTransport_LDAP_TRANSPORT_START_TLS.Enum(),
 			InsecureSkipVerify: proto.Bool(true),
 			SearchBaseDn:       proto.String("dc=example,dc=com"),
 			SearchFilter:       proto.String("(uid=%s)"),
-		},
-		Options: &configpb.OptionsConfiguration{
+		}.Build(),
+		Options: configpb.OptionsConfiguration_builder{
 			ListenAddresses:          []string{"default"},
 			GlobalAnnounceServers:    []string{"default"},
 			LocalAnnouncePort:        proto.Int32(21027),
@@ -420,30 +420,30 @@ func testConfiguration() *configpb.Configuration {
 			ReconnectionIntervalS:    proto.Int32(30),
 			UrAccepted:               proto.Int32(-1), // negative value
 			KeepTemporariesH:         proto.Int32(12),
-			MinHomeDiskFree:          &configpb.Size{Size: &configpb.Size_Percent{Percent: 1}},
+			MinHomeDiskFree:          configpb.Size_builder{Percent: proto.Float64(1)}.Build(),
 			AlwaysLocalNets:          []string{"10.0.0.0/8"},
 			UnackedNotificationIds:   []string{"authenticationUserAndPassword"},
 			SetLowPriority:           proto.Bool(false), // explicit zero value
 			FeatureFlags:             []string{"caves"},
 			ConnectionPriorityTcpLan: proto.Int32(15),
 			StunKeepaliveMinS:        proto.Int32(25),
-		},
-		RemoteIgnoredDevices: []*configpb.ObservedDevice{{
+		}.Build(),
+		RemoteIgnoredDevices: []*configpb.ObservedDevice{configpb.ObservedDevice_builder{
 			Time:     timestamppb.New(time.Date(2026, 9, 1, 8, 30, 0, 0, time.UTC)),
 			DeviceId: proto.String("E5OA2FV-LO2YUML-3SDRQ4C-JPJF3DQ-JSWF3LV-CKSPR4T-KKVMKWS-JVVBQAE"),
 			Name:     proto.String("Gamma"),
 			Address:  proto.String("192.0.2.7:22000"),
-		}},
-		Defaults: &configpb.Defaults{
-			Folder: &configpb.FolderConfiguration{
+		}.Build()},
+		Defaults: configpb.Defaults_builder{
+			Folder: configpb.FolderConfiguration_builder{
 				RescanIntervalS: proto.Int32(10800),
-			},
-			Device: &configpb.DeviceConfiguration{
+			}.Build(),
+			Device: configpb.DeviceConfiguration_builder{
 				Compression: configpb.Compression_COMPRESSION_NEVER.Enum(),
-			},
-			Ignores: &configpb.Ignores{
+			}.Build(),
+			Ignores: configpb.Ignores_builder{
 				Lines: []string{"!qux", "baz/*"},
-			},
-		},
-	}
+			}.Build(),
+		}.Build(),
+	}.Build()
 }
