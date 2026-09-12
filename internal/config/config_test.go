@@ -7,6 +7,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -24,10 +25,15 @@ import (
 func TestYAMLRoundTrip(t *testing.T) {
 	orig := testConfiguration()
 
-	data, err := protoyaml.Marshal(orig)
+	mo := protoyaml.MarshalOptions{
+		Indent: 2,
+	}
+	data, err := mo.Marshal(orig)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
+
+	os.WriteFile("_testdata/roundtrip.yaml", data, 0o644)
 
 	var parsed configpb.Configuration
 	if err := protoyaml.Unmarshal(data, &parsed); err != nil {
