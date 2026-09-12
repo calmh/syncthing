@@ -8,6 +8,7 @@ package api
 
 import (
 	"context"
+	"net/http"
 
 	"connectrpc.com/connect"
 
@@ -39,4 +40,32 @@ func (s *configService) GetConfiguration(_ context.Context, _ *connect.Request[s
 	return connect.NewResponse(syncthingv2.GetConfigResponse_builder{
 		Configuration: cfg.Configuration,
 	}.Build()), nil
+}
+
+// withConnectGetDefaults fills in the query parameters that the Connect
+// protocol requires on GET requests, so that a bare GET works: the
+// encoding defaults to JSON and the message to the encoding of an empty
+// request. Requests that set the parameters are passed through unchanged.
+func withConnectGetDefaults(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			query := r.URL.Query()
+			if !query.Has("encoding") || !query.Has("message") {
+				if !query.Has("encoding") {
+					query.Set("encoding", "json")
+				}
+				if !query.Has("message") {
+					if query.Get("encoding") == "json" {
+						query.Set("message", "{}")
+					} else {
+						query.Set("message", "")
+					}
+				}
+				modified := r.Clone(r.Context())
+				modified.URL.RawQuery = query.Encode()
+				r = modified
+			}
+		}
+		handler.ServeHTTP(w, r)
+	})
 }

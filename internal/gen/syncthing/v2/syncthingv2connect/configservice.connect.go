@@ -58,6 +58,7 @@ func NewConfigurationServiceClient(httpClient connect.HTTPClient, baseURL string
 			httpClient,
 			baseURL+ConfigurationServiceGetConfigurationProcedure,
 			connect.WithSchema(configurationServiceMethods.ByName("GetConfiguration")),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -90,6 +91,7 @@ func NewConfigurationServiceHandler(svc ConfigurationServiceHandler, opts ...con
 		ConfigurationServiceGetConfigurationProcedure,
 		svc.GetConfiguration,
 		connect.WithSchema(configurationServiceMethods.ByName("GetConfiguration")),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/syncthing.v2.ConfigurationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

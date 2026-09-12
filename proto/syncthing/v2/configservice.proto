@@ -12,5 +12,7 @@ message GetConfigResponse {
 }
 
 service ConfigurationService {
-  rpc GetConfiguration(GetConfigRequest) returns (GetConfigResponse) {}
+  rpc GetConfiguration(GetConfigRequest) returns (GetConfigResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
 }

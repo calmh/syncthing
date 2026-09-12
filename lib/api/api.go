@@ -351,9 +351,9 @@ func (s *service) Serve(ctx context.Context) error {
 
 	// ConnectRPC services, at their default paths directly on the root.
 	// They get the same authentication and host check handling as the
-	// REST API.
+	// REST API. The GET defaults wrapper allows bare GET requests.
 	configServicePath, configServiceHandler := syncthingv2connect.NewConfigurationServiceHandler(&configService{s.cfg})
-	mux.Handle(configServicePath, configServiceHandler)
+	mux.Handle(configServicePath, withConnectGetDefaults(configServiceHandler))
 
 	mux.HandleFunc("/qr/", s.getQR)
 

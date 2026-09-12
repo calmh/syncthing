@@ -138,9 +138,9 @@ const file_syncthing_v2_configservice_proto_rawDesc = "" +
 	" syncthing/v2/configservice.proto\x12\fsyncthing.v2\x1a\x19syncthing/v2/config.proto\"\x12\n" +
 	"\x10GetConfigRequest\"V\n" +
 	"\x11GetConfigResponse\x12A\n" +
-	"\rconfiguration\x18\x01 \x01(\v2\x1b.syncthing.v2.ConfigurationR\rconfiguration2m\n" +
-	"\x14ConfigurationService\x12U\n" +
-	"\x10GetConfiguration\x12\x1e.syncthing.v2.GetConfigRequest\x1a\x1f.syncthing.v2.GetConfigResponse\"\x00B\xbd\x01\n" +
+	"\rconfiguration\x18\x01 \x01(\v2\x1b.syncthing.v2.ConfigurationR\rconfiguration2p\n" +
+	"\x14ConfigurationService\x12X\n" +
+	"\x10GetConfiguration\x12\x1e.syncthing.v2.GetConfigRequest\x1a\x1f.syncthing.v2.GetConfigResponse\"\x03\x90\x02\x01B\xbd\x01\n" +
 	"\x10com.syncthing.v2B\x12ConfigserviceProtoP\x01ZDgithub.com/syncthing/syncthing/internal/gen/syncthing/v2;syncthingv2\xa2\x02\x03SXX\xaa\x02\fSyncthing.V2\xca\x02\fSyncthing\\V2\xe2\x02\x18Syncthing\\V2\\GPBMetadata\xea\x02\rSyncthing::V2b\beditionsp\xe9\a"
 
 var file_syncthing_v2_configservice_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
