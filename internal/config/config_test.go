@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"buf.build/go/protoyaml"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -59,6 +60,66 @@ func TestYAMLRoundTrip(t *testing.T) {
 		if !strings.Contains(string(data), expected) {
 			t.Errorf("expected %q in marshalled YAML:\n%s", expected, data)
 		}
+	}
+}
+
+// TestJSONMarshalPresence tests how the JSON encoding, as used by the
+// ConnectRPC services, interacts with unset fields and their defaults:
+// unset fields are omitted rather than baked to zero or default values,
+// explicitly set zero values are preserved, and a marshal/unmarshal round
+// trip is exact.
+func TestJSONMarshalPresence(t *testing.T) {
+	cfg := syncthingv2.Configuration_builder{
+		Version: new(int32(52)),
+		Folders: []*syncthingv2.FolderConfiguration{syncthingv2.FolderConfiguration_builder{
+			Id:           new("f1"),
+			MaxConflicts: new(int32(0)), // explicit zero value
+			// RescanIntervalS deliberately unset, with a default of 3600.
+		}.Build()},
+	}.Build()
+
+	// ConnectRPC marshals with the default protojson options.
+	data, err := protojson.Marshal(cfg)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	for _, expected := range []string{`"version":52`, `"id":"f1"`, `"maxConflicts":0`} {
+		if !strings.Contains(string(data), expected) {
+			t.Errorf("expected %s in JSON:\n%s", expected, data)
+		}
+	}
+	if strings.Contains(string(data), "rescanIntervalS") {
+		t.Errorf("unset field with default materialised into JSON:\n%s", data)
+	}
+
+	// Unmarshalling what was marshalled yields an identical message,
+	// preserving the distinction between unset and explicitly zero.
+	// ConnectRPC unmarshals with unknown fields discarded.
+	var back syncthingv2.Configuration
+	if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal(data, &back); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if !proto.Equal(cfg, &back) {
+		t.Errorf("configuration did not survive JSON round trip:\n%s", data)
+	}
+	folder := back.GetFolders()[0]
+	if folder.HasRescanIntervalS() {
+		t.Errorf("rescanIntervalS should remain unset")
+	}
+	if got := folder.GetRescanIntervalS(); got != 3600 {
+		t.Errorf("rescanIntervalS: got %d, want default 3600", got)
+	}
+	if !folder.HasMaxConflicts() || folder.GetMaxConflicts() != 0 {
+		t.Errorf("explicitly set maxConflicts 0 not preserved")
+	}
+
+	// A JSON null leaves a field unset, same as an absent field.
+	var nullMsg syncthingv2.Configuration
+	if err := (protojson.UnmarshalOptions{DiscardUnknown: true}).Unmarshal([]byte(`{"version": null}`), &nullMsg); err != nil {
+		t.Errorf("null field value rejected: %v", err)
+	}
+	if nullMsg.HasVersion() {
+		t.Errorf("null field value should leave the field unset")
 	}
 }
 
