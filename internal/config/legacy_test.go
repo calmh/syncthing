@@ -119,13 +119,13 @@ func TestFromLegacy(t *testing.T) {
 		{"folder.versioning.type", got.GetFolders()[0].GetVersioning().GetType(), "simple"},
 		{"folder.versioning.params", got.GetFolders()[0].GetVersioning().GetParams()["keep"], "3"},
 		{"folder.versioning.fsType", got.GetFolders()[0].GetVersioning().GetFsType(), configpb.FilesystemType_FILESYSTEM_TYPE_FAKE},
-		{"folder.device.deviceID", got.GetFolders()[0].GetDevices()[0].GetDeviceId(), otherID.String()},
-		{"folder.device.introducedBy", got.GetFolders()[0].GetDevices()[0].GetIntroducedBy(), id.String()},
+		{"folder.device.deviceID", got.GetFolders()[0].GetDevices()[0].GetDeviceId(), otherID},
+		{"folder.device.introducedBy", got.GetFolders()[0].GetDevices()[0].GetIntroducedBy(), id},
 		{"folder.device.encryptionPassword", got.GetFolders()[0].GetDevices()[0].GetEncryptionPassword(), "hunter2"},
 		{"folder.xattrFilter.entry", got.GetFolders()[0].GetXattrFilter().GetEntries()[0].GetMatch(), "user.*"},
 		{"folder.xattrFilter.maxSingleEntrySize", got.GetFolders()[0].GetXattrFilter().GetMaxSingleEntrySize(), int32(512)},
 		{"folder.xattrFilter.maxTotalSize", got.GetFolders()[0].GetXattrFilter().GetMaxTotalSize(), int32(1024)},
-		{"device.deviceID", got.GetDevices()[0].GetDeviceId(), otherID.String()},
+		{"device.deviceID", got.GetDevices()[0].GetDeviceId(), otherID},
 		{"device.compression", got.GetDevices()[0].GetCompression(), configpb.Compression_COMPRESSION_ALWAYS},
 		{"device.numConnections", got.GetDevices()[0].GetNumConnections(), int32(7)},
 		{"device.remoteGUIPort", got.GetDevices()[0].GetRemoteGuiPort(), int32(1234)},
@@ -138,7 +138,7 @@ func TestFromLegacy(t *testing.T) {
 		{"options.maxSendKbps", got.GetOptions().GetMaxSendKbps(), int32(100)},
 		{"options.urAccepted", got.GetOptions().GetUrAccepted(), int32(-1)},
 		{"options.minHomeDiskFree.percent", got.GetOptions().GetMinHomeDiskFree().GetPercent(), 1.0},
-		{"remoteIgnoredDevices[0].deviceID", got.GetRemoteIgnoredDevices()[0].GetDeviceId(), id.String()},
+		{"remoteIgnoredDevices[0].deviceID", got.GetRemoteIgnoredDevices()[0].GetDeviceId(), id},
 		{"remoteIgnoredDevices[0].name", got.GetRemoteIgnoredDevices()[0].GetName(), "Friend"},
 		{"defaults.folder.rescanIntervalS", got.GetDefaults().GetFolder().GetRescanIntervalS(), int32(10800)},
 		{"defaults.device.compression", got.GetDefaults().GetDevice().GetCompression(), configpb.Compression_COMPRESSION_NEVER},
@@ -158,12 +158,12 @@ func TestFromLegacy(t *testing.T) {
 	}
 
 	// The converted configuration passes validation.
-	if err := (validator{}).Validate(got); err != nil {
+	if err := Validate(got); err != nil {
 		t.Errorf("converted configuration failed validation: %v", err)
 	}
 
 	// The converted configuration round-trips through YAML.
-	data, err := protoyaml.Marshal(got)
+	data, err := protoyaml.Marshal(got.Configuration)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
@@ -171,7 +171,7 @@ func TestFromLegacy(t *testing.T) {
 	if err := protoyaml.Unmarshal(data, &reparsed); err != nil {
 		t.Fatalf("unmarshal: %v\n%s", err, data)
 	}
-	if !proto.Equal(got, &reparsed) {
+	if !proto.Equal(got.Configuration, &reparsed) {
 		t.Errorf("converted configuration did not survive YAML round trip:\n%s", data)
 	}
 }
@@ -186,7 +186,7 @@ func TestFromLegacyNewConfig(t *testing.T) {
 	}
 	// The device list contains ourselves; a fresh legacy config has
 	// materialised defaults which must carry over unchanged.
-	if devices := got.GetDevices(); len(devices) != 1 || devices[0].GetDeviceId() != id.String() {
+	if devices := got.GetDevices(); len(devices) != 1 || devices[0].GetDeviceId() != id {
 		t.Errorf("devices: got %v, want single device %s", devices, id)
 	}
 	if v := got.GetGui().GetAddress(); v != "127.0.0.1:8384" {
@@ -198,7 +198,7 @@ func TestFromLegacyNewConfig(t *testing.T) {
 	if v := got.GetOptions().GetUnackedNotificationIds(); len(v) != 1 || v[0] != "authenticationUserAndPassword" {
 		t.Errorf("options.unackedNotificationIDs: got %v", v)
 	}
-	if got.GetDefaults() == nil {
+	if !got.HasDefaults() {
 		t.Errorf("defaults not converted")
 	}
 	// Materialised legacy sizes ("1 %") convert to percentages.
@@ -210,12 +210,12 @@ func TestFromLegacyNewConfig(t *testing.T) {
 	}
 	// The converted configuration passes validation, including the device
 	// ID patterns (the device defaults have an empty device ID).
-	if err := (validator{}).Validate(got); err != nil {
+	if err := Validate(got); err != nil {
 		t.Errorf("converted configuration failed validation: %v", err)
 	}
 
 	// Marshals without error.
-	if _, err := protoyaml.Marshal(got); err != nil {
+	if _, err := protoyaml.Marshal(got.Configuration); err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
 }

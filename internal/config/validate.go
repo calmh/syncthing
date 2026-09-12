@@ -23,7 +23,14 @@ import (
 // schema. In addition to the protovalidate rules, string fields annotated
 // with the (config.device_id) option must parse as a device ID, including
 // matching check digits.
-func Validate(cfg *configpb.Configuration) error {
+func Validate(cfg Configuration) error {
+	return validateConfig(cfg.Configuration)
+}
+
+func validateConfig(cfg *configpb.Configuration) error {
+	if cfg == nil {
+		return nil
+	}
 	if err := protovalidate.GlobalValidator.Validate(cfg); err != nil {
 		return err
 	}
@@ -90,7 +97,7 @@ func checkDeviceID(value string, path []*validate.FieldPathElement, violations *
 		*violations = append(*violations, &protovalidate.Violation{
 			Proto: &validate.Violation{
 				Field:   &validate.FieldPath{Elements: path},
-				Message: proto.String(fmt.Sprintf("invalid device ID %q: %v", value, err)),
+				Message: new(fmt.Sprintf("invalid device ID %q: %v", value, err)),
 			},
 		})
 	}
@@ -106,7 +113,7 @@ func isDeviceIDField(fd protoreflect.FieldDescriptor) bool {
 // withField returns the field path with the field appended.
 func withField(path []*validate.FieldPathElement, fd protoreflect.FieldDescriptor) []*validate.FieldPathElement {
 	out := slices.Clone(path)
-	return append(out, &validate.FieldPathElement{FieldName: proto.String(string(fd.Name()))})
+	return append(out, &validate.FieldPathElement{FieldName: new(string(fd.Name()))})
 }
 
 // withIndex returns the field path with a list index attached to the last

@@ -65,7 +65,7 @@ func TestYAMLRoundTrip(t *testing.T) {
 // TestYAMLMarshalPresence tests that marshalling emits set fields and
 // omits unset ones, so that defaults are not materialised into the file.
 func TestYAMLMarshalPresence(t *testing.T) {
-	cfg := configpb.Configuration_builder{Version: proto.Int32(52)}.Build()
+	cfg := configpb.Configuration_builder{Version: new(int32(52))}.Build()
 	data, err := protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -78,7 +78,7 @@ func TestYAMLMarshalPresence(t *testing.T) {
 	}
 
 	// An explicitly set zero value is emitted.
-	cfg = configpb.Configuration_builder{Version: proto.Int32(0)}.Build()
+	cfg = configpb.Configuration_builder{Version: new(int32(0))}.Build()
 	data, err = protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -330,116 +330,116 @@ func TestYAMLUnmarshalDeviceIDValidation(t *testing.T) {
 // representative spread of fields and values.
 func testConfiguration() *configpb.Configuration {
 	return configpb.Configuration_builder{
-		Version: proto.Int32(52),
+		Version: new(int32(52)),
 		Folders: []*configpb.FolderConfiguration{configpb.FolderConfiguration_builder{
-			Id:               proto.String("test1"),
-			Label:            proto.String("Test One"),
-			Path:             proto.String("/srv/sync/test1"),
-			Type:             configpb.FolderType_FOLDER_TYPE_SEND_ONLY.Enum(),
-			RescanIntervalS:  proto.Int32(7200),
-			FsWatcherEnabled: proto.Bool(false), // explicit zero value
-			FsWatcherDelayS:  proto.Float64(12.5),
-			MinDiskFree:      configpb.Size_builder{Gib: proto.Float64(5)}.Build(),
-			MaxConflicts:     proto.Int32(0), // explicit zero value
-			Paused:           proto.Bool(false),
-			CopyRangeMethod:  configpb.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL.Enum(),
-			BlockPullOrder:   configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER.Enum(),
-			Order:            configpb.PullOrder_PULL_ORDER_NEWEST_FIRST.Enum(),
+			Id:               new("test1"),
+			Label:            new("Test One"),
+			Path:             new("/srv/sync/test1"),
+			Type:             new(configpb.FolderType_FOLDER_TYPE_SEND_ONLY),
+			RescanIntervalS:  new(int32(7200)),
+			FsWatcherEnabled: new(false), // explicit zero value
+			FsWatcherDelayS:  new(12.5),
+			MinDiskFree:      configpb.Size_builder{Gib: new(5.0)}.Build(),
+			MaxConflicts:     new(int32(0)), // explicit zero value
+			Paused:           new(false),
+			CopyRangeMethod:  new(configpb.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL),
+			BlockPullOrder:   new(configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER),
+			Order:            new(configpb.PullOrder_PULL_ORDER_NEWEST_FIRST),
 			Versioning: configpb.VersioningConfiguration_builder{
-				Type:             proto.String("simple"),
+				Type:             new("simple"),
 				Params:           map[string]string{"keep": "5", "cleanoutDays": "30"},
-				CleanupIntervalS: proto.Int32(3600),
-				FsPath:           proto.String("/srv/sync/test1/.stversions"),
-				FsType:           configpb.FilesystemType_FILESYSTEM_TYPE_FAKE.Enum(),
+				CleanupIntervalS: new(int32(3600)),
+				FsPath:           new("/srv/sync/test1/.stversions"),
+				FsType:           new(configpb.FilesystemType_FILESYSTEM_TYPE_FAKE),
 			}.Build(),
 			XattrFilter: configpb.XattrFilter_builder{
 				Entries: []*configpb.XattrFilterEntry{
-					configpb.XattrFilterEntry_builder{Match: proto.String("user.sync.*"), Permit: proto.Bool(true)}.Build(),
-					configpb.XattrFilterEntry_builder{Match: proto.String("*"), Permit: proto.Bool(false)}.Build(),
+					configpb.XattrFilterEntry_builder{Match: new("user.sync.*"), Permit: new(true)}.Build(),
+					configpb.XattrFilterEntry_builder{Match: new("*"), Permit: new(false)}.Build(),
 				},
-				MaxSingleEntrySize: proto.Int32(2048),
-				MaxTotalSize:       proto.Int32(8192),
+				MaxSingleEntrySize: new(int32(2048)),
+				MaxTotalSize:       new(int32(8192)),
 			}.Build(),
 			Devices: []*configpb.FolderDeviceConfiguration{
 				configpb.FolderDeviceConfiguration_builder{
-					DeviceId:           proto.String("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
-					IntroducedBy:       proto.String("BYR4TZD-LFDLPXV-KLS4HPL-XK25UQG-BUF6TCD-6FLFXCO-YV3FQXZ-DQ7SPQU"),
-					EncryptionPassword: proto.String("hunter2"),
+					DeviceId:           new("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
+					IntroducedBy:       new("BYR4TZD-LFDLPXV-KLS4HPL-XK25UQG-BUF6TCD-6FLFXCO-YV3FQXZ-DQ7SPQU"),
+					EncryptionPassword: new("hunter2"),
 				}.Build(),
 				configpb.FolderDeviceConfiguration_builder{
-					DeviceId: proto.String("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
+					DeviceId: new("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
 				}.Build(),
 			},
 		}.Build()},
 		Devices: []*configpb.DeviceConfiguration{
 			configpb.DeviceConfiguration_builder{
-				DeviceId:        proto.String("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
-				Name:            proto.String("Alpha"),
+				DeviceId:        new("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
+				Name:            new("Alpha"),
 				Addresses:       []string{"dynamic", "tcp://192.0.2.1:22000"},
-				Compression:     configpb.Compression_COMPRESSION_ALWAYS.Enum(),
-				Introducer:      proto.Bool(true),
-				Paused:          proto.Bool(false),
-				MaxSendKbps:     proto.Int32(1000),
-				MaxRecvKbps:     proto.Int32(2000),
-				NumConnections:  proto.Int32(2),
+				Compression:     new(configpb.Compression_COMPRESSION_ALWAYS),
+				Introducer:      new(true),
+				Paused:          new(false),
+				MaxSendKbps:     new(int32(1000)),
+				MaxRecvKbps:     new(int32(2000)),
+				NumConnections:  new(int32(2)),
 				AllowedNetworks: []string{"192.168.0.0/16"},
 				IgnoredFolders: []*configpb.ObservedFolder{configpb.ObservedFolder_builder{
 					Time:  timestamppb.New(time.Date(2026, 8, 1, 12, 0, 0, 0, time.UTC)),
-					Id:    proto.String("ignored-folder"),
-					Label: proto.String("Ignored Folder"),
+					Id:    new("ignored-folder"),
+					Label: new("Ignored Folder"),
 				}.Build()},
 			}.Build(),
 			configpb.DeviceConfiguration_builder{
-				DeviceId: proto.String("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
-				Name:     proto.String("Beta"),
+				DeviceId: new("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
+				Name:     new("Beta"),
 			}.Build(),
 		},
 		Gui: configpb.GUIConfiguration_builder{
-			Enabled:  proto.Bool(true),
-			Address:  proto.String("127.0.0.1:8384"),
-			User:     proto.String("admin"),
-			Password: proto.String("$2a$10$X5bFBmJHrHrrIYpuLvBvJ.uUGPmuffeYdWtMskYiCVnrUuLLzJBae"),
-			AuthMode: configpb.AuthMode_AUTH_MODE_LDAP.Enum(),
-			UseTls:   proto.Bool(true),
-			ApiKey:   proto.String("kO8nJgP7tY2wZq4x"),
-			Theme:    proto.String("dark"),
+			Enabled:  new(true),
+			Address:  new("127.0.0.1:8384"),
+			User:     new("admin"),
+			Password: new("$2a$10$X5bFBmJHrHrrIYpuLvBvJ.uUGPmuffeYdWtMskYiCVnrUuLLzJBae"),
+			AuthMode: new(configpb.AuthMode_AUTH_MODE_LDAP),
+			UseTls:   new(true),
+			ApiKey:   new("kO8nJgP7tY2wZq4x"),
+			Theme:    new("dark"),
 		}.Build(),
 		Ldap: configpb.LDAPConfiguration_builder{
-			Address:            proto.String("ldap.example.com:389"),
-			BindDn:             proto.String("cn=admin,dc=example,dc=com"),
-			Transport:          configpb.LDAPTransport_LDAP_TRANSPORT_START_TLS.Enum(),
-			InsecureSkipVerify: proto.Bool(true),
-			SearchBaseDn:       proto.String("dc=example,dc=com"),
-			SearchFilter:       proto.String("(uid=%s)"),
+			Address:            new("ldap.example.com:389"),
+			BindDn:             new("cn=admin,dc=example,dc=com"),
+			Transport:          new(configpb.LDAPTransport_LDAP_TRANSPORT_START_TLS),
+			InsecureSkipVerify: new(true),
+			SearchBaseDn:       new("dc=example,dc=com"),
+			SearchFilter:       new("(uid=%s)"),
 		}.Build(),
 		Options: configpb.OptionsConfiguration_builder{
 			ListenAddresses:          []string{"default"},
 			GlobalAnnounceServers:    []string{"default"},
-			LocalAnnouncePort:        proto.Int32(21027),
-			MaxSendKbps:              proto.Int32(5000),
-			ReconnectionIntervalS:    proto.Int32(30),
-			UrAccepted:               proto.Int32(-1), // negative value
-			KeepTemporariesH:         proto.Int32(12),
-			MinHomeDiskFree:          configpb.Size_builder{Percent: proto.Float64(1)}.Build(),
+			LocalAnnouncePort:        new(int32(21027)),
+			MaxSendKbps:              new(int32(5000)),
+			ReconnectionIntervalS:    new(int32(30)),
+			UrAccepted:               new(int32(-1)), // negative value
+			KeepTemporariesH:         new(int32(12)),
+			MinHomeDiskFree:          configpb.Size_builder{Percent: new(1.0)}.Build(),
 			AlwaysLocalNets:          []string{"10.0.0.0/8"},
 			UnackedNotificationIds:   []string{"authenticationUserAndPassword"},
-			SetLowPriority:           proto.Bool(false), // explicit zero value
+			SetLowPriority:           new(false), // explicit zero value
 			FeatureFlags:             []string{"caves"},
-			ConnectionPriorityTcpLan: proto.Int32(15),
-			StunKeepaliveMinS:        proto.Int32(25),
+			ConnectionPriorityTcpLan: new(int32(15)),
+			StunKeepaliveMinS:        new(int32(25)),
 		}.Build(),
 		RemoteIgnoredDevices: []*configpb.ObservedDevice{configpb.ObservedDevice_builder{
 			Time:     timestamppb.New(time.Date(2026, 9, 1, 8, 30, 0, 0, time.UTC)),
-			DeviceId: proto.String("E5OA2FV-LO2YUML-3SDRQ4C-JPJF3DQ-JSWF3LV-CKSPR4T-KKVMKWS-JVVBQAE"),
-			Name:     proto.String("Gamma"),
-			Address:  proto.String("192.0.2.7:22000"),
+			DeviceId: new("E5OA2FV-LO2YUML-3SDRQ4C-JPJF3DQ-JSWF3LV-CKSPR4T-KKVMKWS-JVVBQAE"),
+			Name:     new("Gamma"),
+			Address:  new("192.0.2.7:22000"),
 		}.Build()},
 		Defaults: configpb.Defaults_builder{
 			Folder: configpb.FolderConfiguration_builder{
-				RescanIntervalS: proto.Int32(10800),
+				RescanIntervalS: new(int32(10800)),
 			}.Build(),
 			Device: configpb.DeviceConfiguration_builder{
-				Compression: configpb.Compression_COMPRESSION_NEVER.Enum(),
+				Compression: new(configpb.Compression_COMPRESSION_NEVER),
 			}.Build(),
 			Ignores: configpb.Ignores_builder{
 				Lines: []string{"!qux", "baz/*"},

@@ -6,5 +6,6 @@
 
 // Package config provides handling of the protobuf based Syncthing
 // configuration, which is stored in YAML format, as well as conversion
-// from the legacy configuration in lib/config.
+// from the legacy configuration in lib/config. The configuration types
+// wrap the generated ones, exposing device IDs as native types.
 package config
