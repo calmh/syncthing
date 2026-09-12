@@ -81,6 +81,7 @@ func TestFromLegacy(t *testing.T) {
 			RawListenAddresses: []string{"default"},
 			MaxSendKbps:        100,
 			URAccepted:         -1,
+			MinHomeDiskFree:    config.Size{Value: 1, Unit: "%"},
 		},
 		IgnoredDevices: []config.ObservedDevice{{Time: ts, ID: id, Name: "Friend", Address: "192.0.2.1:22000"}},
 		Defaults: config.Defaults{
@@ -110,8 +111,7 @@ func TestFromLegacy(t *testing.T) {
 		{"folder.id", got.GetFolders()[0].GetId(), "f1"},
 		{"folder.filesystemType", got.GetFolders()[0].GetFilesystemType(), configpb.FilesystemType_FILESYSTEM_TYPE_FAKE},
 		{"folder.type", got.GetFolders()[0].GetType(), configpb.FolderType_FOLDER_TYPE_RECEIVE_ONLY},
-		{"folder.minDiskFree", got.GetFolders()[0].GetMinDiskFree().GetValue(), 2.0},
-		{"folder.minDiskFree.unit", got.GetFolders()[0].GetMinDiskFree().GetUnit(), "GiB"},
+		{"folder.minDiskFree.gib", got.GetFolders()[0].GetMinDiskFree().GetGib(), 2.0},
 		{"folder.order", got.GetFolders()[0].GetOrder(), configpb.PullOrder_PULL_ORDER_OLDEST_FIRST},
 		{"folder.blockPullOrder", got.GetFolders()[0].GetBlockPullOrder(), configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER},
 		{"folder.copyRangeMethod", got.GetFolders()[0].GetCopyRangeMethod(), configpb.CopyRangeMethod_COPY_RANGE_METHOD_SEND_FILE},
@@ -136,6 +136,7 @@ func TestFromLegacy(t *testing.T) {
 		{"options.listenAddresses", got.GetOptions().GetListenAddresses(), []string{"default"}},
 		{"options.maxSendKbps", got.GetOptions().GetMaxSendKbps(), int32(100)},
 		{"options.urAccepted", got.GetOptions().GetUrAccepted(), int32(-1)},
+		{"options.minHomeDiskFree.percent", got.GetOptions().GetMinHomeDiskFree().GetPercent(), 1.0},
 		{"remoteIgnoredDevices[0].deviceID", got.GetRemoteIgnoredDevices()[0].GetDeviceId(), id.String()},
 		{"remoteIgnoredDevices[0].name", got.GetRemoteIgnoredDevices()[0].GetName(), "Friend"},
 		{"defaults.folder.rescanIntervalS", got.GetDefaults().GetFolder().GetRescanIntervalS(), int32(10800)},
@@ -153,6 +154,11 @@ func TestFromLegacy(t *testing.T) {
 	}
 	if observed := got.GetRemoteIgnoredDevices()[0]; !observed.GetTime().AsTime().Equal(ts) {
 		t.Errorf("observed device time: got %v, want %v", observed.GetTime().AsTime(), ts)
+	}
+
+	// The converted configuration passes validation.
+	if err := (validator{}).Validate(got); err != nil {
+		t.Errorf("converted configuration failed validation: %v", err)
 	}
 
 	// The converted configuration round-trips through YAML.
@@ -193,6 +199,18 @@ func TestFromLegacyNewConfig(t *testing.T) {
 	}
 	if got.GetDefaults() == nil {
 		t.Errorf("defaults not converted")
+	}
+	// Materialised legacy sizes ("1 %") convert to percentages.
+	if got := got.GetOptions().GetMinHomeDiskFree().GetPercent(); got != 1 {
+		t.Errorf("options.minHomeDiskFree.percent: got %v, want 1", got)
+	}
+	if got := got.GetDefaults().GetFolder().GetMinDiskFree().GetPercent(); got != 1 {
+		t.Errorf("defaults.folder.minDiskFree.percent: got %v, want 1", got)
+	}
+	// The converted configuration passes validation, including the device
+	// ID patterns (the device defaults have an empty device ID).
+	if err := (validator{}).Validate(got); err != nil {
+		t.Errorf("converted configuration failed validation: %v", err)
 	}
 
 	// Marshals without error.

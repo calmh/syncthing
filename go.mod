@@ -3,6 +3,8 @@ module github.com/syncthing/syncthing
 go 1.26.2
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250425153114-8976f5be98c1.1
+	buf.build/go/protovalidate v0.11.0
 	buf.build/go/protoyaml v0.7.0
 	github.com/AudriusButkevicius/recli v0.0.7
 	github.com/alecthomas/kong v1.16.1
@@ -53,8 +55,6 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250425153114-8976f5be98c1.1 // indirect
-	buf.build/go/protovalidate v0.11.0 // indirect
 	cel.dev/expr v0.23.1 // indirect
 	github.com/Azure/go-ntlmssp v0.1.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect

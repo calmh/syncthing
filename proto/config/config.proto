@@ -2,6 +2,8 @@ edition = "2023";
 
 package config;
 
+import "buf/validate/validate.proto";
+import "config/options.proto";
 import "google/protobuf/timestamp.proto";
 
 // Singular fields have explicit presence: "unset" is distinct from the
@@ -81,8 +83,10 @@ message FolderConfiguration {
 
 // A device that a folder is shared with.
 message FolderDeviceConfiguration {
-  string device_id = 1;
-  string introduced_by = 2;
+  // Canonical device ID, or empty.
+  string device_id = 1 [(config.device_id) = true];
+  // Canonical device ID of the introducer, or empty.
+  string introduced_by = 2 [(config.device_id) = true];
   string encryption_password = 3;
 }
 
@@ -115,14 +119,16 @@ message XattrFilterEntry {
 // --- Devices ---
 
 message DeviceConfiguration {
-  string device_id = 1;
+  // Canonical device ID, or empty.
+  string device_id = 1 [(config.device_id) = true];
   string name = 2;
   repeated string addresses = 3;
   Compression compression = 4;
   string cert_name = 5;
   bool introducer = 6;
   bool skip_introduction_removals = 7;
-  string introduced_by = 8;
+  // Canonical device ID of the introducer, or empty.
+  string introduced_by = 8 [(config.device_id) = true];
   bool paused = 9;
   repeated string allowed_networks = 10;
   bool auto_accept_folders = 11;
@@ -148,7 +154,8 @@ message ObservedFolder {
 // devices.
 message ObservedDevice {
   google.protobuf.Timestamp time = 1;
-  string device_id = 2;
+  // Canonical device ID, or empty.
+  string device_id = 2 [(config.device_id) = true];
   string name = 3;
   string address = 4;
 }
@@ -252,10 +259,19 @@ message OptionsConfiguration {
 
 // --- Miscellaneous ---
 
-// A size, as a value and a unit (e.g. "10 MB" or "1 %").
+// A size, in bytes or as a percentage of total capacity. At most one of
+// the fields is set; if none are set, the size is zero.
 message Size {
-  double value = 1;
-  string unit = 2;
+  oneof size {
+    // A percentage of total capacity.
+    double percent = 1 [(buf.validate.field).double = {gte: 0, lte: 100}];
+    // A size in bytes.
+    double bytes = 2 [(buf.validate.field).double.gte = 0];
+    // A size in mebibytes (2^20 bytes).
+    double mib = 3 [(buf.validate.field).double.gte = 0];
+    // A size in gibibytes (2^30 bytes).
+    double gib = 4 [(buf.validate.field).double.gte = 0];
+  }
 }
 
 // --- Enums ---

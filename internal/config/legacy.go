@@ -9,6 +9,7 @@ package config
 import (
 	"maps"
 	"slices"
+	"strings"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -129,10 +130,36 @@ func fromLegacyXattrFilter(f config.XattrFilter) *configpb.XattrFilter {
 	return out
 }
 
+// fromLegacySize converts a legacy size to the new representation. A
+// legacy size of zero or less meant "no minimum" and converts to an unset
+// size. Units with an "iB"-suffix are binary, other unit prefixes decimal,
+// matching the intent of the legacy string format.
 func fromLegacySize(s config.Size) *configpb.Size {
-	return &configpb.Size{
-		Value: proto.Float64(s.Value),
-		Unit:  proto.String(s.Unit),
+	if s.Value <= 0 {
+		return nil
+	}
+	if strings.Contains(s.Unit, "%") {
+		return &configpb.Size{Size: &configpb.Size_Percent{Percent: s.Value}}
+	}
+	switch strings.ToLower(s.Unit) {
+	case "mib":
+		return &configpb.Size{Size: &configpb.Size_Mib{Mib: s.Value}}
+	case "gib":
+		return &configpb.Size{Size: &configpb.Size_Gib{Gib: s.Value}}
+	case "kib":
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value * 1024}}
+	case "tib":
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value * (1 << 40)}}
+	case "k", "kb":
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value * 1000}}
+	case "m", "mb":
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value * 1000 * 1000}}
+	case "g", "gb":
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value * 1000 * 1000 * 1000}}
+	case "t", "tb":
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value * 1000 * 1000 * 1000 * 1000}}
+	default:
+		return &configpb.Size{Size: &configpb.Size_Bytes{Bytes: s.Value}}
 	}
 }
 

@@ -1,0 +1,108 @@
+version: 52
+folders:
+  - id: test1
+    label: Test One
+    path: /srv/sync/test1
+    type: FOLDER_TYPE_SEND_ONLY
+    devices:
+      - deviceId: AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU
+        introducedBy: BYR4TZD-LFDLPXV-KLS4HPL-XK25UQG-BUF6TCD-6FLFXCO-YV3FQXZ-DQ7SPQU
+        encryptionPassword: hunter2
+      - deviceId: ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU
+    rescanIntervalS: 7200
+    fsWatcherEnabled: false
+    fsWatcherDelayS: 12.5
+    minDiskFree:
+      gib: 5
+    versioning:
+      type: simple
+      params:
+        cleanoutDays: "30"
+        keep: "5"
+      cleanupIntervalS: 3600
+      fsPath: /srv/sync/test1/.stversions
+      fsType: FILESYSTEM_TYPE_FAKE
+    order: PULL_ORDER_NEWEST_FIRST
+    maxConflicts: 0
+    paused: false
+    blockPullOrder: BLOCK_PULL_ORDER_IN_ORDER
+    copyRangeMethod: COPY_RANGE_METHOD_IOCTL
+    xattrFilter:
+      entries:
+        - match: user.sync.*
+          permit: true
+        - match: '*'
+          permit: false
+      maxSingleEntrySize: 2048
+      maxTotalSize: 8192
+devices:
+  - deviceId: AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU
+    name: Alpha
+    addresses:
+      - dynamic
+      - tcp://192.0.2.1:22000
+    compression: COMPRESSION_ALWAYS
+    introducer: true
+    paused: false
+    allowedNetworks:
+      - 192.168.0.0/16
+    maxSendKbps: 1000
+    maxRecvKbps: 2000
+    ignoredFolders:
+      - time: "2026-08-01T12:00:00Z"
+        id: ignored-folder
+        label: Ignored Folder
+    numConnections: 2
+  - deviceId: ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU
+    name: Beta
+gui:
+  enabled: true
+  address: 127.0.0.1:8384
+  user: admin
+  password: $2a$10$X5bFBmJHrHrrIYpuLvBvJ.uUGPmuffeYdWtMskYiCVnrUuLLzJBae
+  authMode: AUTH_MODE_LDAP
+  useTls: true
+  apiKey: kO8nJgP7tY2wZq4x
+  theme: dark
+ldap:
+  address: ldap.example.com:389
+  bindDn: cn=admin,dc=example,dc=com
+  transport: LDAP_TRANSPORT_START_TLS
+  insecureSkipVerify: true
+  searchBaseDn: dc=example,dc=com
+  searchFilter: (uid=%s)
+options:
+  listenAddresses:
+    - default
+  globalAnnounceServers:
+    - default
+  localAnnouncePort: 21027
+  maxSendKbps: 5000
+  reconnectionIntervalS: 30
+  urAccepted: -1
+  keepTemporariesH: 12
+  minHomeDiskFree:
+    percent: 1
+  alwaysLocalNets:
+    - 10.0.0.0/8
+  unackedNotificationIds:
+    - authenticationUserAndPassword
+  setLowPriority: false
+  stunKeepaliveMinS: 25
+  featureFlags:
+    - caves
+  connectionPriorityTcpLan: 15
+remoteIgnoredDevices:
+  - time: "2026-09-01T08:30:00Z"
+    deviceId: E5OA2FV-LO2YUML-3SDRQ4C-JPJF3DQ-JSWF3LV-CKSPR4T-KKVMKWS-JVVBQAE
+    name: Gamma
+    address: 192.0.2.7:22000
+defaults:
+  folder:
+    rescanIntervalS: 10800
+  device:
+    compression: COMPRESSION_NEVER
+  ignores:
+    lines:
+      - '!qux'
+      - baz/*

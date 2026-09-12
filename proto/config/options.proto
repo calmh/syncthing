@@ -1,0 +1,12 @@
+edition = "2023";
+
+package config;
+
+import "google/protobuf/descriptor.proto";
+
+// Marks a string field as containing a device ID in canonical form. The
+// value must parse as a device ID, including matching check digits. An
+// empty value is allowed and means "no device".
+extend google.protobuf.FieldOptions {
+  bool device_id = 50000;
+}

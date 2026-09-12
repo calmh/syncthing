@@ -17,6 +17,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	configpb "github.com/syncthing/syncthing/internal/gen/config"
+	"github.com/syncthing/syncthing/lib/protocol"
 )
 
 // TestYAMLRoundTrip tests that a configuration survives being marshalled
@@ -193,6 +194,138 @@ func TestYAMLUnmarshalUnknownField(t *testing.T) {
 	}
 }
 
+// TestYAMLUnmarshalSize tests unmarshalling of sizes in each unit, and
+// that an unset size means zero.
+func TestYAMLUnmarshalSize(t *testing.T) {
+	tests := []struct {
+		unit      string
+		yamlValue string
+		want      float64
+	}{
+		{"percent", "10", 10},
+		{"bytes", "1024", 1024},
+		{"mib", "2", 2},
+		{"gib", "5", 5},
+	}
+	for _, test := range tests {
+		document := "folders:\n  - id: f1\n    minDiskFree:\n      " + test.unit + ": " + test.yamlValue + "\n"
+		cfg, err := Unmarshal([]byte(document))
+		if err != nil {
+			t.Errorf("unmarshal %s: %v", test.unit, err)
+			continue
+		}
+		size := cfg.GetFolders()[0].GetMinDiskFree()
+		var got float64
+		switch size.GetSize().(type) {
+		case *configpb.Size_Percent:
+			got = size.GetPercent()
+		case *configpb.Size_Bytes:
+			got = size.GetBytes()
+		case *configpb.Size_Mib:
+			got = size.GetMib()
+		case *configpb.Size_Gib:
+			got = size.GetGib()
+		default:
+			t.Errorf("size for %s not set", test.unit)
+			continue
+		}
+		if got != test.want {
+			t.Errorf("size %s: got %v, want %v", test.unit, got, test.want)
+		}
+	}
+
+	// An absent size is unset, meaning zero.
+	cfg, err := Unmarshal([]byte("folders:\n  - id: f1\n"))
+	if err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if size := cfg.GetFolders()[0].GetMinDiskFree(); size != nil {
+		t.Errorf("absent size should be unset, got %v", size)
+	}
+}
+
+// TestYAMLUnmarshalValidation tests that validation rules are enforced at
+// load time.
+func TestYAMLUnmarshalValidation(t *testing.T) {
+	valid := []string{
+		"folders:\n  - id: f1\n    minDiskFree:\n      gib: 5\n",
+		"folders:\n  - id: f1\n    minDiskFree:\n      percent: 10\n",
+		// Empty device IDs are allowed, e.g. for device defaults.
+		"devices:\n  - deviceId: \"\"\n",
+	}
+	for _, document := range valid {
+		if _, err := Unmarshal([]byte(document)); err != nil {
+			t.Errorf("valid document rejected: %v\n%s", err, document)
+		}
+	}
+
+	invalid := []string{
+		// Percent must be within 0-100.
+		"folders:\n  - id: f1\n    minDiskFree:\n      percent: 150\n",
+		// Sizes must not be negative.
+		"folders:\n  - id: f1\n    minDiskFree:\n      bytes: -1\n",
+		"folders:\n  - id: f1\n    minDiskFree:\n      mib: -1\n",
+		"folders:\n  - id: f1\n    minDiskFree:\n      gib: -1\n",
+		"options:\n  minHomeDiskFree:\n    percent: -1\n",
+		// Device IDs must parse as device IDs (or be empty).
+		"devices:\n  - deviceId: not-a-device-id\n",
+		"folders:\n  - id: f1\n    devices:\n      - deviceId: abc\n",
+	}
+	for _, document := range invalid {
+		if _, err := Unmarshal([]byte(document)); err == nil {
+			t.Errorf("invalid document accepted:\n%s", document)
+		}
+	}
+}
+
+// TestYAMLUnmarshalDeviceIDValidation tests that device IDs are verified
+// to parse with matching check digits, beyond the shape checked by the
+// pattern rules.
+func TestYAMLUnmarshalDeviceIDValidation(t *testing.T) {
+	good := protocol.NewDeviceID([]byte("gooddevice")).String()
+
+	// Corrupt one character, keeping the shape of the ID intact: the
+	// check digits no longer match.
+	corrupt := []byte(good)
+	if corrupt[0] == 'A' {
+		corrupt[0] = 'B'
+	} else {
+		corrupt[0] = 'A'
+	}
+	bad := string(corrupt)
+	if _, err := protocol.DeviceIDFromString(bad); err == nil {
+		t.Fatalf("test bug: corrupted device ID %q still parses", bad)
+	}
+
+	if _, err := Unmarshal([]byte("devices:\n  - deviceId: " + good + "\n")); err != nil {
+		t.Errorf("valid device ID rejected: %v", err)
+	}
+	if _, err := Unmarshal([]byte("folders:\n  - id: f1\n    devices:\n      - deviceId: " + good + "\n")); err != nil {
+		t.Errorf("valid device ID rejected: %v", err)
+	}
+	// Lenient forms that still parse: lowercase, and without dashes.
+	if _, err := Unmarshal([]byte("devices:\n  - deviceId: " + strings.ToLower(good) + "\n")); err != nil {
+		t.Errorf("lowercase device ID rejected: %v", err)
+	}
+	if _, err := Unmarshal([]byte("devices:\n  - deviceId: " + strings.ReplaceAll(good, "-", "") + "\n")); err != nil {
+		t.Errorf("device ID without dashes rejected: %v", err)
+	}
+
+	for _, document := range []string{
+		"devices:\n  - deviceId: " + bad + "\n",
+		"folders:\n  - id: f1\n    devices:\n      - deviceId: " + bad + "\n",
+	} {
+		_, err := Unmarshal([]byte(document))
+		if err == nil {
+			t.Errorf("device ID with bad check digits accepted:\n%s", document)
+			continue
+		}
+		if !strings.Contains(err.Error(), "invalid device ID") {
+			t.Errorf("error should mention the device ID: %v", err)
+		}
+	}
+}
+
 // testConfiguration returns a configuration populated with a
 // representative spread of fields and values.
 func testConfiguration() *configpb.Configuration {
@@ -206,7 +339,7 @@ func testConfiguration() *configpb.Configuration {
 			RescanIntervalS:  proto.Int32(7200),
 			FsWatcherEnabled: proto.Bool(false), // explicit zero value
 			FsWatcherDelayS:  proto.Float64(12.5),
-			MinDiskFree:      &configpb.Size{Value: proto.Float64(5), Unit: proto.String("GiB")},
+			MinDiskFree:      &configpb.Size{Size: &configpb.Size_Gib{Gib: 5}},
 			MaxConflicts:     proto.Int32(0), // explicit zero value
 			Paused:           proto.Bool(false),
 			CopyRangeMethod:  configpb.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL.Enum(),
@@ -287,7 +420,7 @@ func testConfiguration() *configpb.Configuration {
 			ReconnectionIntervalS:    proto.Int32(30),
 			UrAccepted:               proto.Int32(-1), // negative value
 			KeepTemporariesH:         proto.Int32(12),
-			MinHomeDiskFree:          &configpb.Size{Value: proto.Float64(1), Unit: proto.String("%")},
+			MinHomeDiskFree:          &configpb.Size{Size: &configpb.Size_Percent{Percent: 1}},
 			AlwaysLocalNets:          []string{"10.0.0.0/8"},
 			UnackedNotificationIds:   []string{"authenticationUserAndPassword"},
 			SetLowPriority:           proto.Bool(false), // explicit zero value

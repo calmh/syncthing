@@ -4,6 +4,11 @@ managed:
   override:
     - file_option: go_package_prefix
       value: github.com/syncthing/syncthing/internal/gen
+    # Use the upstream Go bindings for the protovalidate extensions instead
+    # of generating our own copy under the prefix above.
+    - file_option: go_package
+      module: buf.build/bufbuild/protovalidate
+      value: buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.35.1
     out: .
