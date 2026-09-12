@@ -25,8 +25,10 @@ const (
 type AuthMode int32
 
 const (
+	// Authentication using user and password.
 	AuthMode_AUTH_MODE_STATIC AuthMode = 0 // "static"
-	AuthMode_AUTH_MODE_LDAP   AuthMode = 1 // "ldap"
+	// LDAP authentication. Requires the LDAP configuration to be present.
+	AuthMode_AUTH_MODE_LDAP AuthMode = 1 // "ldap"
 )
 
 // Enum value maps for AuthMode.
@@ -66,8 +68,19 @@ func (x AuthMode) Number() protoreflect.EnumNumber {
 type BlockPullOrder int32
 
 const (
+	// The blocks of a file are split into N equal continuous sequences,
+	// where N is the number of connected devices. Each device starts
+	// downloading its own sequence, after which it picks other devices'
+	// sequences at random. Provides acceptable data distribution and
+	// minimal spinning disk strain.
 	BlockPullOrder_BLOCK_PULL_ORDER_STANDARD BlockPullOrder = 0 // "standard"
-	BlockPullOrder_BLOCK_PULL_ORDER_RANDOM   BlockPullOrder = 1 // "random"
+	// The blocks of a file are downloaded in a random order. Provides
+	// great data distribution, but is very taxing on spinning disk
+	// drives.
+	BlockPullOrder_BLOCK_PULL_ORDER_RANDOM BlockPullOrder = 1 // "random"
+	// The blocks of a file are downloaded sequentially, from start to
+	// finish. Spinning disk drive friendly, but provides no improvements
+	// to data distribution.
 	BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER BlockPullOrder = 2 // "inOrder"
 )
 
@@ -110,9 +123,15 @@ func (x BlockPullOrder) Number() protoreflect.EnumNumber {
 type Compression int32
 
 const (
+	// Compress metadata packets, such as index information. Metadata is
+	// usually very compression friendly so this is a good default.
 	Compression_COMPRESSION_METADATA Compression = 0 // "metadata"
-	Compression_COMPRESSION_NEVER    Compression = 1 // "never"
-	Compression_COMPRESSION_ALWAYS   Compression = 2 // "always"
+	// Disable all compression.
+	Compression_COMPRESSION_NEVER Compression = 1 // "never"
+	// Compress all packets, including file data. Recommended if the
+	// folder contents are mainly compressible data such as documents or
+	// text files.
+	Compression_COMPRESSION_ALWAYS Compression = 2 // "always"
 )
 
 // Enum value maps for Compression.
@@ -208,8 +227,10 @@ func (x CopyRangeMethod) Number() protoreflect.EnumNumber {
 type FilesystemType int32
 
 const (
+	// The standard filesystem, backed by the OS.
 	FilesystemType_FILESYSTEM_TYPE_BASIC FilesystemType = 0 // "basic"
-	FilesystemType_FILESYSTEM_TYPE_FAKE  FilesystemType = 1 // "fake"
+	// An in-memory filesystem, for testing.
+	FilesystemType_FILESYSTEM_TYPE_FAKE FilesystemType = 1 // "fake"
 )
 
 // Enum value maps for FilesystemType.
@@ -249,9 +270,18 @@ func (x FilesystemType) Number() protoreflect.EnumNumber {
 type FolderType int32
 
 const (
-	FolderType_FOLDER_TYPE_SEND_RECEIVE      FolderType = 0 // "sendreceive"
-	FolderType_FOLDER_TYPE_SEND_ONLY         FolderType = 1 // "sendonly"
-	FolderType_FOLDER_TYPE_RECEIVE_ONLY      FolderType = 2 // "receiveonly"
+	// Default mode. Sending local and accepting remote changes. Previously
+	// called "readwrite", which is still accepted in legacy configs.
+	FolderType_FOLDER_TYPE_SEND_RECEIVE FolderType = 0 // "sendreceive"
+	// Send only mode. The folder will not be modified by Syncthing on
+	// this device. Previously called "readonly", which is still accepted
+	// in legacy configs.
+	FolderType_FOLDER_TYPE_SEND_ONLY FolderType = 1 // "sendonly"
+	// Receive only mode. Changes will not be propagated to other devices.
+	FolderType_FOLDER_TYPE_RECEIVE_ONLY FolderType = 2 // "receiveonly"
+	// Receive encrypted mode. Must be used on untrusted devices, where
+	// the data cannot be decrypted because no folder password was
+	// entered.
 	FolderType_FOLDER_TYPE_RECEIVE_ENCRYPTED FolderType = 3 // "receiveencrypted"
 )
 
@@ -296,8 +326,11 @@ func (x FolderType) Number() protoreflect.EnumNumber {
 type LDAPTransport int32
 
 const (
-	LDAPTransport_LDAP_TRANSPORT_PLAIN     LDAPTransport = 0 // "plain"
-	LDAPTransport_LDAP_TRANSPORT_TLS       LDAPTransport = 2 // "tls"
+	// Non-secure connection.
+	LDAPTransport_LDAP_TRANSPORT_PLAIN LDAPTransport = 0 // "plain"
+	// TLS secured connection.
+	LDAPTransport_LDAP_TRANSPORT_TLS LDAPTransport = 2 // "tls"
+	// StartTLS connection mode.
 	LDAPTransport_LDAP_TRANSPORT_START_TLS LDAPTransport = 3 // "starttls"
 )
 
@@ -340,12 +373,19 @@ func (x LDAPTransport) Number() protoreflect.EnumNumber {
 type PullOrder int32
 
 const (
-	PullOrder_PULL_ORDER_RANDOM         PullOrder = 0 // "random"
-	PullOrder_PULL_ORDER_ALPHABETIC     PullOrder = 1 // "alphabetic"
+	// Pull files in random order. Optimizes for balancing resources among
+	// the devices in a cluster.
+	PullOrder_PULL_ORDER_RANDOM PullOrder = 0 // "random"
+	// Pull files ordered by file name alphabetically.
+	PullOrder_PULL_ORDER_ALPHABETIC PullOrder = 1 // "alphabetic"
+	// Pull files ordered by file size, smallest first.
 	PullOrder_PULL_ORDER_SMALLEST_FIRST PullOrder = 2 // "smallestFirst"
-	PullOrder_PULL_ORDER_LARGEST_FIRST  PullOrder = 3 // "largestFirst"
-	PullOrder_PULL_ORDER_OLDEST_FIRST   PullOrder = 4 // "oldestFirst"
-	PullOrder_PULL_ORDER_NEWEST_FIRST   PullOrder = 5 // "newestFirst"
+	// Pull files ordered by file size, largest first.
+	PullOrder_PULL_ORDER_LARGEST_FIRST PullOrder = 3 // "largestFirst"
+	// Pull files ordered by modification time, oldest first.
+	PullOrder_PULL_ORDER_OLDEST_FIRST PullOrder = 4 // "oldestFirst"
+	// Pull files ordered by modification time, newest first.
+	PullOrder_PULL_ORDER_NEWEST_FIRST PullOrder = 5 // "newestFirst"
 )
 
 // Enum value maps for PullOrder.
@@ -390,6 +430,7 @@ func (x PullOrder) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
+// The Syncthing configuration.
 type Configuration struct {
 	state                           protoimpl.MessageState  `protogen:"opaque.v1"`
 	xxx_hidden_Version              int32                   `protobuf:"varint,1,opt,name=version"`
@@ -585,14 +626,27 @@ func (x *Configuration) ClearDefaults() {
 type Configuration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Version              *int32
-	Folders              []*FolderConfiguration
-	Devices              []*DeviceConfiguration
-	Gui                  *GUIConfiguration
-	Ldap                 *LDAPConfiguration
-	Options              *OptionsConfiguration
+	// The config version. Increments whenever a change is made that
+	// requires migration from previous formats.
+	Version *int32
+	// The folders to synchronize. At least one folder must be present.
+	Folders []*FolderConfiguration
+	// The devices participating in the cluster, including the local device.
+	// Syncthing adds the local device automatically if it is not present.
+	Devices []*DeviceConfiguration
+	// The web GUI and REST API configuration.
+	Gui *GUIConfiguration
+	// The LDAP configuration, used when the GUI authentication mode is
+	// LDAP.
+	Ldap *LDAPConfiguration
+	// Global configuration options.
+	Options *OptionsConfiguration
+	// Devices that should be ignored. Connection attempts from these
+	// devices are logged to the console but never displayed in the web GUI.
 	RemoteIgnoredDevices []*ObservedDevice
-	Defaults             *Defaults
+	// Templates for newly added folders and devices, used when adding a
+	// new folder or remote device through the GUI or command line.
+	Defaults *Defaults
 }
 
 func (b0 Configuration_builder) Build() *Configuration {
@@ -613,6 +667,7 @@ func (b0 Configuration_builder) Build() *Configuration {
 	return m0
 }
 
+// Templates for newly added folder and device options.
 type Defaults struct {
 	state              protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Folder  *FolderConfiguration   `protobuf:"bytes,1,opt,name=folder"`
@@ -716,8 +771,18 @@ func (x *Defaults) ClearIgnores() {
 type Defaults_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Folder  *FolderConfiguration
-	Device  *DeviceConfiguration
+	// Template for a folder. Any set fields are used for newly shared
+	// folders. The ID is meaningless in this context. The path is proposed
+	// as the location for new folders, including folders automatically
+	// accepted from a remote device.
+	Folder *FolderConfiguration
+	// Template for a device. Any set fields are used for newly added
+	// remote devices. The ID is meaningless in this context.
+	Device *DeviceConfiguration
+	// Template for the ignore patterns applied to new folders. Copied to
+	// the .stignore file when a folder is automatically accepted from a
+	// remote device, and used to pre-fill the ignore patterns field when
+	// adding a new folder.
 	Ignores *Ignores
 }
 
@@ -731,6 +796,7 @@ func (b0 Defaults_builder) Build() *Defaults {
 	return m0
 }
 
+// A set of ignore patterns, one line per entry.
 type Ignores struct {
 	state            protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Lines []string               `protobuf:"bytes,1,rep,name=lines"`
@@ -788,6 +854,8 @@ func (b0 Ignores_builder) Build() *Ignores {
 	return m0
 }
 
+// The configuration for a folder. The ID must be unique. The path is
+// local to this device and never sent to other devices.
 type FolderConfiguration struct {
 	state                              protoimpl.MessageState        `protogen:"opaque.v1"`
 	xxx_hidden_Id                      *string                       `protobuf:"bytes,1,opt,name=id"`
@@ -1875,47 +1943,158 @@ func (x *FolderConfiguration) ClearXattrFilter() {
 type FolderConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Id                      *string
-	Label                   *string
-	FilesystemType          *FilesystemType
-	Path                    *string
-	Type                    *FolderType
-	Devices                 []*FolderDeviceConfiguration
-	Group                   *string
-	RescanIntervalS         *int32
-	FsWatcherEnabled        *bool
-	FsWatcherDelayS         *float64
-	FsWatcherTimeoutS       *float64
-	IgnorePerms             *bool
-	AutoNormalize           *bool
-	MinDiskFree             *Size
-	Versioning              *VersioningConfiguration
-	Copiers                 *int32
-	PullerMaxPendingKiB     *int32
-	Hashers                 *int32
-	Order                   *PullOrder
-	IgnoreDelete            *bool
-	ScanProgressIntervalS   *int32
-	PullerPauseS            *int32
-	PullerDelayS            *float64
-	MaxConflicts            *int32
-	DisableSparseFiles      *bool
-	Paused                  *bool
-	MarkerName              *string
+	// The folder ID, which must be unique.
+	Id *string
+	// A human readable and descriptive local name for the folder. May be
+	// different on each device, empty, and/or identical to other folder
+	// labels.
+	Label *string
+	// The internal file system implementation used to access this folder.
+	FilesystemType *FilesystemType
+	// The path to the directory where the folder is stored on this device;
+	// not sent to other devices.
+	Path *string
+	// Controls how the folder is handled by Syncthing.
+	Type *FolderType
+	// The devices that share this folder. It is customary that the local
+	// device ID is included in all folders; Syncthing adds it automatically
+	// if it is not present in the configuration. Each mentioned device
+	// must also have an entry in the top level device list.
+	Devices []*FolderDeviceConfiguration
+	// A human readable and descriptive local name, allowing folders to be
+	// grouped together locally. May be different on each device, empty,
+	// and/or identical to other folder groups.
+	Group *string
+	// The rescan interval, in seconds. Can be set to zero to disable
+	// periodic rescans, when external plugins are used to trigger them.
+	RescanIntervalS *int32
+	// If true, changes to files in the folder are detected and scanned.
+	FsWatcherEnabled *bool
+	// The duration, in seconds, during which detected changes are
+	// accumulated before a scan is scheduled. Only takes effect when
+	// fs_watcher_enabled is true.
+	FsWatcherDelayS *float64
+	// The maximum delay, in seconds, before a scan is triggered when a
+	// file is continuously changing. If unset or zero, a default value is
+	// calculated based on fs_watcher_delay_s.
+	FsWatcherTimeoutS *float64
+	// If true, files originating from this folder will be announced to
+	// remote devices with the "no permission bits" flag. The remote devices
+	// will use whatever their default permission setting is when creating
+	// the files. Primarily for file systems that do not support
+	// permissions, such as FAT, or environments where changing permissions
+	// is impossible.
+	IgnorePerms *bool
+	// Automatically correct UTF-8 normalization errors found in file
+	// names.
+	AutoNormalize *bool
+	// The minimum required free space on the disk this folder resides on.
+	// The folder will be stopped when the value drops below the threshold.
+	// An unset or zero size disables the check.
+	MinDiskFree *Size
+	// The file versioning configuration for the folder.
+	Versioning *VersioningConfiguration
+	// The number of copier routines to use, or zero for the system
+	// determined optimum. Low-level performance option for advanced users
+	// only.
+	Copiers *int32
+	// Controls when we stop sending requests to other devices once we've
+	// got this much unserved requests, in kibibytes. The number of pullers
+	// is automatically adjusted based on this desired amount of outstanding
+	// request data.
+	PullerMaxPendingKiB *int32
+	// The number of hasher routines to use, or zero for the system
+	// determined optimum. Low-level performance option for advanced users
+	// only.
+	Hashers *int32
+	// The order in which needed files should be pulled from the cluster.
+	// Has no effect when the folder type is send only. Note that scanned
+	// files are sent in batches and the sorting is applied only to the
+	// already discovered files.
+	Order *PullOrder
+	// When true, this device will pretend not to see instructions to delete
+	// files from other devices. Enabling this is highly discouraged - use
+	// at your own risk.
+	IgnoreDelete *bool
+	// The interval, in seconds, with which scan progress information is
+	// sent to the GUI. Zero uses the default value of two seconds; -1
+	// disables scan progress entirely.
+	ScanProgressIntervalS *int32
+	// Tweak for rate limiting the puller when it retries pulling files.
+	// Don't change this unless you know what you're doing.
+	PullerPauseS *int32
+	// The delay, in seconds, before pulling after a pull has been
+	// scheduled, letting incoming updates settle before the actual pull.
+	PullerDelayS *float64
+	// The maximum number of conflict copies to keep around for any given
+	// file. -1 means an unlimited number, and zero disables conflict
+	// copies altogether.
+	MaxConflicts *int32
+	// By default, blocks containing all zeros are not written, causing
+	// files to be sparse on filesystems that support this feature. When
+	// true, sparse files will not be created.
+	DisableSparseFiles *bool
+	// True if this folder is (temporarily) suspended.
+	Paused *bool
+	// Name of a directory or file in the folder root to be used as a
+	// folder marker. A marker directory is only created by Syncthing for
+	// the default ".stfolder", not otherwise.
+	MarkerName *string
+	// On Unix systems, tries to copy file/folder ownership from the parent
+	// directory. Requires running Syncthing as a privileged user, or
+	// granting it additional capabilities (e.g. CAP_CHOWN on Linux).
 	CopyOwnershipFromParent *bool
-	ModTimeWindowS          *int32
-	MaxConcurrentWrites     *int32
-	DisableFsync            *bool
-	BlockPullOrder          *BlockPullOrder
-	CopyRangeMethod         *CopyRangeMethod
-	CaseSensitiveFs         *bool
-	JunctionsAsDirs         *bool
-	SyncOwnership           *bool
-	SendOwnership           *bool
-	SyncXattrs              *bool
-	SendXattrs              *bool
-	BlockIndexing           *bool
-	XattrFilter             *XattrFilter
+	// Allowed modification timestamp difference, in seconds, when
+	// comparing files for equivalence. To be used on file systems which
+	// have unstable modification timestamps that might change after being
+	// recorded during the last write operation. The default is 2 on
+	// Android when the folder is located on a FAT partition, and zero
+	// otherwise.
+	ModTimeWindowS *int32
+	// Maximum number of concurrent write operations while syncing.
+	// Increasing this might increase or decrease disk performance,
+	// depending on the underlying storage.
+	MaxConcurrentWrites *int32
+	// Disables committing file operations to disk before recording them in
+	// the database. Disabling fsync can lead to data corruption; this is a
+	// known insecure option - use at your own risk.
+	DisableFsync *bool
+	// Order in which the blocks of a file are downloaded. Controls how
+	// quickly different parts of the file spread between the connected
+	// devices, at the cost of causing strain on the storage.
+	BlockPullOrder *BlockPullOrder
+	// The method used for copying data between files. Can be used to
+	// optimise copies on network filesystems, improve speed of large
+	// copies, or clone data using copy-on-write functionality if the
+	// underlying filesystem supports it.
+	CopyRangeMethod *CopyRangeMethod
+	// Affects performance by disabling the extra safety checks for case
+	// insensitive filesystems. Only set this if the folder is on a case
+	// sensitive filesystem.
+	CaseSensitiveFs *bool
+	// NTFS directory junctions are treated as ordinary directories if this
+	// is true.
+	JunctionsAsDirs *bool
+	// File and directory ownership is synced when this is true.
+	SyncOwnership *bool
+	// File and directory ownership information is scanned when this is
+	// true. Must be enabled for sync_ownership to have any effect.
+	SendOwnership *bool
+	// File and directory extended attributes are synced when this is true.
+	SyncXattrs *bool
+	// File and directory extended attributes are scanned and sent to other
+	// devices when this is true. Must be enabled for sync_xattrs to have
+	// any effect.
+	SendXattrs *bool
+	// Whether to use block indexing for the folder. Block indexing makes
+	// it possible for Syncthing to reuse data blocks between files (even
+	// in different folders), but requires maintaining an index of every
+	// individual block's hash. This index can be costly for large folders,
+	// so indexing can be disabled with the tradeoff of using more
+	// bandwidth for transfers.
+	BlockIndexing *bool
+	// Filter for which extended attributes to sync.
+	XattrFilter *XattrFilter
 }
 
 func (b0 FolderConfiguration_builder) Build() *FolderConfiguration {
@@ -2198,10 +2377,19 @@ func (x *FolderDeviceConfiguration) ClearEncryptionPassword() {
 type FolderDeviceConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	// Canonical device ID, or empty.
+	// The device sharing the folder, in canonical form; empty means no
+	// device.
 	DeviceId *string
-	// Canonical device ID of the introducer, or empty.
-	IntroducedBy       *string
+	// The device that introduced us to share this folder with the given
+	// device, in canonical form. If the original introducer unshares this
+	// folder with this device, our device will follow and unshare the
+	// folder as well, subject to skip_introduction_removals being false on
+	// the introducer device. Empty if the device was not introduced by
+	// another device.
+	IntroducedBy *string
+	// The secret needed to decrypt this folder's data on the remote
+	// device. If left empty, the data is plainly accessible (but still
+	// protected by the transport encryption).
 	EncryptionPassword *string
 }
 
@@ -2387,11 +2575,20 @@ func (x *VersioningConfiguration) ClearFsType() {
 type VersioningConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Type             *string
-	Params           map[string]string
+	// The versioning type to use, e.g. "simple" or "staggered". Empty
+	// disables versioning.
+	Type *string
+	// Parameters for the versioning type.
+	Params map[string]string
+	// The interval, in seconds, between version cleanup runs. Zero
+	// disables cleanup.
 	CleanupIntervalS *int32
-	FsPath           *string
-	FsType           *FilesystemType
+	// The path where versions are stored, if somewhere other than the
+	// default ".stversions" directory inside the folder.
+	FsPath *string
+	// The internal file system implementation used to access the
+	// versioning path.
+	FsType *FilesystemType
 }
 
 func (b0 VersioningConfiguration_builder) Build() *VersioningConfiguration {
@@ -2418,12 +2615,13 @@ func (b0 VersioningConfiguration_builder) Build() *VersioningConfiguration {
 	return m0
 }
 
-// Extended attribute filter. This is a list of patterns to match (glob
-// style), each with an action (permit or deny). First match is used. If the
-// filter is empty, all strings are permitted. If the filter is non-empty,
-// the default action becomes deny. To counter this, you can use the "*"
-// pattern to match all strings at the end of the filter. There are also
-// limits on the size of accepted attributes.
+// Filter for which extended attributes to sync. This is a list of
+// patterns to match (glob style), each with an action (permit or deny).
+// First match is used. If the filter is empty, all strings are
+// permitted. If the filter is non-empty, the default action becomes
+// deny. To counter this, you can use the "*" pattern to match all
+// strings at the end of the filter. There are also limits on the size of
+// accepted attributes.
 type XattrFilter struct {
 	state                         protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Entries            *[]*XattrFilterEntry   `protobuf:"bytes,1,rep,name=entries"`
@@ -2532,9 +2730,12 @@ func (x *XattrFilter) ClearMaxTotalSize() {
 type XattrFilter_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Entries            []*XattrFilterEntry
+	// The filter rules. First match is used.
+	Entries []*XattrFilterEntry
+	// The maximum size of a single extended attribute, in bytes.
 	MaxSingleEntrySize *int32
-	MaxTotalSize       *int32
+	// The maximum total size of extended attributes on a file, in bytes.
+	MaxTotalSize *int32
 }
 
 func (b0 XattrFilter_builder) Build() *XattrFilter {
@@ -2553,6 +2754,7 @@ func (b0 XattrFilter_builder) Build() *XattrFilter {
 	return m0
 }
 
+// A single extended attribute filter rule.
 type XattrFilterEntry struct {
 	state                  protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Match       *string                `protobuf:"bytes,1,opt,name=match"`
@@ -2642,7 +2844,9 @@ func (x *XattrFilterEntry) ClearPermit() {
 type XattrFilterEntry_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Match  *string
+	// The glob pattern to match attribute names against.
+	Match *string
+	// Whether matching attributes are permitted (true) or denied (false).
 	Permit *bool
 }
 
@@ -2661,6 +2865,7 @@ func (b0 XattrFilterEntry_builder) Build() *XattrFilterEntry {
 	return m0
 }
 
+// The configuration for a device participating in the cluster.
 type DeviceConfiguration struct {
 	state                               protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_DeviceId                 *string                `protobuf:"bytes,1,opt,name=device_id,json=deviceId"`
@@ -3152,27 +3357,74 @@ func (x *DeviceConfiguration) ClearGroup() {
 type DeviceConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	// Canonical device ID, or empty.
-	DeviceId                 *string
-	Name                     *string
-	Addresses                []string
-	Compression              *Compression
-	CertName                 *string
-	Introducer               *bool
+	// The device ID, in canonical form; empty means no device.
+	DeviceId *string
+	// A friendly name for the device.
+	Name *string
+	// Addresses or host names to use when attempting to connect to this
+	// device. Entries other than "dynamic" need a protocol specific
+	// prefix: for TCP "tcp://" (dual-stack), "tcp4://" or "tcp6://", and
+	// analogously "quic://" for QUIC. The word "dynamic" means to use
+	// local and global discovery to find the device.
+	Addresses []string
+	// Whether to use protocol compression when sending messages to this
+	// device.
+	Compression *Compression
+	// The device certificate's common name, if it is not the default
+	// "syncthing".
+	CertName *string
+	// True if this device should be trusted as an introducer, i.e. we
+	// should copy their list of devices per folder when connecting.
+	Introducer *bool
+	// True to follow only introductions and not de-introductions. For
+	// example, if this is set, we would not remove a device that we were
+	// introduced to even if the original introducer is no longer listing
+	// the remote device as known.
 	SkipIntroductionRemovals *bool
-	// Canonical device ID of the introducer, or empty.
-	IntroducedBy      *string
-	Paused            *bool
-	AllowedNetworks   []string
+	// The device that introduced us to this device, in canonical form.
+	// Used only for following de-introductions. Empty if the device was
+	// not introduced by another device.
+	IntroducedBy *string
+	// True if synchronization with this device is (temporarily)
+	// suspended.
+	Paused *bool
+	// If given, restricts connections to this device to these networks,
+	// in CIDR notation.
+	AllowedNetworks []string
+	// If true, folders shared from this remote device are automatically
+	// added and synced locally under the default path. Syncthing tries to
+	// use the folder label for the local name, then the folder ID; if
+	// both already exist, the folder is just offered to accept manually.
 	AutoAcceptFolders *bool
-	MaxSendKbps       *int32
-	MaxRecvKbps       *int32
-	IgnoredFolders    []*ObservedFolder
-	MaxRequestKiB     *int32
-	Untrusted         *bool
-	RemoteGuiPort     *int32
-	NumConnections    *int32
-	Group             *string
+	// Maximum send rate to use for this device, in kibibytes per second
+	// (despite the config name looking like kilobits per second).
+	MaxSendKbps *int32
+	// Maximum receive rate to use for this device, in kibibytes per
+	// second (despite the config name looking like kilobits per second).
+	MaxRecvKbps *int32
+	// Folders that should be ignored when advertised from this remote
+	// device. They will be logged, but there will be no dialog shown in
+	// the web GUI.
+	IgnoredFolders []*ObservedFolder
+	// Maximum amount of data to have outstanding in requests towards this
+	// device, in kibibytes.
+	MaxRequestKiB *int32
+	// Marks the device as untrusted, which disallows ever sharing any
+	// unencrypted data with it. Every folder shared with that device then
+	// needs an encryption password set, or must already be of the receive
+	// encrypted type locally.
+	Untrusted *bool
+	// If set to a positive integer, the GUI will display an HTTP link to
+	// the address currently used for synchronization, with the port
+	// exchanged for this value. Any port forwarding or firewall settings
+	// need to be done manually.
+	RemoteGuiPort *int32
+	// The number of connections to maintain to this device.
+	NumConnections *int32
+	// A human readable and descriptive local name, allowing devices to be
+	// grouped together locally. May be different on each device, empty,
+	// and/or identical to other device groups.
+	Group *string
 }
 
 func (b0 DeviceConfiguration_builder) Build() *DeviceConfiguration {
@@ -3366,8 +3618,11 @@ func (x *ObservedFolder) ClearLabel() {
 type ObservedFolder_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Time  *timestamppb.Timestamp
-	Id    *string
+	// When the folder was seen.
+	Time *timestamppb.Timestamp
+	// The folder ID.
+	Id *string
+	// The folder label.
 	Label *string
 }
 
@@ -3532,11 +3787,14 @@ func (x *ObservedDevice) ClearAddress() {
 type ObservedDevice_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	// When the device was seen.
 	Time *timestamppb.Timestamp
-	// Canonical device ID, or empty.
+	// The device ID, in canonical form; empty means no device.
 	DeviceId *string
-	Name     *string
-	Address  *string
+	// The device name.
+	Name *string
+	// The address the device was seen at.
+	Address *string
 }
 
 func (b0 ObservedDevice_builder) Build() *ObservedDevice {
@@ -3559,6 +3817,7 @@ func (b0 ObservedDevice_builder) Build() *ObservedDevice {
 	return m0
 }
 
+// Configuration for the web GUI. Also used by the REST and events APIs.
 type GUIConfiguration struct {
 	state                                protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Enabled                   bool                   `protobuf:"varint,1,opt,name=enabled,def=1"`
@@ -4032,22 +4291,55 @@ func (x *GUIConfiguration) ClearSessionCookiePath() {
 type GUIConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Enabled                   *bool
-	Address                   *string
-	UnixSocketPermissions     *string
-	User                      *string
-	Password                  *string
-	AuthMode                  *AuthMode
-	MetricsWithoutAuth        *bool
-	UseTls                    *bool
-	ApiKey                    *string
-	InsecureAdminAccess       *bool
-	Theme                     *string
-	InsecureSkipHostcheck     *bool
+	// If not true, the GUI and API will not be started.
+	Enabled *bool
+	// The listen address. Allowed formats are an IPv4 or IPv6 address and
+	// port, a wildcard address and port, or an absolute path for a UNIX
+	// socket.
+	Address *string
+	// When address is a UNIX socket location, an octal value overriding
+	// the default permissions of the socket.
+	UnixSocketPermissions *string
+	// User name to require for authentication.
+	User *string
+	// The bcrypt hash of the password.
+	Password *string
+	// The authentication mode to use.
+	AuthMode *AuthMode
+	// If true, allows access to the /metrics endpoint without
+	// authentication.
+	MetricsWithoutAuth *bool
+	// If true, TLS (HTTPS) will be enforced and non-HTTPS requests
+	// redirected to HTTPS. When false, TLS connections are still possible
+	// but not required.
+	UseTls *bool
+	// If set, the API key that enables usage of the REST interface.
+	ApiKey *string
+	// If true, allows access to the web GUI from outside (i.e. not
+	// localhost) without authorization. A warning will be displayed about
+	// this setting on startup.
+	InsecureAdminAccess *bool
+	// The name of the theme to use.
+	Theme *string
+	// When the GUI is bound to localhost, the Host header is enforced to
+	// look like localhost; this option bypasses that check.
+	InsecureSkipHostcheck *bool
+	// Allow rendering the GUI within an iframe by not setting the
+	// X-Frame-Options HTTP header. May be needed when serving the GUI
+	// through a proxy as part of a website.
 	InsecureAllowFrameLoading *bool
-	SendBasicAuthPrompt       *bool
-	SessionCookieDurationS    *int32
-	SessionCookiePath         *string
+	// When enabled, the GUI responds to unauthenticated requests with a
+	// 401 response prompting for Basic Authorization, so that
+	// "https://user:pass@host" style URLs continue to work in standard
+	// browsers. When disabled, no 401 responses are sent, so users won't
+	// see browser popups prompting for username and password.
+	SendBasicAuthPrompt *bool
+	// How long to remain logged in when "stay logged in" is checked in
+	// the GUI login form, in seconds.
+	SessionCookieDurationS *int32
+	// Path for the session cookie. Change only if the GUI is served via a
+	// proxy at a subpath.
+	SessionCookiePath *string
 }
 
 func (b0 GUIConfiguration_builder) Build() *GUIConfiguration {
@@ -4121,6 +4413,7 @@ func (b0 GUIConfiguration_builder) Build() *GUIConfiguration {
 	return m0
 }
 
+// LDAP configuration, used when the GUI authentication mode is LDAP.
 type LDAPConfiguration struct {
 	state                         protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_Address            *string                `protobuf:"bytes,1,opt,name=address"`
@@ -4321,12 +4614,19 @@ func (x *LDAPConfiguration) ClearSearchFilter() {
 type LDAPConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	Address            *string
-	BindDn             *string
-	Transport          *LDAPTransport
+	// LDAP server address (server:port).
+	Address *string
+	// BindDN for user authentication. A %s variable is replaced with the
+	// username.
+	BindDn *string
+	// The connection mode.
+	Transport *LDAPTransport
+	// Skip verification of the server certificate.
 	InsecureSkipVerify *bool
-	SearchBaseDn       *string
-	SearchFilter       *string
+	// Base DN for user searches.
+	SearchBaseDn *string
+	// Search filter for user searches.
+	SearchFilter *string
 }
 
 func (b0 LDAPConfiguration_builder) Build() *LDAPConfiguration {
@@ -4360,6 +4660,7 @@ func (b0 LDAPConfiguration_builder) Build() *LDAPConfiguration {
 	return m0
 }
 
+// Global configuration options.
 type OptionsConfiguration struct {
 	state                                          protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_ListenAddresses                     []string               `protobuf:"bytes,1,rep,name=listen_addresses,json=listenAddresses"`
@@ -5769,65 +6070,179 @@ func (x *OptionsConfiguration) ClearConnectionPriorityUpgradeThreshold() {
 type OptionsConfiguration_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
-	ListenAddresses                     []string
-	GlobalAnnounceServers               []string
-	GlobalAnnounceEnabled               *bool
-	LocalAnnounceEnabled                *bool
-	LocalAnnouncePort                   *int32
-	LocalAnnounceMcAddr                 *string
-	MaxSendKbps                         *int32
-	MaxRecvKbps                         *int32
-	ReconnectionIntervalS               *int32
-	RelaysEnabled                       *bool
-	RelayReconnectIntervalM             *int32
-	StartBrowser                        *bool
-	NatEnabled                          *bool
-	NatLeaseMinutes                     *int32
-	NatRenewalMinutes                   *int32
-	NatTimeoutSeconds                   *int32
-	UrAccepted                          *int32
-	UrSeen                              *int32
-	UrUniqueId                          *string
-	UrUrl                               *string
-	UrPostInsecurely                    *bool
-	UrInitialDelayS                     *int32
-	AutoUpgradeIntervalH                *int32
-	UpgradeToPreReleases                *bool
-	KeepTemporariesH                    *int32
-	ProgressUpdateIntervalS             *int32
-	LimitBandwidthInLan                 *bool
-	MinHomeDiskFree                     *Size
-	ReleasesUrl                         *string
-	AlwaysLocalNets                     []string
+	// The listen addresses for incoming sync connections. The word
+	// "default" is equivalent to "tcp://0.0.0.0:22000",
+	// "quic://0.0.0.0:22000" and the dynamic relay pool at
+	// "dynamic+https://relays.syncthing.net/endpoint". Other entries need
+	// a protocol prefix, e.g. "tcp://0.0.0.0:22000" or
+	// "relay://192.0.2.42:22067".
+	ListenAddresses []string
+	// URIs to global announce (discovery) servers, or "default" for the
+	// default servers. Non-default entries are HTTP(S) URLs, where
+	// "insecure" as a query option prevents certificate validation, and
+	// "id=<device ID>" performs certificate pinning.
+	GlobalAnnounceServers []string
+	// Whether to announce this device to the global discovery servers,
+	// and also use them to look up other devices.
+	GlobalAnnounceEnabled *bool
+	// Whether to send announcements to the local LAN, and also use such
+	// announcements to find other devices.
+	LocalAnnounceEnabled *bool
+	// The port on which to listen and send IPv4 broadcast announcements.
+	LocalAnnouncePort *int32
+	// The group address and port to join and send IPv6 multicast
+	// announcements on.
+	LocalAnnounceMcAddr *string
+	// Outgoing data rate limit, in kibibytes per second.
+	MaxSendKbps *int32
+	// Incoming data rate limit, in kibibytes per second.
+	MaxRecvKbps *int32
+	// The number of seconds to wait between attempts to connect to
+	// currently unconnected devices.
+	ReconnectionIntervalS *int32
+	// When true, relays will be connected to and potentially used for
+	// device to device connections.
+	RelaysEnabled *bool
+	// The interval, in minutes, between relay reconnect attempts.
+	RelayReconnectIntervalM *int32
+	// Whether to attempt to start a browser to show the GUI when Syncthing
+	// starts.
+	StartBrowser *bool
+	// Whether to attempt a UPnP and NAT-PMP port mapping for incoming sync
+	// connections.
+	NatEnabled *bool
+	// Request a NAT lease for this many minutes; zero to request a
+	// permanent lease.
+	NatLeaseMinutes *int32
+	// Attempt to renew the NAT lease after this many minutes.
+	NatRenewalMinutes *int32
+	// When scanning for UPnP devices, wait this long for responses, in
+	// seconds.
+	NatTimeoutSeconds *int32
+	// Whether the user has accepted to submit anonymous usage data. Zero
+	// means the user has not made a choice, and Syncthing will ask at some
+	// point in the future. -1 means no, and a number above zero means that
+	// that version of usage reporting has been accepted.
+	UrAccepted *int32
+	// The highest usage reporting version that has already been shown in
+	// the web GUI.
+	UrSeen *int32
+	// The unique ID sent together with the usage report. Generated when
+	// usage reporting is enabled.
+	UrUniqueId *string
+	// The URL to post usage report data to, when enabled.
+	UrUrl *string
+	// When true, the usage report URL may be http instead of https, or
+	// have a self-signed certificate.
+	UrPostInsecurely *bool
+	// The time to wait from startup before the first usage report is
+	// sent, allowing the system to stabilize before reporting statistics.
+	UrInitialDelayS *int32
+	// Check for a newer version after this many hours. Zero disables
+	// automatic upgrades.
+	AutoUpgradeIntervalH *int32
+	// If true, automatic upgrades include release candidates.
+	UpgradeToPreReleases *bool
+	// Keep temporary failed transfers for this many hours. While the
+	// temporaries are kept, the data they contain need not be transferred
+	// again.
+	KeepTemporariesH *int32
+	// How often, in seconds, the progress of ongoing downloads is made
+	// available to the GUI. -1 disables progress updates; when disabled,
+	// the detailed sync progress for out of sync items will not work.
+	ProgressUpdateIntervalS *int32
+	// Whether to apply bandwidth limits to devices in the same broadcast
+	// domain as the local device.
+	LimitBandwidthInLan *bool
+	// The minimum required free space on the partition holding the
+	// configuration and index. An unset or zero size disables the check.
+	MinHomeDiskFree *Size
+	// The URL from which release information is loaded, for automatic
+	// upgrades.
+	ReleasesUrl *string
+	// Networks that should be considered local, in CIDR notation.
+	AlwaysLocalNets []string
+	// If set, device names will always be overwritten with the name given
+	// by the remote on each connection. By default, the name that the
+	// remote device announces will only be adopted when a name has not
+	// already been set.
 	OverwriteRemoteDeviceNamesOnConnect *bool
-	TempIndexMinBlocks                  *int32
-	UnackedNotificationIds              []string
-	TrafficClass                        *int32
-	SetLowPriority                      *bool
-	MaxFolderConcurrency                *int32
-	CrUrl                               *string
-	CrashReportingEnabled               *bool
-	StunKeepaliveStartS                 *int32
-	StunKeepaliveMinS                   *int32
-	StunServers                         []string
-	MaxConcurrentIncomingRequestKiB     *int32
-	AnnounceLanAddresses                *bool
-	SendFullIndexOnUpgrade              *bool
-	FeatureFlags                        []string
-	AuditEnabled                        *bool
-	AuditFile                           *string
+	// When exchanging index information for incomplete transfers, only
+	// take into account files with at least this many blocks.
+	TempIndexMinBlocks *int32
+	// IDs of notifications to be displayed in the web GUI. An ID is
+	// removed once the user acknowledges it, e.g. a transition notice on
+	// an upgrade.
+	UnackedNotificationIds []string
+	// An IPv4 type of service (TOS)/IPv6 traffic class for outgoing
+	// packets. To specify a differentiated services code point (DSCP) the
+	// value must be bit shifted to the left by two, to take the two least
+	// significant ECN bits into account.
+	TrafficClass *int32
+	// Attempt to lower the process priority at startup: on Linux, set
+	// itself to a separate process group with niceness level nine and
+	// best-effort I/O priority five; on other Unixes, set the niceness
+	// level to nine; on Windows, set the process priority class to below
+	// normal. Set to false to control process priority yourself when
+	// launching Syncthing.
+	SetLowPriority *bool
+	// How many folders may concurrently be in I/O-intensive operations
+	// such as syncing or scanning. Zero means the number of CPUs.
+	MaxFolderConcurrency *int32
+	// Server URL where automatic crash reports will be sent, if enabled.
+	CrUrl *string
+	// Set to false to keep Syncthing from sending panic logs on serious
+	// troubles.
+	CrashReportingEnabled *bool
+	// Interval, in seconds, between contacting a STUN server to maintain
+	// the NAT mapping. Zero disables contacting STUN servers. The interval
+	// is automatically reduced if needed, down to a minimum of
+	// stun_keepalive_min_s.
+	StunKeepaliveStartS *int32
+	// Minimum for the stun_keepalive_start_s interval, in seconds.
+	StunKeepaliveMinS *int32
+	// Servers to use for STUN, given as ip:port. The keyword "default"
+	// gets expanded to a set of public STUN servers, with preference given
+	// to those hosted by the Syncthing project.
+	StunServers []string
+	// Limits how much data is "in the air" in the form of response data
+	// being read and processed, in kibibytes.
+	MaxConcurrentIncomingRequestKiB *int32
+	// Enable (the default) or disable announcing private (RFC1918) LAN
+	// addresses to global discovery.
+	AnnounceLanAddresses *bool
+	// Whether all index data is resent when an upgrade has happened. This
+	// used to be the default behavior in older versions, but is mainly
+	// useful as a troubleshooting step and causes high database churn.
+	SendFullIndexOnUpgrade *bool
+	// Feature flags enable unfinished or still-in-development features
+	// for early testing. Supported values are announced separately with
+	// each feature.
+	FeatureFlags []string
+	// When true, auditing is enabled, analogous to the --audit command
+	// line flag being set.
+	AuditEnabled *bool
+	// File for audit log output, analogous to the --auditfile flag. For
+	// compatibility reasons, the command line flag takes priority when
+	// both are set.
+	AuditFile *string
 	// The number of connections at which we stop trying to connect to more
 	// devices, zero meaning no limit. Does not affect incoming connections.
 	ConnectionLimitEnough *int32
 	// The maximum number of connections which we will allow in total, zero
 	// meaning no limit. Affects incoming connections and prevents
 	// attempting outgoing connections.
-	ConnectionLimitMax                 *int32
-	ConnectionPriorityTcpLan           *int32
-	ConnectionPriorityQuicLan          *int32
-	ConnectionPriorityTcpWan           *int32
-	ConnectionPriorityQuicWan          *int32
-	ConnectionPriorityRelay            *int32
+	ConnectionLimitMax *int32
+	// Priorities for the different connection types; connections are
+	// tried in order of increasing priority value.
+	ConnectionPriorityTcpLan  *int32
+	ConnectionPriorityQuicLan *int32
+	ConnectionPriorityTcpWan  *int32
+	ConnectionPriorityQuicWan *int32
+	ConnectionPriorityRelay   *int32
+	// A new connection only replaces an existing one if its priority is
+	// better than the existing one's by at least this much, preventing
+	// connection churn between similarly prioritized connection types.
 	ConnectionPriorityUpgradeThreshold *int32
 }
 

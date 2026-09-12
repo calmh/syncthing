@@ -8,252 +8,779 @@ import "google/protobuf/timestamp.proto";
 
 // Singular fields have explicit presence: "unset" is distinct from the
 // zero value.
-
-// The Syncthing configuration. Device IDs are represented as strings in
-// their canonical form (base32, with check digits and dashes).
+//
+// Device IDs are represented as strings in their canonical form (base32,
+// with check digits and dashes). Fields containing device IDs are
+// annotated with (config.device_id) and validated to parse as device IDs.
 
 // --- Top level ---
 
+// The Syncthing configuration.
 message Configuration {
+  // The config version. Increments whenever a change is made that
+  // requires migration from previous formats.
   int32 version = 1;
+
+  // The folders to synchronize. At least one folder must be present.
   repeated FolderConfiguration folders = 2;
+
+  // The devices participating in the cluster, including the local device.
+  // Syncthing adds the local device automatically if it is not present.
   repeated DeviceConfiguration devices = 3;
+
+  // The web GUI and REST API configuration.
   GUIConfiguration gui = 4;
+
+  // The LDAP configuration, used when the GUI authentication mode is
+  // LDAP.
   LDAPConfiguration ldap = 5;
+
+  // Global configuration options.
   OptionsConfiguration options = 6;
+
+  // Devices that should be ignored. Connection attempts from these
+  // devices are logged to the console but never displayed in the web GUI.
   repeated ObservedDevice remote_ignored_devices = 7;
+
+  // Templates for newly added folders and devices, used when adding a
+  // new folder or remote device through the GUI or command line.
   Defaults defaults = 9;
 }
 
+// Templates for newly added folder and device options.
 message Defaults {
+  // Template for a folder. Any set fields are used for newly shared
+  // folders. The ID is meaningless in this context. The path is proposed
+  // as the location for new folders, including folders automatically
+  // accepted from a remote device.
   FolderConfiguration folder = 1;
+
+  // Template for a device. Any set fields are used for newly added
+  // remote devices. The ID is meaningless in this context.
   DeviceConfiguration device = 2;
+
+  // Template for the ignore patterns applied to new folders. Copied to
+  // the .stignore file when a folder is automatically accepted from a
+  // remote device, and used to pre-fill the ignore patterns field when
+  // adding a new folder.
   Ignores ignores = 3;
 }
 
+// A set of ignore patterns, one line per entry.
 message Ignores {
   repeated string lines = 1;
 }
 
 // --- Folders ---
 
+// The configuration for a folder. The ID must be unique. The path is
+// local to this device and never sent to other devices.
 message FolderConfiguration {
+  // The folder ID, which must be unique.
   string id = 1;
+
+  // A human readable and descriptive local name for the folder. May be
+  // different on each device, empty, and/or identical to other folder
+  // labels.
   string label = 2;
+
+  // The internal file system implementation used to access this folder.
   FilesystemType filesystem_type = 3 [default = FILESYSTEM_TYPE_BASIC];
+
+  // The path to the directory where the folder is stored on this device;
+  // not sent to other devices.
   string path = 4;
+
+  // Controls how the folder is handled by Syncthing.
   FolderType type = 5;
+
+  // The devices that share this folder. It is customary that the local
+  // device ID is included in all folders; Syncthing adds it automatically
+  // if it is not present in the configuration. Each mentioned device
+  // must also have an entry in the top level device list.
   repeated FolderDeviceConfiguration devices = 6;
+
+  // A human readable and descriptive local name, allowing folders to be
+  // grouped together locally. May be different on each device, empty,
+  // and/or identical to other folder groups.
   string group = 7;
+
+  // The rescan interval, in seconds. Can be set to zero to disable
+  // periodic rescans, when external plugins are used to trigger them.
   int32 rescan_interval_s = 8 [default = 3600];
+
+  // If true, changes to files in the folder are detected and scanned.
   bool fs_watcher_enabled = 9 [default = true];
+
+  // The duration, in seconds, during which detected changes are
+  // accumulated before a scan is scheduled. Only takes effect when
+  // fs_watcher_enabled is true.
   double fs_watcher_delay_s = 10 [default = 10];
+
+  // The maximum delay, in seconds, before a scan is triggered when a
+  // file is continuously changing. If unset or zero, a default value is
+  // calculated based on fs_watcher_delay_s.
   double fs_watcher_timeout_s = 11;
+
+  // If true, files originating from this folder will be announced to
+  // remote devices with the "no permission bits" flag. The remote devices
+  // will use whatever their default permission setting is when creating
+  // the files. Primarily for file systems that do not support
+  // permissions, such as FAT, or environments where changing permissions
+  // is impossible.
   bool ignore_perms = 12;
+
+  // Automatically correct UTF-8 normalization errors found in file
+  // names.
   bool auto_normalize = 13 [default = true];
+
+  // The minimum required free space on the disk this folder resides on.
+  // The folder will be stopped when the value drops below the threshold.
+  // An unset or zero size disables the check.
   Size min_disk_free = 14;
+
+  // The file versioning configuration for the folder.
   VersioningConfiguration versioning = 15;
+
+  // The number of copier routines to use, or zero for the system
+  // determined optimum. Low-level performance option for advanced users
+  // only.
   int32 copiers = 16;
+
+  // Controls when we stop sending requests to other devices once we've
+  // got this much unserved requests, in kibibytes. The number of pullers
+  // is automatically adjusted based on this desired amount of outstanding
+  // request data.
   int32 puller_max_pending_ki_b = 17;
+
+  // The number of hasher routines to use, or zero for the system
+  // determined optimum. Low-level performance option for advanced users
+  // only.
   int32 hashers = 18;
+
+  // The order in which needed files should be pulled from the cluster.
+  // Has no effect when the folder type is send only. Note that scanned
+  // files are sent in batches and the sorting is applied only to the
+  // already discovered files.
   PullOrder order = 19;
+
+  // When true, this device will pretend not to see instructions to delete
+  // files from other devices. Enabling this is highly discouraged - use
+  // at your own risk.
   bool ignore_delete = 20;
+
+  // The interval, in seconds, with which scan progress information is
+  // sent to the GUI. Zero uses the default value of two seconds; -1
+  // disables scan progress entirely.
   int32 scan_progress_interval_s = 21;
+
+  // Tweak for rate limiting the puller when it retries pulling files.
+  // Don't change this unless you know what you're doing.
   int32 puller_pause_s = 22;
+
+  // The delay, in seconds, before pulling after a pull has been
+  // scheduled, letting incoming updates settle before the actual pull.
   double puller_delay_s = 23 [default = 1];
+
+  // The maximum number of conflict copies to keep around for any given
+  // file. -1 means an unlimited number, and zero disables conflict
+  // copies altogether.
   int32 max_conflicts = 24 [default = 10];
+
+  // By default, blocks containing all zeros are not written, causing
+  // files to be sparse on filesystems that support this feature. When
+  // true, sparse files will not be created.
   bool disable_sparse_files = 25;
+
+  // True if this folder is (temporarily) suspended.
   bool paused = 26;
+
+  // Name of a directory or file in the folder root to be used as a
+  // folder marker. A marker directory is only created by Syncthing for
+  // the default ".stfolder", not otherwise.
   string marker_name = 27;
+
+  // On Unix systems, tries to copy file/folder ownership from the parent
+  // directory. Requires running Syncthing as a privileged user, or
+  // granting it additional capabilities (e.g. CAP_CHOWN on Linux).
   bool copy_ownership_from_parent = 28;
+
+  // Allowed modification timestamp difference, in seconds, when
+  // comparing files for equivalence. To be used on file systems which
+  // have unstable modification timestamps that might change after being
+  // recorded during the last write operation. The default is 2 on
+  // Android when the folder is located on a FAT partition, and zero
+  // otherwise.
   int32 mod_time_window_s = 29;
+
+  // Maximum number of concurrent write operations while syncing.
+  // Increasing this might increase or decrease disk performance,
+  // depending on the underlying storage.
   int32 max_concurrent_writes = 30;
+
+  // Disables committing file operations to disk before recording them in
+  // the database. Disabling fsync can lead to data corruption; this is a
+  // known insecure option - use at your own risk.
   bool disable_fsync = 31;
+
+  // Order in which the blocks of a file are downloaded. Controls how
+  // quickly different parts of the file spread between the connected
+  // devices, at the cost of causing strain on the storage.
   BlockPullOrder block_pull_order = 32;
+
+  // The method used for copying data between files. Can be used to
+  // optimise copies on network filesystems, improve speed of large
+  // copies, or clone data using copy-on-write functionality if the
+  // underlying filesystem supports it.
   CopyRangeMethod copy_range_method = 33 [default = COPY_RANGE_METHOD_STANDARD];
+
+  // Affects performance by disabling the extra safety checks for case
+  // insensitive filesystems. Only set this if the folder is on a case
+  // sensitive filesystem.
   bool case_sensitive_fs = 34;
+
+  // NTFS directory junctions are treated as ordinary directories if this
+  // is true.
   bool junctions_as_dirs = 35;
+
+  // File and directory ownership is synced when this is true.
   bool sync_ownership = 36;
+
+  // File and directory ownership information is scanned when this is
+  // true. Must be enabled for sync_ownership to have any effect.
   bool send_ownership = 37;
+
+  // File and directory extended attributes are synced when this is true.
   bool sync_xattrs = 38;
+
+  // File and directory extended attributes are scanned and sent to other
+  // devices when this is true. Must be enabled for sync_xattrs to have
+  // any effect.
   bool send_xattrs = 39;
+
+  // Whether to use block indexing for the folder. Block indexing makes
+  // it possible for Syncthing to reuse data blocks between files (even
+  // in different folders), but requires maintaining an index of every
+  // individual block's hash. This index can be costly for large folders,
+  // so indexing can be disabled with the tradeoff of using more
+  // bandwidth for transfers.
   bool block_indexing = 40 [default = true];
+
+  // Filter for which extended attributes to sync.
   XattrFilter xattr_filter = 41;
 }
 
 // A device that a folder is shared with.
 message FolderDeviceConfiguration {
-  // Canonical device ID, or empty.
+  // The device sharing the folder, in canonical form; empty means no
+  // device.
   string device_id = 1 [(config.device_id) = true];
-  // Canonical device ID of the introducer, or empty.
+
+  // The device that introduced us to share this folder with the given
+  // device, in canonical form. If the original introducer unshares this
+  // folder with this device, our device will follow and unshare the
+  // folder as well, subject to skip_introduction_removals being false on
+  // the introducer device. Empty if the device was not introduced by
+  // another device.
   string introduced_by = 2 [(config.device_id) = true];
+
+  // The secret needed to decrypt this folder's data on the remote
+  // device. If left empty, the data is plainly accessible (but still
+  // protected by the transport encryption).
   string encryption_password = 3;
 }
 
 // File versioning configuration for a folder.
 message VersioningConfiguration {
+  // The versioning type to use, e.g. "simple" or "staggered". Empty
+  // disables versioning.
   string type = 1;
+
+  // Parameters for the versioning type.
   map<string, string> params = 2;
+
+  // The interval, in seconds, between version cleanup runs. Zero
+  // disables cleanup.
   int32 cleanup_interval_s = 3 [default = 3600];
+
+  // The path where versions are stored, if somewhere other than the
+  // default ".stversions" directory inside the folder.
   string fs_path = 4;
+
+  // The internal file system implementation used to access the
+  // versioning path.
   FilesystemType fs_type = 5 [default = FILESYSTEM_TYPE_BASIC];
 }
 
-// Extended attribute filter. This is a list of patterns to match (glob
-// style), each with an action (permit or deny). First match is used. If the
-// filter is empty, all strings are permitted. If the filter is non-empty,
-// the default action becomes deny. To counter this, you can use the "*"
-// pattern to match all strings at the end of the filter. There are also
-// limits on the size of accepted attributes.
+// Filter for which extended attributes to sync. This is a list of
+// patterns to match (glob style), each with an action (permit or deny).
+// First match is used. If the filter is empty, all strings are
+// permitted. If the filter is non-empty, the default action becomes
+// deny. To counter this, you can use the "*" pattern to match all
+// strings at the end of the filter. There are also limits on the size of
+// accepted attributes.
 message XattrFilter {
+  // The filter rules. First match is used.
   repeated XattrFilterEntry entries = 1;
+
+  // The maximum size of a single extended attribute, in bytes.
   int32 max_single_entry_size = 2 [default = 1024];
+
+  // The maximum total size of extended attributes on a file, in bytes.
   int32 max_total_size = 3 [default = 4096];
 }
 
+// A single extended attribute filter rule.
 message XattrFilterEntry {
+  // The glob pattern to match attribute names against.
   string match = 1;
+
+  // Whether matching attributes are permitted (true) or denied (false).
   bool permit = 2;
 }
 
 // --- Devices ---
 
+// The configuration for a device participating in the cluster.
 message DeviceConfiguration {
-  // Canonical device ID, or empty.
+  // The device ID, in canonical form; empty means no device.
   string device_id = 1 [(config.device_id) = true];
+
+  // A friendly name for the device.
   string name = 2;
+
+  // Addresses or host names to use when attempting to connect to this
+  // device. Entries other than "dynamic" need a protocol specific
+  // prefix: for TCP "tcp://" (dual-stack), "tcp4://" or "tcp6://", and
+  // analogously "quic://" for QUIC. The word "dynamic" means to use
+  // local and global discovery to find the device.
   repeated string addresses = 3;
+
+  // Whether to use protocol compression when sending messages to this
+  // device.
   Compression compression = 4;
+
+  // The device certificate's common name, if it is not the default
+  // "syncthing".
   string cert_name = 5;
+
+  // True if this device should be trusted as an introducer, i.e. we
+  // should copy their list of devices per folder when connecting.
   bool introducer = 6;
+
+  // True to follow only introductions and not de-introductions. For
+  // example, if this is set, we would not remove a device that we were
+  // introduced to even if the original introducer is no longer listing
+  // the remote device as known.
   bool skip_introduction_removals = 7;
-  // Canonical device ID of the introducer, or empty.
+
+  // The device that introduced us to this device, in canonical form.
+  // Used only for following de-introductions. Empty if the device was
+  // not introduced by another device.
   string introduced_by = 8 [(config.device_id) = true];
+
+  // True if synchronization with this device is (temporarily)
+  // suspended.
   bool paused = 9;
+
+  // If given, restricts connections to this device to these networks,
+  // in CIDR notation.
   repeated string allowed_networks = 10;
+
+  // If true, folders shared from this remote device are automatically
+  // added and synced locally under the default path. Syncthing tries to
+  // use the folder label for the local name, then the folder ID; if
+  // both already exist, the folder is just offered to accept manually.
   bool auto_accept_folders = 11;
+
+  // Maximum send rate to use for this device, in kibibytes per second
+  // (despite the config name looking like kilobits per second).
   int32 max_send_kbps = 12;
+
+  // Maximum receive rate to use for this device, in kibibytes per
+  // second (despite the config name looking like kilobits per second).
   int32 max_recv_kbps = 13;
+
+  // Folders that should be ignored when advertised from this remote
+  // device. They will be logged, but there will be no dialog shown in
+  // the web GUI.
   repeated ObservedFolder ignored_folders = 14;
+
+  // Maximum amount of data to have outstanding in requests towards this
+  // device, in kibibytes.
   int32 max_request_ki_b = 16;
+
+  // Marks the device as untrusted, which disallows ever sharing any
+  // unencrypted data with it. Every folder shared with that device then
+  // needs an encryption password set, or must already be of the receive
+  // encrypted type locally.
   bool untrusted = 17;
+
+  // If set to a positive integer, the GUI will display an HTTP link to
+  // the address currently used for synchronization, with the port
+  // exchanged for this value. Any port forwarding or firewall settings
+  // need to be done manually.
   int32 remote_gui_port = 18;
+
+  // The number of connections to maintain to this device.
   int32 num_connections = 19;
+
+  // A human readable and descriptive local name, allowing devices to be
+  // grouped together locally. May be different on each device, empty,
+  // and/or identical to other device groups.
   string group = 20;
 }
 
 // A folder announced by a remote device, e.g. in the list of ignored
 // folders.
 message ObservedFolder {
+  // When the folder was seen.
   google.protobuf.Timestamp time = 1;
+
+  // The folder ID.
   string id = 2;
+
+  // The folder label.
   string label = 3;
 }
 
 // A device encountered on the network, e.g. in the list of ignored
 // devices.
 message ObservedDevice {
+  // When the device was seen.
   google.protobuf.Timestamp time = 1;
-  // Canonical device ID, or empty.
+
+  // The device ID, in canonical form; empty means no device.
   string device_id = 2 [(config.device_id) = true];
+
+  // The device name.
   string name = 3;
+
+  // The address the device was seen at.
   string address = 4;
 }
 
 // --- GUI ---
 
+// Configuration for the web GUI. Also used by the REST and events APIs.
 message GUIConfiguration {
+  // If not true, the GUI and API will not be started.
   bool enabled = 1 [default = true];
+
+  // The listen address. Allowed formats are an IPv4 or IPv6 address and
+  // port, a wildcard address and port, or an absolute path for a UNIX
+  // socket.
   string address = 2 [default = "127.0.0.1:8384"];
+
+  // When address is a UNIX socket location, an octal value overriding
+  // the default permissions of the socket.
   string unix_socket_permissions = 3;
+
+  // User name to require for authentication.
   string user = 4;
+
+  // The bcrypt hash of the password.
   string password = 5;
+
+  // The authentication mode to use.
   AuthMode auth_mode = 6;
+
+  // If true, allows access to the /metrics endpoint without
+  // authentication.
   bool metrics_without_auth = 7;
+
+  // If true, TLS (HTTPS) will be enforced and non-HTTPS requests
+  // redirected to HTTPS. When false, TLS connections are still possible
+  // but not required.
   bool use_tls = 8;
+
+  // If set, the API key that enables usage of the REST interface.
   string api_key = 9;
+
+  // If true, allows access to the web GUI from outside (i.e. not
+  // localhost) without authorization. A warning will be displayed about
+  // this setting on startup.
   bool insecure_admin_access = 10;
+
+  // The name of the theme to use.
   string theme = 11 [default = "default"];
+
+  // When the GUI is bound to localhost, the Host header is enforced to
+  // look like localhost; this option bypasses that check.
   bool insecure_skip_hostcheck = 12;
+
+  // Allow rendering the GUI within an iframe by not setting the
+  // X-Frame-Options HTTP header. May be needed when serving the GUI
+  // through a proxy as part of a website.
   bool insecure_allow_frame_loading = 13;
+
+  // When enabled, the GUI responds to unauthenticated requests with a
+  // 401 response prompting for Basic Authorization, so that
+  // "https://user:pass@host" style URLs continue to work in standard
+  // browsers. When disabled, no 401 responses are sent, so users won't
+  // see browser popups prompting for username and password.
   bool send_basic_auth_prompt = 14;
+
+  // How long to remain logged in when "stay logged in" is checked in
+  // the GUI login form, in seconds.
   int32 session_cookie_duration_s = 15 [default = 604800];
+
+  // Path for the session cookie. Change only if the GUI is served via a
+  // proxy at a subpath.
   string session_cookie_path = 16 [default = "/"];
 }
 
 // --- LDAP ---
 
+// LDAP configuration, used when the GUI authentication mode is LDAP.
 message LDAPConfiguration {
+  // LDAP server address (server:port).
   string address = 1;
+
+  // BindDN for user authentication. A %s variable is replaced with the
+  // username.
   string bind_dn = 2;
+
+  // The connection mode.
   LDAPTransport transport = 3;
+
+  // Skip verification of the server certificate.
   bool insecure_skip_verify = 4;
+
+  // Base DN for user searches.
   string search_base_dn = 5;
+
+  // Search filter for user searches.
   string search_filter = 6;
 }
 
 // --- Options ---
 
+// Global configuration options.
 message OptionsConfiguration {
+  // The listen addresses for incoming sync connections. The word
+  // "default" is equivalent to "tcp://0.0.0.0:22000",
+  // "quic://0.0.0.0:22000" and the dynamic relay pool at
+  // "dynamic+https://relays.syncthing.net/endpoint". Other entries need
+  // a protocol prefix, e.g. "tcp://0.0.0.0:22000" or
+  // "relay://192.0.2.42:22067".
   repeated string listen_addresses = 1;
+
+  // URIs to global announce (discovery) servers, or "default" for the
+  // default servers. Non-default entries are HTTP(S) URLs, where
+  // "insecure" as a query option prevents certificate validation, and
+  // "id=<device ID>" performs certificate pinning.
   repeated string global_announce_servers = 2;
+
+  // Whether to announce this device to the global discovery servers,
+  // and also use them to look up other devices.
   bool global_announce_enabled = 3 [default = true];
+
+  // Whether to send announcements to the local LAN, and also use such
+  // announcements to find other devices.
   bool local_announce_enabled = 4 [default = true];
+
+  // The port on which to listen and send IPv4 broadcast announcements.
   int32 local_announce_port = 5 [default = 21027];
+
+  // The group address and port to join and send IPv6 multicast
+  // announcements on.
   string local_announce_mc_addr = 6 [default = "[ff12::8384]:21027"];
+
+  // Outgoing data rate limit, in kibibytes per second.
   int32 max_send_kbps = 7;
+
+  // Incoming data rate limit, in kibibytes per second.
   int32 max_recv_kbps = 8;
+
+  // The number of seconds to wait between attempts to connect to
+  // currently unconnected devices.
   int32 reconnection_interval_s = 9 [default = 20];
+
+  // When true, relays will be connected to and potentially used for
+  // device to device connections.
   bool relays_enabled = 10 [default = true];
+
+  // The interval, in minutes, between relay reconnect attempts.
   int32 relay_reconnect_interval_m = 11;
+
+  // Whether to attempt to start a browser to show the GUI when Syncthing
+  // starts.
   bool start_browser = 12 [default = true];
+
+  // Whether to attempt a UPnP and NAT-PMP port mapping for incoming sync
+  // connections.
   bool nat_enabled = 13 [default = true];
+
+  // Request a NAT lease for this many minutes; zero to request a
+  // permanent lease.
   int32 nat_lease_minutes = 14 [default = 60];
+
+  // Attempt to renew the NAT lease after this many minutes.
   int32 nat_renewal_minutes = 15 [default = 30];
+
+  // When scanning for UPnP devices, wait this long for responses, in
+  // seconds.
   int32 nat_timeout_seconds = 16 [default = 10];
+
+  // Whether the user has accepted to submit anonymous usage data. Zero
+  // means the user has not made a choice, and Syncthing will ask at some
+  // point in the future. -1 means no, and a number above zero means that
+  // that version of usage reporting has been accepted.
   int32 ur_accepted = 17;
+
+  // The highest usage reporting version that has already been shown in
+  // the web GUI.
   int32 ur_seen = 18;
+
+  // The unique ID sent together with the usage report. Generated when
+  // usage reporting is enabled.
   string ur_unique_id = 19;
+
+  // The URL to post usage report data to, when enabled.
   string ur_url = 20 [default = "https://data.syncthing.net/newdata"];
+
+  // When true, the usage report URL may be http instead of https, or
+  // have a self-signed certificate.
   bool ur_post_insecurely = 21;
+
+  // The time to wait from startup before the first usage report is
+  // sent, allowing the system to stabilize before reporting statistics.
   int32 ur_initial_delay_s = 22 [default = 1800];
+
+  // Check for a newer version after this many hours. Zero disables
+  // automatic upgrades.
   int32 auto_upgrade_interval_h = 23 [default = 12];
+
+  // If true, automatic upgrades include release candidates.
   bool upgrade_to_pre_releases = 24;
+
+  // Keep temporary failed transfers for this many hours. While the
+  // temporaries are kept, the data they contain need not be transferred
+  // again.
   int32 keep_temporaries_h = 25 [default = 24];
+
+  // How often, in seconds, the progress of ongoing downloads is made
+  // available to the GUI. -1 disables progress updates; when disabled,
+  // the detailed sync progress for out of sync items will not work.
   int32 progress_update_interval_s = 26 [default = 5];
+
+  // Whether to apply bandwidth limits to devices in the same broadcast
+  // domain as the local device.
   bool limit_bandwidth_in_lan = 27;
+
+  // The minimum required free space on the partition holding the
+  // configuration and index. An unset or zero size disables the check.
   Size min_home_disk_free = 28;
+
+  // The URL from which release information is loaded, for automatic
+  // upgrades.
   string releases_url = 29 [default = "https://upgrades.syncthing.net/meta.json"];
+
+  // Networks that should be considered local, in CIDR notation.
   repeated string always_local_nets = 30;
+
+  // If set, device names will always be overwritten with the name given
+  // by the remote on each connection. By default, the name that the
+  // remote device announces will only be adopted when a name has not
+  // already been set.
   bool overwrite_remote_device_names_on_connect = 31;
+
+  // When exchanging index information for incomplete transfers, only
+  // take into account files with at least this many blocks.
   int32 temp_index_min_blocks = 32;
+
+  // IDs of notifications to be displayed in the web GUI. An ID is
+  // removed once the user acknowledges it, e.g. a transition notice on
+  // an upgrade.
   repeated string unacked_notification_ids = 33;
+
+  // An IPv4 type of service (TOS)/IPv6 traffic class for outgoing
+  // packets. To specify a differentiated services code point (DSCP) the
+  // value must be bit shifted to the left by two, to take the two least
+  // significant ECN bits into account.
   int32 traffic_class = 34;
+
+  // Attempt to lower the process priority at startup: on Linux, set
+  // itself to a separate process group with niceness level nine and
+  // best-effort I/O priority five; on other Unixes, set the niceness
+  // level to nine; on Windows, set the process priority class to below
+  // normal. Set to false to control process priority yourself when
+  // launching Syncthing.
   bool set_low_priority = 36 [default = true];
+
+  // How many folders may concurrently be in I/O-intensive operations
+  // such as syncing or scanning. Zero means the number of CPUs.
   int32 max_folder_concurrency = 37;
+
+  // Server URL where automatic crash reports will be sent, if enabled.
   string cr_url = 38 [default = "https://crash.syncthing.net/newcrash"];
+
+  // Set to false to keep Syncthing from sending panic logs on serious
+  // troubles.
   bool crash_reporting_enabled = 39 [default = true];
+
+  // Interval, in seconds, between contacting a STUN server to maintain
+  // the NAT mapping. Zero disables contacting STUN servers. The interval
+  // is automatically reduced if needed, down to a minimum of
+  // stun_keepalive_min_s.
   int32 stun_keepalive_start_s = 40 [default = 180];
+
+  // Minimum for the stun_keepalive_start_s interval, in seconds.
   int32 stun_keepalive_min_s = 41 [default = 20];
+
+  // Servers to use for STUN, given as ip:port. The keyword "default"
+  // gets expanded to a set of public STUN servers, with preference given
+  // to those hosted by the Syncthing project.
   repeated string stun_servers = 42;
+
+  // Limits how much data is "in the air" in the form of response data
+  // being read and processed, in kibibytes.
   int32 max_concurrent_incoming_request_ki_b = 43;
+
+  // Enable (the default) or disable announcing private (RFC1918) LAN
+  // addresses to global discovery.
   bool announce_lan_addresses = 44 [default = true];
+
+  // Whether all index data is resent when an upgrade has happened. This
+  // used to be the default behavior in older versions, but is mainly
+  // useful as a troubleshooting step and causes high database churn.
   bool send_full_index_on_upgrade = 45;
+
+  // Feature flags enable unfinished or still-in-development features
+  // for early testing. Supported values are announced separately with
+  // each feature.
   repeated string feature_flags = 46;
+
+  // When true, auditing is enabled, analogous to the --audit command
+  // line flag being set.
   bool audit_enabled = 47;
+
+  // File for audit log output, analogous to the --auditfile flag. For
+  // compatibility reasons, the command line flag takes priority when
+  // both are set.
   string audit_file = 48;
+
   // The number of connections at which we stop trying to connect to more
   // devices, zero meaning no limit. Does not affect incoming connections.
   int32 connection_limit_enough = 49;
+
   // The maximum number of connections which we will allow in total, zero
   // meaning no limit. Affects incoming connections and prevents
   // attempting outgoing connections.
   int32 connection_limit_max = 50;
+
+  // Priorities for the different connection types; connections are
+  // tried in order of increasing priority value.
   int32 connection_priority_tcp_lan = 51 [default = 10];
   int32 connection_priority_quic_lan = 52 [default = 20];
   int32 connection_priority_tcp_wan = 53 [default = 30];
   int32 connection_priority_quic_wan = 54 [default = 40];
   int32 connection_priority_relay = 55 [default = 50];
+
+  // A new connection only replaces an existing one if its priority is
+  // better than the existing one's by at least this much, preventing
+  // connection churn between similarly prioritized connection types.
   int32 connection_priority_upgrade_threshold = 56;
 }
 
@@ -279,20 +806,39 @@ message Size {
 // string representation used in JSON and XML is noted next to each value.
 
 enum AuthMode {
+  // Authentication using user and password.
   AUTH_MODE_STATIC = 0; // "static"
-  AUTH_MODE_LDAP = 1;   // "ldap"
+  // LDAP authentication. Requires the LDAP configuration to be present.
+  AUTH_MODE_LDAP = 1; // "ldap"
 }
 
 enum BlockPullOrder {
+  // The blocks of a file are split into N equal continuous sequences,
+  // where N is the number of connected devices. Each device starts
+  // downloading its own sequence, after which it picks other devices'
+  // sequences at random. Provides acceptable data distribution and
+  // minimal spinning disk strain.
   BLOCK_PULL_ORDER_STANDARD = 0; // "standard"
-  BLOCK_PULL_ORDER_RANDOM = 1;   // "random"
+  // The blocks of a file are downloaded in a random order. Provides
+  // great data distribution, but is very taxing on spinning disk
+  // drives.
+  BLOCK_PULL_ORDER_RANDOM = 1; // "random"
+  // The blocks of a file are downloaded sequentially, from start to
+  // finish. Spinning disk drive friendly, but provides no improvements
+  // to data distribution.
   BLOCK_PULL_ORDER_IN_ORDER = 2; // "inOrder"
 }
 
 enum Compression {
+  // Compress metadata packets, such as index information. Metadata is
+  // usually very compression friendly so this is a good default.
   COMPRESSION_METADATA = 0; // "metadata"
-  COMPRESSION_NEVER = 1;    // "never"
-  COMPRESSION_ALWAYS = 2;   // "always"
+  // Disable all compression.
+  COMPRESSION_NEVER = 1; // "never"
+  // Compress all packets, including file data. Recommended if the
+  // folder contents are mainly compressible data such as documents or
+  // text files.
+  COMPRESSION_ALWAYS = 2; // "always"
 }
 
 enum CopyRangeMethod {
@@ -306,29 +852,50 @@ enum CopyRangeMethod {
 
 // The zero value means "basic", for legacy compatibility.
 enum FilesystemType {
+  // The standard filesystem, backed by the OS.
   FILESYSTEM_TYPE_BASIC = 0; // "basic"
+  // An in-memory filesystem, for testing.
   FILESYSTEM_TYPE_FAKE = 1;  // "fake"
 }
 
 enum FolderType {
-  FOLDER_TYPE_SEND_RECEIVE = 0;      // "sendreceive"
-  FOLDER_TYPE_SEND_ONLY = 1;         // "sendonly"
-  FOLDER_TYPE_RECEIVE_ONLY = 2;      // "receiveonly"
+  // Default mode. Sending local and accepting remote changes. Previously
+  // called "readwrite", which is still accepted in legacy configs.
+  FOLDER_TYPE_SEND_RECEIVE = 0; // "sendreceive"
+  // Send only mode. The folder will not be modified by Syncthing on
+  // this device. Previously called "readonly", which is still accepted
+  // in legacy configs.
+  FOLDER_TYPE_SEND_ONLY = 1; // "sendonly"
+  // Receive only mode. Changes will not be propagated to other devices.
+  FOLDER_TYPE_RECEIVE_ONLY = 2; // "receiveonly"
+  // Receive encrypted mode. Must be used on untrusted devices, where
+  // the data cannot be decrypted because no folder password was
+  // entered.
   FOLDER_TYPE_RECEIVE_ENCRYPTED = 3; // "receiveencrypted"
 }
 
 enum LDAPTransport {
-  LDAP_TRANSPORT_PLAIN = 0;     // "plain"
-  LDAP_TRANSPORT_TLS = 2;       // "tls"
+  // Non-secure connection.
+  LDAP_TRANSPORT_PLAIN = 0; // "plain"
+  // TLS secured connection.
+  LDAP_TRANSPORT_TLS = 2; // "tls"
+  // StartTLS connection mode.
   LDAP_TRANSPORT_START_TLS = 3; // "starttls"
   reserved 1;
 }
 
 enum PullOrder {
-  PULL_ORDER_RANDOM = 0;         // "random"
-  PULL_ORDER_ALPHABETIC = 1;     // "alphabetic"
+  // Pull files in random order. Optimizes for balancing resources among
+  // the devices in a cluster.
+  PULL_ORDER_RANDOM = 0; // "random"
+  // Pull files ordered by file name alphabetically.
+  PULL_ORDER_ALPHABETIC = 1; // "alphabetic"
+  // Pull files ordered by file size, smallest first.
   PULL_ORDER_SMALLEST_FIRST = 2; // "smallestFirst"
-  PULL_ORDER_LARGEST_FIRST = 3;  // "largestFirst"
-  PULL_ORDER_OLDEST_FIRST = 4;   // "oldestFirst"
-  PULL_ORDER_NEWEST_FIRST = 5;   // "newestFirst"
+  // Pull files ordered by file size, largest first.
+  PULL_ORDER_LARGEST_FIRST = 3; // "largestFirst"
+  // Pull files ordered by modification time, oldest first.
+  PULL_ORDER_OLDEST_FIRST = 4; // "oldestFirst"
+  // Pull files ordered by modification time, newest first.
+  PULL_ORDER_NEWEST_FIRST = 5; // "newestFirst"
 }
