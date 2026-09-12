@@ -5,6 +5,7 @@ package syncthing.v2;
 import "syncthing/v2/config.proto";
 
 message GetConfigRequest {
+  bool materialize_defaults = 1;
 }
 
 message GetConfigResponse {

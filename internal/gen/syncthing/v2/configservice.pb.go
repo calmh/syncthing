@@ -21,9 +21,12 @@ const (
 )
 
 type GetConfigRequest struct {
-	state         protoimpl.MessageState `protogen:"opaque.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state                          protoimpl.MessageState `protogen:"opaque.v1"`
+	xxx_hidden_MaterializeDefaults bool                   `protobuf:"varint,1,opt,name=materialize_defaults,json=materializeDefaults"`
+	XXX_raceDetectHookData         protoimpl.RaceDetectHookData
+	XXX_presence                   [1]uint32
+	unknownFields                  protoimpl.UnknownFields
+	sizeCache                      protoimpl.SizeCache
 }
 
 func (x *GetConfigRequest) Reset() {
@@ -51,15 +54,44 @@ func (x *GetConfigRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
+func (x *GetConfigRequest) GetMaterializeDefaults() bool {
+	if x != nil {
+		return x.xxx_hidden_MaterializeDefaults
+	}
+	return false
+}
+
+func (x *GetConfigRequest) SetMaterializeDefaults(v bool) {
+	x.xxx_hidden_MaterializeDefaults = v
+	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 1)
+}
+
+func (x *GetConfigRequest) HasMaterializeDefaults() bool {
+	if x == nil {
+		return false
+	}
+	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
+}
+
+func (x *GetConfigRequest) ClearMaterializeDefaults() {
+	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
+	x.xxx_hidden_MaterializeDefaults = false
+}
+
 type GetConfigRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
+	MaterializeDefaults *bool
 }
 
 func (b0 GetConfigRequest_builder) Build() *GetConfigRequest {
 	m0 := &GetConfigRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
+	if b.MaterializeDefaults != nil {
+		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 0, 1)
+		x.xxx_hidden_MaterializeDefaults = *b.MaterializeDefaults
+	}
 	return m0
 }
 
@@ -135,8 +167,9 @@ var File_syncthing_v2_configservice_proto protoreflect.FileDescriptor
 
 const file_syncthing_v2_configservice_proto_rawDesc = "" +
 	"\n" +
-	" syncthing/v2/configservice.proto\x12\fsyncthing.v2\x1a\x19syncthing/v2/config.proto\"\x12\n" +
-	"\x10GetConfigRequest\"V\n" +
+	" syncthing/v2/configservice.proto\x12\fsyncthing.v2\x1a\x19syncthing/v2/config.proto\"E\n" +
+	"\x10GetConfigRequest\x121\n" +
+	"\x14materialize_defaults\x18\x01 \x01(\bR\x13materializeDefaults\"V\n" +
 	"\x11GetConfigResponse\x12A\n" +
 	"\rconfiguration\x18\x01 \x01(\v2\x1b.syncthing.v2.ConfigurationR\rconfiguration2p\n" +
 	"\x14ConfigurationService\x12X\n" +
