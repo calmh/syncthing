@@ -1,0 +1,16 @@
+edition = "2024";
+
+package syncthing.v2;
+
+import "syncthing/v2/config.proto";
+
+message GetConfigRequest {
+}
+
+message GetConfigResponse {
+  syncthing.v2.Configuration configuration = 1;
+}
+
+service ConfigurationService {
+  rpc GetConfiguration(GetConfigRequest) returns (GetConfigResponse) {}
+}

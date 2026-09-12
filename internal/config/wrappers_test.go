@@ -9,7 +9,7 @@ package config
 import (
 	"testing"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -19,22 +19,22 @@ func TestWrapperDeviceIDs(t *testing.T) {
 	id := protocol.NewDeviceID([]byte("wrapper"))
 	other := protocol.NewDeviceID([]byte("otherdevice"))
 
-	cfg := Configuration{configpb.Configuration_builder{
-		Folders: []*configpb.FolderConfiguration{configpb.FolderConfiguration_builder{
+	cfg := Configuration{syncthingv2.Configuration_builder{
+		Folders: []*syncthingv2.FolderConfiguration{syncthingv2.FolderConfiguration_builder{
 			Id: new("f1"),
-			Devices: []*configpb.FolderDeviceConfiguration{configpb.FolderDeviceConfiguration_builder{
+			Devices: []*syncthingv2.FolderDeviceConfiguration{syncthingv2.FolderDeviceConfiguration_builder{
 				DeviceId:     new(id.String()),
 				IntroducedBy: new(other.String()),
 			}.Build()},
 		}.Build()},
-		Devices: []*configpb.DeviceConfiguration{configpb.DeviceConfiguration_builder{
+		Devices: []*syncthingv2.DeviceConfiguration{syncthingv2.DeviceConfiguration_builder{
 			DeviceId:     new(id.String()),
 			IntroducedBy: new(other.String()),
 		}.Build()},
-		RemoteIgnoredDevices: []*configpb.ObservedDevice{configpb.ObservedDevice_builder{
+		RemoteIgnoredDevices: []*syncthingv2.ObservedDevice{syncthingv2.ObservedDevice_builder{
 			DeviceId: new(id.String()),
 		}.Build()},
-		Defaults: configpb.Defaults_builder{}.Build(),
+		Defaults: syncthingv2.Defaults_builder{}.Build(),
 	}.Build()}
 
 	tests := []struct {
@@ -70,7 +70,7 @@ func TestWrapperDeviceIDs(t *testing.T) {
 
 	// Parent setters accept the wrapper types.
 	cfg.SetDevices([]DeviceConfiguration{{
-		DeviceConfiguration: configpb.DeviceConfiguration_builder{
+		DeviceConfiguration: syncthingv2.DeviceConfiguration_builder{
 			DeviceId: new(other.String()),
 		}.Build(),
 	}})

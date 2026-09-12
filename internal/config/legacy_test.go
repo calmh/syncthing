@@ -14,7 +14,7 @@ import (
 	"buf.build/go/protoyaml"
 	"google.golang.org/protobuf/proto"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	config "github.com/syncthing/syncthing/lib/config"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
@@ -110,15 +110,15 @@ func TestFromLegacy(t *testing.T) {
 	}{
 		{"version", got.GetVersion(), int32(52)},
 		{"folder.id", got.GetFolders()[0].GetId(), "f1"},
-		{"folder.filesystemType", got.GetFolders()[0].GetFilesystemType(), configpb.FilesystemType_FILESYSTEM_TYPE_FAKE},
-		{"folder.type", got.GetFolders()[0].GetType(), configpb.FolderType_FOLDER_TYPE_RECEIVE_ONLY},
+		{"folder.filesystemType", got.GetFolders()[0].GetFilesystemType(), syncthingv2.FilesystemType_FILESYSTEM_TYPE_FAKE},
+		{"folder.type", got.GetFolders()[0].GetType(), syncthingv2.FolderType_FOLDER_TYPE_RECEIVE_ONLY},
 		{"folder.minDiskFree.gib", got.GetFolders()[0].GetMinDiskFree().GetGib(), 2.0},
-		{"folder.order", got.GetFolders()[0].GetOrder(), configpb.PullOrder_PULL_ORDER_OLDEST_FIRST},
-		{"folder.blockPullOrder", got.GetFolders()[0].GetBlockPullOrder(), configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER},
-		{"folder.copyRangeMethod", got.GetFolders()[0].GetCopyRangeMethod(), configpb.CopyRangeMethod_COPY_RANGE_METHOD_SEND_FILE},
+		{"folder.order", got.GetFolders()[0].GetOrder(), syncthingv2.PullOrder_PULL_ORDER_OLDEST_FIRST},
+		{"folder.blockPullOrder", got.GetFolders()[0].GetBlockPullOrder(), syncthingv2.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER},
+		{"folder.copyRangeMethod", got.GetFolders()[0].GetCopyRangeMethod(), syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_SEND_FILE},
 		{"folder.versioning.type", got.GetFolders()[0].GetVersioning().GetType(), "simple"},
 		{"folder.versioning.params", got.GetFolders()[0].GetVersioning().GetParams()["keep"], "3"},
-		{"folder.versioning.fsType", got.GetFolders()[0].GetVersioning().GetFsType(), configpb.FilesystemType_FILESYSTEM_TYPE_FAKE},
+		{"folder.versioning.fsType", got.GetFolders()[0].GetVersioning().GetFsType(), syncthingv2.FilesystemType_FILESYSTEM_TYPE_FAKE},
 		{"folder.device.deviceID", got.GetFolders()[0].GetDevices()[0].GetDeviceId(), otherID},
 		{"folder.device.introducedBy", got.GetFolders()[0].GetDevices()[0].GetIntroducedBy(), id},
 		{"folder.device.encryptionPassword", got.GetFolders()[0].GetDevices()[0].GetEncryptionPassword(), "hunter2"},
@@ -126,14 +126,14 @@ func TestFromLegacy(t *testing.T) {
 		{"folder.xattrFilter.maxSingleEntrySize", got.GetFolders()[0].GetXattrFilter().GetMaxSingleEntrySize(), int32(512)},
 		{"folder.xattrFilter.maxTotalSize", got.GetFolders()[0].GetXattrFilter().GetMaxTotalSize(), int32(1024)},
 		{"device.deviceID", got.GetDevices()[0].GetDeviceId(), otherID},
-		{"device.compression", got.GetDevices()[0].GetCompression(), configpb.Compression_COMPRESSION_ALWAYS},
+		{"device.compression", got.GetDevices()[0].GetCompression(), syncthingv2.Compression_COMPRESSION_ALWAYS},
 		{"device.numConnections", got.GetDevices()[0].GetNumConnections(), int32(7)},
 		{"device.remoteGUIPort", got.GetDevices()[0].GetRemoteGuiPort(), int32(1234)},
 		{"device.ignoredFolders[0].id", got.GetDevices()[0].GetIgnoredFolders()[0].GetId(), "ig1"},
 		{"gui.address", got.GetGui().GetAddress(), "127.0.0.1:9000"},
-		{"gui.authMode", got.GetGui().GetAuthMode(), configpb.AuthMode_AUTH_MODE_LDAP},
+		{"gui.authMode", got.GetGui().GetAuthMode(), syncthingv2.AuthMode_AUTH_MODE_LDAP},
 		{"gui.useTLS", got.GetGui().GetUseTls(), true},
-		{"ldap.transport", got.GetLdap().GetTransport(), configpb.LDAPTransport_LDAP_TRANSPORT_START_TLS},
+		{"ldap.transport", got.GetLdap().GetTransport(), syncthingv2.LDAPTransport_LDAP_TRANSPORT_START_TLS},
 		{"options.listenAddresses", got.GetOptions().GetListenAddresses(), []string{"default"}},
 		{"options.maxSendKbps", got.GetOptions().GetMaxSendKbps(), int32(100)},
 		{"options.urAccepted", got.GetOptions().GetUrAccepted(), int32(-1)},
@@ -141,7 +141,7 @@ func TestFromLegacy(t *testing.T) {
 		{"remoteIgnoredDevices[0].deviceID", got.GetRemoteIgnoredDevices()[0].GetDeviceId(), id},
 		{"remoteIgnoredDevices[0].name", got.GetRemoteIgnoredDevices()[0].GetName(), "Friend"},
 		{"defaults.folder.rescanIntervalS", got.GetDefaults().GetFolder().GetRescanIntervalS(), int32(10800)},
-		{"defaults.device.compression", got.GetDefaults().GetDevice().GetCompression(), configpb.Compression_COMPRESSION_NEVER},
+		{"defaults.device.compression", got.GetDefaults().GetDevice().GetCompression(), syncthingv2.Compression_COMPRESSION_NEVER},
 		{"defaults.ignores.lines", got.GetDefaults().GetIgnores().GetLines(), []string{"*.tmp"}},
 	}
 	for _, test := range tests {
@@ -167,7 +167,7 @@ func TestFromLegacy(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
-	var reparsed configpb.Configuration
+	var reparsed syncthingv2.Configuration
 	if err := protoyaml.Unmarshal(data, &reparsed); err != nil {
 		t.Fatalf("unmarshal: %v\n%s", err, data)
 	}
@@ -229,33 +229,33 @@ func TestLegacyEnumValues(t *testing.T) {
 		legacy int64
 		want   int64
 	}{
-		{"FolderType.SendReceive", int64(config.FolderTypeSendReceive), int64(configpb.FolderType_FOLDER_TYPE_SEND_RECEIVE)},
-		{"FolderType.SendOnly", int64(config.FolderTypeSendOnly), int64(configpb.FolderType_FOLDER_TYPE_SEND_ONLY)},
-		{"FolderType.ReceiveOnly", int64(config.FolderTypeReceiveOnly), int64(configpb.FolderType_FOLDER_TYPE_RECEIVE_ONLY)},
-		{"FolderType.ReceiveEncrypted", int64(config.FolderTypeReceiveEncrypted), int64(configpb.FolderType_FOLDER_TYPE_RECEIVE_ENCRYPTED)},
-		{"Compression.Metadata", int64(config.CompressionMetadata), int64(configpb.Compression_COMPRESSION_METADATA)},
-		{"Compression.Never", int64(config.CompressionNever), int64(configpb.Compression_COMPRESSION_NEVER)},
-		{"Compression.Always", int64(config.CompressionAlways), int64(configpb.Compression_COMPRESSION_ALWAYS)},
-		{"AuthMode.Static", int64(config.AuthModeStatic), int64(configpb.AuthMode_AUTH_MODE_STATIC)},
-		{"AuthMode.LDAP", int64(config.AuthModeLDAP), int64(configpb.AuthMode_AUTH_MODE_LDAP)},
-		{"BlockPullOrder.Standard", int64(config.BlockPullOrderStandard), int64(configpb.BlockPullOrder_BLOCK_PULL_ORDER_STANDARD)},
-		{"BlockPullOrder.Random", int64(config.BlockPullOrderRandom), int64(configpb.BlockPullOrder_BLOCK_PULL_ORDER_RANDOM)},
-		{"BlockPullOrder.InOrder", int64(config.BlockPullOrderInOrder), int64(configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER)},
-		{"CopyRangeMethod.Standard", int64(config.CopyRangeMethodStandard), int64(configpb.CopyRangeMethod_COPY_RANGE_METHOD_STANDARD)},
-		{"CopyRangeMethod.Ioctl", int64(config.CopyRangeMethodIoctl), int64(configpb.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL)},
-		{"CopyRangeMethod.CopyFileRange", int64(config.CopyRangeMethodCopyFileRange), int64(configpb.CopyRangeMethod_COPY_RANGE_METHOD_COPY_FILE_RANGE)},
-		{"CopyRangeMethod.SendFile", int64(config.CopyRangeMethodSendFile), int64(configpb.CopyRangeMethod_COPY_RANGE_METHOD_SEND_FILE)},
-		{"CopyRangeMethod.DuplicateExtents", int64(config.CopyRangeMethodDuplicateExtents), int64(configpb.CopyRangeMethod_COPY_RANGE_METHOD_DUPLICATE_EXTENTS)},
-		{"CopyRangeMethod.AllWithFallback", int64(config.CopyRangeMethodAllWithFallback), int64(configpb.CopyRangeMethod_COPY_RANGE_METHOD_ALL_WITH_FALLBACK)},
-		{"LDAPTransport.Plain", int64(config.LDAPTransportPlain), int64(configpb.LDAPTransport_LDAP_TRANSPORT_PLAIN)},
-		{"LDAPTransport.TLS", int64(config.LDAPTransportTLS), int64(configpb.LDAPTransport_LDAP_TRANSPORT_TLS)},
-		{"LDAPTransport.StartTLS", int64(config.LDAPTransportStartTLS), int64(configpb.LDAPTransport_LDAP_TRANSPORT_START_TLS)},
-		{"PullOrder.Random", int64(config.PullOrderRandom), int64(configpb.PullOrder_PULL_ORDER_RANDOM)},
-		{"PullOrder.Alphabetic", int64(config.PullOrderAlphabetic), int64(configpb.PullOrder_PULL_ORDER_ALPHABETIC)},
-		{"PullOrder.SmallestFirst", int64(config.PullOrderSmallestFirst), int64(configpb.PullOrder_PULL_ORDER_SMALLEST_FIRST)},
-		{"PullOrder.LargestFirst", int64(config.PullOrderLargestFirst), int64(configpb.PullOrder_PULL_ORDER_LARGEST_FIRST)},
-		{"PullOrder.OldestFirst", int64(config.PullOrderOldestFirst), int64(configpb.PullOrder_PULL_ORDER_OLDEST_FIRST)},
-		{"PullOrder.NewestFirst", int64(config.PullOrderNewestFirst), int64(configpb.PullOrder_PULL_ORDER_NEWEST_FIRST)},
+		{"FolderType.SendReceive", int64(config.FolderTypeSendReceive), int64(syncthingv2.FolderType_FOLDER_TYPE_SEND_RECEIVE)},
+		{"FolderType.SendOnly", int64(config.FolderTypeSendOnly), int64(syncthingv2.FolderType_FOLDER_TYPE_SEND_ONLY)},
+		{"FolderType.ReceiveOnly", int64(config.FolderTypeReceiveOnly), int64(syncthingv2.FolderType_FOLDER_TYPE_RECEIVE_ONLY)},
+		{"FolderType.ReceiveEncrypted", int64(config.FolderTypeReceiveEncrypted), int64(syncthingv2.FolderType_FOLDER_TYPE_RECEIVE_ENCRYPTED)},
+		{"Compression.Metadata", int64(config.CompressionMetadata), int64(syncthingv2.Compression_COMPRESSION_METADATA)},
+		{"Compression.Never", int64(config.CompressionNever), int64(syncthingv2.Compression_COMPRESSION_NEVER)},
+		{"Compression.Always", int64(config.CompressionAlways), int64(syncthingv2.Compression_COMPRESSION_ALWAYS)},
+		{"AuthMode.Static", int64(config.AuthModeStatic), int64(syncthingv2.AuthMode_AUTH_MODE_STATIC)},
+		{"AuthMode.LDAP", int64(config.AuthModeLDAP), int64(syncthingv2.AuthMode_AUTH_MODE_LDAP)},
+		{"BlockPullOrder.Standard", int64(config.BlockPullOrderStandard), int64(syncthingv2.BlockPullOrder_BLOCK_PULL_ORDER_STANDARD)},
+		{"BlockPullOrder.Random", int64(config.BlockPullOrderRandom), int64(syncthingv2.BlockPullOrder_BLOCK_PULL_ORDER_RANDOM)},
+		{"BlockPullOrder.InOrder", int64(config.BlockPullOrderInOrder), int64(syncthingv2.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER)},
+		{"CopyRangeMethod.Standard", int64(config.CopyRangeMethodStandard), int64(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_STANDARD)},
+		{"CopyRangeMethod.Ioctl", int64(config.CopyRangeMethodIoctl), int64(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL)},
+		{"CopyRangeMethod.CopyFileRange", int64(config.CopyRangeMethodCopyFileRange), int64(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_COPY_FILE_RANGE)},
+		{"CopyRangeMethod.SendFile", int64(config.CopyRangeMethodSendFile), int64(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_SEND_FILE)},
+		{"CopyRangeMethod.DuplicateExtents", int64(config.CopyRangeMethodDuplicateExtents), int64(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_DUPLICATE_EXTENTS)},
+		{"CopyRangeMethod.AllWithFallback", int64(config.CopyRangeMethodAllWithFallback), int64(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_ALL_WITH_FALLBACK)},
+		{"LDAPTransport.Plain", int64(config.LDAPTransportPlain), int64(syncthingv2.LDAPTransport_LDAP_TRANSPORT_PLAIN)},
+		{"LDAPTransport.TLS", int64(config.LDAPTransportTLS), int64(syncthingv2.LDAPTransport_LDAP_TRANSPORT_TLS)},
+		{"LDAPTransport.StartTLS", int64(config.LDAPTransportStartTLS), int64(syncthingv2.LDAPTransport_LDAP_TRANSPORT_START_TLS)},
+		{"PullOrder.Random", int64(config.PullOrderRandom), int64(syncthingv2.PullOrder_PULL_ORDER_RANDOM)},
+		{"PullOrder.Alphabetic", int64(config.PullOrderAlphabetic), int64(syncthingv2.PullOrder_PULL_ORDER_ALPHABETIC)},
+		{"PullOrder.SmallestFirst", int64(config.PullOrderSmallestFirst), int64(syncthingv2.PullOrder_PULL_ORDER_SMALLEST_FIRST)},
+		{"PullOrder.LargestFirst", int64(config.PullOrderLargestFirst), int64(syncthingv2.PullOrder_PULL_ORDER_LARGEST_FIRST)},
+		{"PullOrder.OldestFirst", int64(config.PullOrderOldestFirst), int64(syncthingv2.PullOrder_PULL_ORDER_OLDEST_FIRST)},
+		{"PullOrder.NewestFirst", int64(config.PullOrderNewestFirst), int64(syncthingv2.PullOrder_PULL_ORDER_NEWEST_FIRST)},
 	}
 	for _, test := range tests {
 		if test.legacy != test.want {
@@ -267,11 +267,11 @@ func TestLegacyEnumValues(t *testing.T) {
 	// the empty (zero) value meaning "basic".
 	for _, test := range []struct {
 		legacy config.FilesystemType
-		want   configpb.FilesystemType
+		want   syncthingv2.FilesystemType
 	}{
-		{config.FilesystemTypeBasic, configpb.FilesystemType_FILESYSTEM_TYPE_BASIC},
-		{config.FilesystemTypeFake, configpb.FilesystemType_FILESYSTEM_TYPE_FAKE},
-		{"", configpb.FilesystemType_FILESYSTEM_TYPE_BASIC},
+		{config.FilesystemTypeBasic, syncthingv2.FilesystemType_FILESYSTEM_TYPE_BASIC},
+		{config.FilesystemTypeFake, syncthingv2.FilesystemType_FILESYSTEM_TYPE_FAKE},
+		{"", syncthingv2.FilesystemType_FILESYSTEM_TYPE_BASIC},
 	} {
 		if got := filesystemTypeFromLegacy(test.legacy); got != test.want {
 			t.Errorf("filesystemTypeFromLegacy(%q): got %v, want %v", test.legacy, got, test.want)

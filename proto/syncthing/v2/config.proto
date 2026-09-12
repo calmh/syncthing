@@ -1,17 +1,17 @@
 edition = "2024";
 
-package syncthing.v2.config;
+package syncthing.v2;
 
 import "buf/validate/validate.proto";
 import "google/protobuf/timestamp.proto";
-import "syncthing/v2/config/options.proto";
+import "syncthing/v2/options.proto";
 
 // Singular fields have explicit presence: "unset" is distinct from the
 // zero value.
 //
 // Device IDs are represented as strings in their canonical form (base32,
 // with check digits and dashes). Fields containing device IDs are
-// annotated with (config.device_id) and validated to parse as device IDs.
+// annotated with (syncthing.v2.device_id) and validated to parse as device IDs.
 
 // --- Top level ---
 
@@ -274,7 +274,7 @@ message FolderConfiguration {
 message FolderDeviceConfiguration {
   // The device sharing the folder, in canonical form; empty means no
   // device.
-  string device_id = 1 [(config.device_id) = true];
+  string device_id = 1 [(syncthing.v2.device_id) = true];
 
   // The device that introduced us to share this folder with the given
   // device, in canonical form. If the original introducer unshares this
@@ -282,7 +282,7 @@ message FolderDeviceConfiguration {
   // folder as well, subject to skip_introduction_removals being false on
   // the introducer device. Empty if the device was not introduced by
   // another device.
-  string introduced_by = 2 [(config.device_id) = true];
+  string introduced_by = 2 [(syncthing.v2.device_id) = true];
 
   // The secret needed to decrypt this folder's data on the remote
   // device. If left empty, the data is plainly accessible (but still
@@ -344,7 +344,7 @@ message XattrFilterEntry {
 // The configuration for a device participating in the cluster.
 message DeviceConfiguration {
   // The device ID, in canonical form; empty means no device.
-  string device_id = 1 [(config.device_id) = true];
+  string device_id = 1 [(syncthing.v2.device_id) = true];
 
   // A friendly name for the device.
   string name = 2;
@@ -377,7 +377,7 @@ message DeviceConfiguration {
   // The device that introduced us to this device, in canonical form.
   // Used only for following de-introductions. Empty if the device was
   // not introduced by another device.
-  string introduced_by = 8 [(config.device_id) = true];
+  string introduced_by = 8 [(syncthing.v2.device_id) = true];
 
   // True if synchronization with this device is (temporarily)
   // suspended.
@@ -451,7 +451,7 @@ message ObservedDevice {
   google.protobuf.Timestamp time = 1;
 
   // The device ID, in canonical form; empty means no device.
-  string device_id = 2 [(config.device_id) = true];
+  string device_id = 2 [(syncthing.v2.device_id) = true];
 
   // The device name.
   string name = 3;

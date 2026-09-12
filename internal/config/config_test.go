@@ -16,7 +16,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -36,7 +36,7 @@ func TestYAMLRoundTrip(t *testing.T) {
 
 	os.WriteFile("_testdata/roundtrip.yaml", data, 0o644)
 
-	var parsed configpb.Configuration
+	var parsed syncthingv2.Configuration
 	if err := protoyaml.Unmarshal(data, &parsed); err != nil {
 		t.Fatalf("unmarshal: %v\n%s", err, data)
 	}
@@ -65,7 +65,7 @@ func TestYAMLRoundTrip(t *testing.T) {
 // TestYAMLMarshalPresence tests that marshalling emits set fields and
 // omits unset ones, so that defaults are not materialised into the file.
 func TestYAMLMarshalPresence(t *testing.T) {
-	cfg := configpb.Configuration_builder{Version: new(int32(52))}.Build()
+	cfg := syncthingv2.Configuration_builder{Version: new(int32(52))}.Build()
 	data, err := protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -78,7 +78,7 @@ func TestYAMLMarshalPresence(t *testing.T) {
 	}
 
 	// An explicitly set zero value is emitted.
-	cfg = configpb.Configuration_builder{Version: new(int32(0))}.Build()
+	cfg = syncthingv2.Configuration_builder{Version: new(int32(0))}.Build()
 	data, err = protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -88,7 +88,7 @@ func TestYAMLMarshalPresence(t *testing.T) {
 	}
 
 	// An unset field is not.
-	cfg = &configpb.Configuration{}
+	cfg = &syncthingv2.Configuration{}
 	data, err = protoyaml.Marshal(cfg)
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
@@ -106,7 +106,7 @@ version: 52
 folders:
   - id: minimal
 `
-	var cfg configpb.Configuration
+	var cfg syncthingv2.Configuration
 	if err := protoyaml.Unmarshal([]byte(document), &cfg); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
@@ -148,11 +148,11 @@ folders:
 	if got := folder.GetRescanIntervalS(); got != 3600 {
 		t.Errorf("folder.rescanIntervalS: got %d, want default 3600", got)
 	}
-	if got := folder.GetFilesystemType(); got != configpb.FilesystemType_FILESYSTEM_TYPE_BASIC {
-		t.Errorf("folder.filesystemType: got %v, want default %v", got, configpb.FilesystemType_FILESYSTEM_TYPE_BASIC)
+	if got := folder.GetFilesystemType(); got != syncthingv2.FilesystemType_FILESYSTEM_TYPE_BASIC {
+		t.Errorf("folder.filesystemType: got %v, want default %v", got, syncthingv2.FilesystemType_FILESYSTEM_TYPE_BASIC)
 	}
-	if got := folder.GetCopyRangeMethod(); got != configpb.CopyRangeMethod_COPY_RANGE_METHOD_STANDARD {
-		t.Errorf("folder.copyRangeMethod: got %v, want default %v", got, configpb.CopyRangeMethod_COPY_RANGE_METHOD_STANDARD)
+	if got := folder.GetCopyRangeMethod(); got != syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_STANDARD {
+		t.Errorf("folder.copyRangeMethod: got %v, want default %v", got, syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_STANDARD)
 	}
 	if !folder.GetAutoNormalize() || !folder.GetBlockIndexing() {
 		t.Errorf("folder.autoNormalize and folder.blockIndexing should default to true")
@@ -185,7 +185,7 @@ folders:
 // TestYAMLUnmarshalUnknownField tests that unknown fields in the YAML are
 // an error, so that typos don't get silently ignored.
 func TestYAMLUnmarshalUnknownField(t *testing.T) {
-	err := protoyaml.Unmarshal([]byte("version: 52\nnoSuchField: 1\n"), &configpb.Configuration{})
+	err := protoyaml.Unmarshal([]byte("version: 52\nnoSuchField: 1\n"), &syncthingv2.Configuration{})
 	if err == nil {
 		t.Fatalf("expected error on unknown field")
 	}
@@ -328,91 +328,91 @@ func TestYAMLUnmarshalDeviceIDValidation(t *testing.T) {
 
 // testConfiguration returns a configuration populated with a
 // representative spread of fields and values.
-func testConfiguration() *configpb.Configuration {
-	return configpb.Configuration_builder{
+func testConfiguration() *syncthingv2.Configuration {
+	return syncthingv2.Configuration_builder{
 		Version: new(int32(52)),
-		Folders: []*configpb.FolderConfiguration{configpb.FolderConfiguration_builder{
+		Folders: []*syncthingv2.FolderConfiguration{syncthingv2.FolderConfiguration_builder{
 			Id:               new("test1"),
 			Label:            new("Test One"),
 			Path:             new("/srv/sync/test1"),
-			Type:             new(configpb.FolderType_FOLDER_TYPE_SEND_ONLY),
+			Type:             new(syncthingv2.FolderType_FOLDER_TYPE_SEND_ONLY),
 			RescanIntervalS:  new(int32(7200)),
 			FsWatcherEnabled: new(false), // explicit zero value
 			FsWatcherDelayS:  new(12.5),
-			MinDiskFree:      configpb.Size_builder{Gib: new(5.0)}.Build(),
+			MinDiskFree:      syncthingv2.Size_builder{Gib: new(5.0)}.Build(),
 			MaxConflicts:     new(int32(0)), // explicit zero value
 			Paused:           new(false),
-			CopyRangeMethod:  new(configpb.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL),
-			BlockPullOrder:   new(configpb.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER),
-			Order:            new(configpb.PullOrder_PULL_ORDER_NEWEST_FIRST),
-			Versioning: configpb.VersioningConfiguration_builder{
+			CopyRangeMethod:  new(syncthingv2.CopyRangeMethod_COPY_RANGE_METHOD_IOCTL),
+			BlockPullOrder:   new(syncthingv2.BlockPullOrder_BLOCK_PULL_ORDER_IN_ORDER),
+			Order:            new(syncthingv2.PullOrder_PULL_ORDER_NEWEST_FIRST),
+			Versioning: syncthingv2.VersioningConfiguration_builder{
 				Type:             new("simple"),
 				Params:           map[string]string{"keep": "5", "cleanoutDays": "30"},
 				CleanupIntervalS: new(int32(3600)),
 				FsPath:           new("/srv/sync/test1/.stversions"),
-				FsType:           new(configpb.FilesystemType_FILESYSTEM_TYPE_FAKE),
+				FsType:           new(syncthingv2.FilesystemType_FILESYSTEM_TYPE_FAKE),
 			}.Build(),
-			XattrFilter: configpb.XattrFilter_builder{
-				Entries: []*configpb.XattrFilterEntry{
-					configpb.XattrFilterEntry_builder{Match: new("user.sync.*"), Permit: new(true)}.Build(),
-					configpb.XattrFilterEntry_builder{Match: new("*"), Permit: new(false)}.Build(),
+			XattrFilter: syncthingv2.XattrFilter_builder{
+				Entries: []*syncthingv2.XattrFilterEntry{
+					syncthingv2.XattrFilterEntry_builder{Match: new("user.sync.*"), Permit: new(true)}.Build(),
+					syncthingv2.XattrFilterEntry_builder{Match: new("*"), Permit: new(false)}.Build(),
 				},
 				MaxSingleEntrySize: new(int32(2048)),
 				MaxTotalSize:       new(int32(8192)),
 			}.Build(),
-			Devices: []*configpb.FolderDeviceConfiguration{
-				configpb.FolderDeviceConfiguration_builder{
+			Devices: []*syncthingv2.FolderDeviceConfiguration{
+				syncthingv2.FolderDeviceConfiguration_builder{
 					DeviceId:           new("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
 					IntroducedBy:       new("BYR4TZD-LFDLPXV-KLS4HPL-XK25UQG-BUF6TCD-6FLFXCO-YV3FQXZ-DQ7SPQU"),
 					EncryptionPassword: new("hunter2"),
 				}.Build(),
-				configpb.FolderDeviceConfiguration_builder{
+				syncthingv2.FolderDeviceConfiguration_builder{
 					DeviceId: new("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
 				}.Build(),
 			},
 		}.Build()},
-		Devices: []*configpb.DeviceConfiguration{
-			configpb.DeviceConfiguration_builder{
+		Devices: []*syncthingv2.DeviceConfiguration{
+			syncthingv2.DeviceConfiguration_builder{
 				DeviceId:        new("AIR6LPZ-7ENK4MY-4VVODLE-VDGP6LY-Q3GSA2S-7SJMDTM-DLJ4BGV-K3ZP4QU"),
 				Name:            new("Alpha"),
 				Addresses:       []string{"dynamic", "tcp://192.0.2.1:22000"},
-				Compression:     new(configpb.Compression_COMPRESSION_ALWAYS),
+				Compression:     new(syncthingv2.Compression_COMPRESSION_ALWAYS),
 				Introducer:      new(true),
 				Paused:          new(false),
 				MaxSendKbps:     new(int32(1000)),
 				MaxRecvKbps:     new(int32(2000)),
 				NumConnections:  new(int32(2)),
 				AllowedNetworks: []string{"192.168.0.0/16"},
-				IgnoredFolders: []*configpb.ObservedFolder{configpb.ObservedFolder_builder{
+				IgnoredFolders: []*syncthingv2.ObservedFolder{syncthingv2.ObservedFolder_builder{
 					Time:  timestamppb.New(time.Date(2026, 8, 1, 12, 0, 0, 0, time.UTC)),
 					Id:    new("ignored-folder"),
 					Label: new("Ignored Folder"),
 				}.Build()},
 			}.Build(),
-			configpb.DeviceConfiguration_builder{
+			syncthingv2.DeviceConfiguration_builder{
 				DeviceId: new("ZK6FOFT-TXHAKOT-DNJRW3B-7EDSH2F-C4QIYYI-ZAX2UXW-I3HZLGY-YGLAZQU"),
 				Name:     new("Beta"),
 			}.Build(),
 		},
-		Gui: configpb.GUIConfiguration_builder{
+		Gui: syncthingv2.GUIConfiguration_builder{
 			Enabled:  new(true),
 			Address:  new("127.0.0.1:8384"),
 			User:     new("admin"),
 			Password: new("$2a$10$X5bFBmJHrHrrIYpuLvBvJ.uUGPmuffeYdWtMskYiCVnrUuLLzJBae"),
-			AuthMode: new(configpb.AuthMode_AUTH_MODE_LDAP),
+			AuthMode: new(syncthingv2.AuthMode_AUTH_MODE_LDAP),
 			UseTls:   new(true),
 			ApiKey:   new("kO8nJgP7tY2wZq4x"),
 			Theme:    new("dark"),
 		}.Build(),
-		Ldap: configpb.LDAPConfiguration_builder{
+		Ldap: syncthingv2.LDAPConfiguration_builder{
 			Address:            new("ldap.example.com:389"),
 			BindDn:             new("cn=admin,dc=example,dc=com"),
-			Transport:          new(configpb.LDAPTransport_LDAP_TRANSPORT_START_TLS),
+			Transport:          new(syncthingv2.LDAPTransport_LDAP_TRANSPORT_START_TLS),
 			InsecureSkipVerify: new(true),
 			SearchBaseDn:       new("dc=example,dc=com"),
 			SearchFilter:       new("(uid=%s)"),
 		}.Build(),
-		Options: configpb.OptionsConfiguration_builder{
+		Options: syncthingv2.OptionsConfiguration_builder{
 			ListenAddresses:          []string{"default"},
 			GlobalAnnounceServers:    []string{"default"},
 			LocalAnnouncePort:        new(int32(21027)),
@@ -420,7 +420,7 @@ func testConfiguration() *configpb.Configuration {
 			ReconnectionIntervalS:    new(int32(30)),
 			UrAccepted:               new(int32(-1)), // negative value
 			KeepTemporariesH:         new(int32(12)),
-			MinHomeDiskFree:          configpb.Size_builder{Percent: new(1.0)}.Build(),
+			MinHomeDiskFree:          syncthingv2.Size_builder{Percent: new(1.0)}.Build(),
 			AlwaysLocalNets:          []string{"10.0.0.0/8"},
 			UnackedNotificationIds:   []string{"authenticationUserAndPassword"},
 			SetLowPriority:           new(false), // explicit zero value
@@ -428,20 +428,20 @@ func testConfiguration() *configpb.Configuration {
 			ConnectionPriorityTcpLan: new(int32(15)),
 			StunKeepaliveMinS:        new(int32(25)),
 		}.Build(),
-		RemoteIgnoredDevices: []*configpb.ObservedDevice{configpb.ObservedDevice_builder{
+		RemoteIgnoredDevices: []*syncthingv2.ObservedDevice{syncthingv2.ObservedDevice_builder{
 			Time:     timestamppb.New(time.Date(2026, 9, 1, 8, 30, 0, 0, time.UTC)),
 			DeviceId: new("E5OA2FV-LO2YUML-3SDRQ4C-JPJF3DQ-JSWF3LV-CKSPR4T-KKVMKWS-JVVBQAE"),
 			Name:     new("Gamma"),
 			Address:  new("192.0.2.7:22000"),
 		}.Build()},
-		Defaults: configpb.Defaults_builder{
-			Folder: configpb.FolderConfiguration_builder{
+		Defaults: syncthingv2.Defaults_builder{
+			Folder: syncthingv2.FolderConfiguration_builder{
 				RescanIntervalS: new(int32(10800)),
 			}.Build(),
-			Device: configpb.DeviceConfiguration_builder{
-				Compression: new(configpb.Compression_COMPRESSION_NEVER),
+			Device: syncthingv2.DeviceConfiguration_builder{
+				Compression: new(syncthingv2.Compression_COMPRESSION_NEVER),
 			}.Build(),
-			Ignores: configpb.Ignores_builder{
+			Ignores: syncthingv2.Ignores_builder{
 				Lines: []string{"!qux", "baz/*"},
 			}.Build(),
 		}.Build(),

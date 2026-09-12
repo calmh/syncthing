@@ -6,6 +6,7 @@ require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250425153114-8976f5be98c1.1
 	buf.build/go/protovalidate v0.11.0
 	buf.build/go/protoyaml v0.7.0
+	connectrpc.com/connect v1.21.0
 	github.com/AudriusButkevicius/recli v0.0.7
 	github.com/alecthomas/kong v1.16.1
 	github.com/aws/aws-sdk-go v1.55.8

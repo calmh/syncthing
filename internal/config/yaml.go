@@ -12,7 +12,7 @@ import (
 	"buf.build/go/protoyaml"
 	"google.golang.org/protobuf/proto"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 )
 
 // Marshal returns the configuration in YAML format.
@@ -24,7 +24,7 @@ func Marshal(cfg Configuration) ([]byte, error) {
 // the data is not valid YAML, does not match the schema, or violates the
 // validation rules in the schema.
 func Unmarshal(data []byte) (Configuration, error) {
-	var cfg configpb.Configuration
+	var cfg syncthingv2.Configuration
 	opts := protoyaml.UnmarshalOptions{
 		Validator: validator{},
 	}
@@ -39,7 +39,7 @@ func Unmarshal(data []byte) (Configuration, error) {
 type validator struct{}
 
 func (validator) Validate(message proto.Message) error {
-	cfg, ok := message.(*configpb.Configuration)
+	cfg, ok := message.(*syncthingv2.Configuration)
 	if !ok {
 		return fmt.Errorf("validation: unexpected message type %T", message)
 	}

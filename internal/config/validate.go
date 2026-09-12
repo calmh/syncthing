@@ -15,19 +15,19 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
 // Validate checks the configuration against the validation rules in the
 // schema. In addition to the protovalidate rules, string fields annotated
-// with the (config.device_id) option must parse as a device ID, including
+// with the (syncthing.v2.device_id) option must parse as a device ID, including
 // matching check digits.
 func Validate(cfg Configuration) error {
 	return validateConfig(cfg.Configuration)
 }
 
-func validateConfig(cfg *configpb.Configuration) error {
+func validateConfig(cfg *syncthingv2.Configuration) error {
 	if cfg == nil {
 		return nil
 	}
@@ -104,9 +104,9 @@ func checkDeviceID(value string, path []*validate.FieldPathElement, violations *
 }
 
 // isDeviceIDField reports whether the field is annotated with the
-// (config.device_id) option.
+// (syncthing.v2.device_id) option.
 func isDeviceIDField(fd protoreflect.FieldDescriptor) bool {
-	value, _ := proto.GetExtension(fd.Options(), configpb.E_DeviceId).(bool)
+	value, _ := proto.GetExtension(fd.Options(), syncthingv2.E_DeviceId).(bool)
 	return value
 }
 

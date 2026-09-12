@@ -7,7 +7,7 @@
 package config
 
 import (
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
 )
 
@@ -18,7 +18,7 @@ import (
 
 // Configuration is the Syncthing configuration.
 type Configuration struct {
-	*configpb.Configuration
+	*syncthingv2.Configuration
 }
 
 // GetFolders returns the folder configurations.
@@ -33,7 +33,7 @@ func (c Configuration) GetFolders() []FolderConfiguration {
 
 // SetFolders sets the folder configurations.
 func (c Configuration) SetFolders(folders []FolderConfiguration) {
-	pbs := make([]*configpb.FolderConfiguration, len(folders))
+	pbs := make([]*syncthingv2.FolderConfiguration, len(folders))
 	for i, folder := range folders {
 		pbs[i] = folder.FolderConfiguration
 	}
@@ -52,7 +52,7 @@ func (c Configuration) GetDevices() []DeviceConfiguration {
 
 // SetDevices sets the device configurations.
 func (c Configuration) SetDevices(devices []DeviceConfiguration) {
-	pbs := make([]*configpb.DeviceConfiguration, len(devices))
+	pbs := make([]*syncthingv2.DeviceConfiguration, len(devices))
 	for i, device := range devices {
 		pbs[i] = device.DeviceConfiguration
 	}
@@ -73,7 +73,7 @@ func (c Configuration) GetRemoteIgnoredDevices() []ObservedDevice {
 // SetRemoteIgnoredDevices sets the devices that have been ignored after
 // being seen remotely.
 func (c Configuration) SetRemoteIgnoredDevices(devices []ObservedDevice) {
-	pbs := make([]*configpb.ObservedDevice, len(devices))
+	pbs := make([]*syncthingv2.ObservedDevice, len(devices))
 	for i, device := range devices {
 		pbs[i] = device.ObservedDevice
 	}
@@ -92,7 +92,7 @@ func (c Configuration) SetDefaults(defaults Defaults) {
 
 // Defaults are the default values for new folders and devices.
 type Defaults struct {
-	*configpb.Defaults
+	*syncthingv2.Defaults
 }
 
 // GetFolder returns the default folder configuration.
@@ -117,7 +117,7 @@ func (d Defaults) SetDevice(device DeviceConfiguration) {
 
 // FolderConfiguration is the configuration for a shared folder.
 type FolderConfiguration struct {
-	*configpb.FolderConfiguration
+	*syncthingv2.FolderConfiguration
 }
 
 // GetDevices returns the devices the folder is shared with.
@@ -132,7 +132,7 @@ func (f FolderConfiguration) GetDevices() []FolderDeviceConfiguration {
 
 // SetDevices sets the devices the folder is shared with.
 func (f FolderConfiguration) SetDevices(devices []FolderDeviceConfiguration) {
-	pbs := make([]*configpb.FolderDeviceConfiguration, len(devices))
+	pbs := make([]*syncthingv2.FolderDeviceConfiguration, len(devices))
 	for i, device := range devices {
 		pbs[i] = device.FolderDeviceConfiguration
 	}
@@ -141,7 +141,7 @@ func (f FolderConfiguration) SetDevices(devices []FolderDeviceConfiguration) {
 
 // FolderDeviceConfiguration is a device that a folder is shared with.
 type FolderDeviceConfiguration struct {
-	*configpb.FolderDeviceConfiguration
+	*syncthingv2.FolderDeviceConfiguration
 }
 
 // GetDeviceId returns the device ID. An unset or empty device ID is
@@ -169,7 +169,7 @@ func (d FolderDeviceConfiguration) SetIntroducedBy(id protocol.DeviceID) {
 
 // DeviceConfiguration is the configuration for a device.
 type DeviceConfiguration struct {
-	*configpb.DeviceConfiguration
+	*syncthingv2.DeviceConfiguration
 }
 
 // GetDeviceId returns the device ID. An unset or empty device ID is
@@ -197,7 +197,7 @@ func (d DeviceConfiguration) SetIntroducedBy(id protocol.DeviceID) {
 
 // ObservedDevice is a device encountered on the network.
 type ObservedDevice struct {
-	*configpb.ObservedDevice
+	*syncthingv2.ObservedDevice
 }
 
 // GetDeviceId returns the device ID. An unset or empty device ID is
@@ -225,13 +225,13 @@ func deviceIDFromString(s string) protocol.DeviceID {
 // Types without device IDs are used as-is.
 
 type (
-	GUIConfiguration        = configpb.GUIConfiguration
-	LDAPConfiguration       = configpb.LDAPConfiguration
-	OptionsConfiguration    = configpb.OptionsConfiguration
-	VersioningConfiguration = configpb.VersioningConfiguration
-	XattrFilter             = configpb.XattrFilter
-	XattrFilterEntry        = configpb.XattrFilterEntry
-	Size                    = configpb.Size
-	Ignores                 = configpb.Ignores
-	ObservedFolder          = configpb.ObservedFolder
+	GUIConfiguration        = syncthingv2.GUIConfiguration
+	LDAPConfiguration       = syncthingv2.LDAPConfiguration
+	OptionsConfiguration    = syncthingv2.OptionsConfiguration
+	VersioningConfiguration = syncthingv2.VersioningConfiguration
+	XattrFilter             = syncthingv2.XattrFilter
+	XattrFilterEntry        = syncthingv2.XattrFilterEntry
+	Size                    = syncthingv2.Size
+	Ignores                 = syncthingv2.Ignores
+	ObservedFolder          = syncthingv2.ObservedFolder
 )

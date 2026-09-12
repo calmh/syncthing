@@ -43,6 +43,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 
 	"github.com/syncthing/syncthing/internal/db"
+	"github.com/syncthing/syncthing/internal/gen/syncthing/v2/syncthingv2connect"
 	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/config"
@@ -347,6 +348,13 @@ func (s *service) Serve(ctx context.Context) error {
 	// The main routing handler
 	mux := http.NewServeMux()
 	mux.Handle("/rest/", noCacheRestMux)
+
+	// ConnectRPC services, at their default paths directly on the root.
+	// They get the same authentication and host check handling as the
+	// REST API.
+	configServicePath, configServiceHandler := syncthingv2connect.NewConfigurationServiceHandler(&configService{s.cfg})
+	mux.Handle(configServicePath, configServiceHandler)
+
 	mux.HandleFunc("/qr/", s.getQR)
 
 	// Serve compiled in assets unless an asset directory was set (for development)

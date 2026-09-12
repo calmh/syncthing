@@ -13,7 +13,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	configpb "github.com/syncthing/syncthing/internal/gen/syncthing/v2/config"
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	config "github.com/syncthing/syncthing/lib/config"
 )
 
@@ -27,7 +27,7 @@ import (
 // preserved as such. Legacy fields that were deprecated have no counterpart
 // in the new format and are dropped.
 func FromLegacy(cfg config.Configuration) Configuration {
-	return Configuration{configpb.Configuration_builder{
+	return Configuration{syncthingv2.Configuration_builder{
 		Version:              new(int32(cfg.Version)),
 		Folders:              fromLegacyFolders(cfg.Folders),
 		Devices:              fromLegacyDevices(cfg.Devices),
@@ -39,21 +39,21 @@ func FromLegacy(cfg config.Configuration) Configuration {
 	}.Build()}
 }
 
-func fromLegacyFolders(folders []config.FolderConfiguration) []*configpb.FolderConfiguration {
-	out := make([]*configpb.FolderConfiguration, len(folders))
+func fromLegacyFolders(folders []config.FolderConfiguration) []*syncthingv2.FolderConfiguration {
+	out := make([]*syncthingv2.FolderConfiguration, len(folders))
 	for i, folder := range folders {
 		out[i] = fromLegacyFolder(folder)
 	}
 	return out
 }
 
-func fromLegacyFolder(f config.FolderConfiguration) *configpb.FolderConfiguration {
-	return configpb.FolderConfiguration_builder{
+func fromLegacyFolder(f config.FolderConfiguration) *syncthingv2.FolderConfiguration {
+	return syncthingv2.FolderConfiguration_builder{
 		Id:                      new(f.ID),
 		Label:                   new(f.Label),
 		FilesystemType:          new(filesystemTypeFromLegacy(f.FilesystemType)),
 		Path:                    new(f.Path),
-		Type:                    new(configpb.FolderType(f.Type)),
+		Type:                    new(syncthingv2.FolderType(f.Type)),
 		Devices:                 fromLegacyFolderDevices(f.Devices),
 		Group:                   new(f.Group),
 		RescanIntervalS:         new(int32(f.RescanIntervalS)),
@@ -67,7 +67,7 @@ func fromLegacyFolder(f config.FolderConfiguration) *configpb.FolderConfiguratio
 		Copiers:                 new(int32(f.Copiers)),
 		PullerMaxPendingKiB:     new(int32(f.PullerMaxPendingKiB)),
 		Hashers:                 new(int32(f.Hashers)),
-		Order:                   new(configpb.PullOrder(f.Order)),
+		Order:                   new(syncthingv2.PullOrder(f.Order)),
 		IgnoreDelete:            new(f.IgnoreDelete),
 		ScanProgressIntervalS:   new(int32(f.ScanProgressIntervalS)),
 		PullerPauseS:            new(int32(f.PullerPauseS)),
@@ -80,8 +80,8 @@ func fromLegacyFolder(f config.FolderConfiguration) *configpb.FolderConfiguratio
 		ModTimeWindowS:          new(int32(f.RawModTimeWindowS)),
 		MaxConcurrentWrites:     new(int32(f.MaxConcurrentWrites)),
 		DisableFsync:            new(f.DisableFsync),
-		BlockPullOrder:          new(configpb.BlockPullOrder(f.BlockPullOrder)),
-		CopyRangeMethod:         new(configpb.CopyRangeMethod(f.CopyRangeMethod)),
+		BlockPullOrder:          new(syncthingv2.BlockPullOrder(f.BlockPullOrder)),
+		CopyRangeMethod:         new(syncthingv2.CopyRangeMethod(f.CopyRangeMethod)),
 		CaseSensitiveFs:         new(f.CaseSensitiveFS),
 		JunctionsAsDirs:         new(f.JunctionsAsDirs),
 		SyncOwnership:           new(f.SyncOwnership),
@@ -93,10 +93,10 @@ func fromLegacyFolder(f config.FolderConfiguration) *configpb.FolderConfiguratio
 	}.Build()
 }
 
-func fromLegacyFolderDevices(devices []config.FolderDeviceConfiguration) []*configpb.FolderDeviceConfiguration {
-	out := make([]*configpb.FolderDeviceConfiguration, len(devices))
+func fromLegacyFolderDevices(devices []config.FolderDeviceConfiguration) []*syncthingv2.FolderDeviceConfiguration {
+	out := make([]*syncthingv2.FolderDeviceConfiguration, len(devices))
 	for i, device := range devices {
-		out[i] = configpb.FolderDeviceConfiguration_builder{
+		out[i] = syncthingv2.FolderDeviceConfiguration_builder{
 			DeviceId:           new(device.DeviceID.String()),
 			IntroducedBy:       new(device.IntroducedBy.String()),
 			EncryptionPassword: new(device.EncryptionPassword),
@@ -105,8 +105,8 @@ func fromLegacyFolderDevices(devices []config.FolderDeviceConfiguration) []*conf
 	return out
 }
 
-func fromLegacyVersioning(v config.VersioningConfiguration) *configpb.VersioningConfiguration {
-	return configpb.VersioningConfiguration_builder{
+func fromLegacyVersioning(v config.VersioningConfiguration) *syncthingv2.VersioningConfiguration {
+	return syncthingv2.VersioningConfiguration_builder{
 		Type:             new(v.Type),
 		Params:           maps.Clone(v.Params),
 		CleanupIntervalS: new(int32(v.CleanupIntervalS)),
@@ -115,15 +115,15 @@ func fromLegacyVersioning(v config.VersioningConfiguration) *configpb.Versioning
 	}.Build()
 }
 
-func fromLegacyXattrFilter(f config.XattrFilter) *configpb.XattrFilter {
-	entries := make([]*configpb.XattrFilterEntry, len(f.Entries))
+func fromLegacyXattrFilter(f config.XattrFilter) *syncthingv2.XattrFilter {
+	entries := make([]*syncthingv2.XattrFilterEntry, len(f.Entries))
 	for i, entry := range f.Entries {
-		entries[i] = configpb.XattrFilterEntry_builder{
+		entries[i] = syncthingv2.XattrFilterEntry_builder{
 			Match:  new(entry.Match),
 			Permit: new(entry.Permit),
 		}.Build()
 	}
-	return configpb.XattrFilter_builder{
+	return syncthingv2.XattrFilter_builder{
 		Entries:            entries,
 		MaxSingleEntrySize: new(int32(f.MaxSingleEntrySize)),
 		MaxTotalSize:       new(int32(f.MaxTotalSize)),
@@ -134,49 +134,49 @@ func fromLegacyXattrFilter(f config.XattrFilter) *configpb.XattrFilter {
 // legacy size of zero or less meant "no minimum" and converts to an unset
 // size. Units with an "iB"-suffix are binary, other unit prefixes decimal,
 // matching the intent of the legacy string format.
-func fromLegacySize(s config.Size) *configpb.Size {
+func fromLegacySize(s config.Size) *syncthingv2.Size {
 	if s.Value <= 0 {
 		return nil
 	}
 	if strings.Contains(s.Unit, "%") {
-		return configpb.Size_builder{Percent: new(s.Value)}.Build()
+		return syncthingv2.Size_builder{Percent: new(s.Value)}.Build()
 	}
 	switch strings.ToLower(s.Unit) {
 	case "mib":
-		return configpb.Size_builder{Mib: new(s.Value)}.Build()
+		return syncthingv2.Size_builder{Mib: new(s.Value)}.Build()
 	case "gib":
-		return configpb.Size_builder{Gib: new(s.Value)}.Build()
+		return syncthingv2.Size_builder{Gib: new(s.Value)}.Build()
 	case "kib":
-		return configpb.Size_builder{Bytes: new(s.Value * 1024)}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value * 1024)}.Build()
 	case "tib":
-		return configpb.Size_builder{Bytes: new(s.Value * (1 << 40))}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value * (1 << 40))}.Build()
 	case "k", "kb":
-		return configpb.Size_builder{Bytes: new(s.Value * 1000)}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value * 1000)}.Build()
 	case "m", "mb":
-		return configpb.Size_builder{Bytes: new(s.Value * 1000 * 1000)}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value * 1000 * 1000)}.Build()
 	case "g", "gb":
-		return configpb.Size_builder{Bytes: new(s.Value * 1000 * 1000 * 1000)}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value * 1000 * 1000 * 1000)}.Build()
 	case "t", "tb":
-		return configpb.Size_builder{Bytes: new(s.Value * 1000 * 1000 * 1000 * 1000)}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value * 1000 * 1000 * 1000 * 1000)}.Build()
 	default:
-		return configpb.Size_builder{Bytes: new(s.Value)}.Build()
+		return syncthingv2.Size_builder{Bytes: new(s.Value)}.Build()
 	}
 }
 
-func fromLegacyDevices(devices []config.DeviceConfiguration) []*configpb.DeviceConfiguration {
-	out := make([]*configpb.DeviceConfiguration, len(devices))
+func fromLegacyDevices(devices []config.DeviceConfiguration) []*syncthingv2.DeviceConfiguration {
+	out := make([]*syncthingv2.DeviceConfiguration, len(devices))
 	for i, device := range devices {
 		out[i] = fromLegacyDevice(device)
 	}
 	return out
 }
 
-func fromLegacyDevice(d config.DeviceConfiguration) *configpb.DeviceConfiguration {
-	return configpb.DeviceConfiguration_builder{
+func fromLegacyDevice(d config.DeviceConfiguration) *syncthingv2.DeviceConfiguration {
+	return syncthingv2.DeviceConfiguration_builder{
 		DeviceId:                 new(d.DeviceID.String()),
 		Name:                     new(d.Name),
 		Addresses:                slices.Clone(d.Addresses),
-		Compression:              new(configpb.Compression(d.Compression)),
+		Compression:              new(syncthingv2.Compression(d.Compression)),
 		CertName:                 new(d.CertName),
 		Introducer:               new(d.Introducer),
 		SkipIntroductionRemovals: new(d.SkipIntroductionRemovals),
@@ -195,10 +195,10 @@ func fromLegacyDevice(d config.DeviceConfiguration) *configpb.DeviceConfiguratio
 	}.Build()
 }
 
-func fromLegacyObservedFolders(folders []config.ObservedFolder) []*configpb.ObservedFolder {
-	out := make([]*configpb.ObservedFolder, len(folders))
+func fromLegacyObservedFolders(folders []config.ObservedFolder) []*syncthingv2.ObservedFolder {
+	out := make([]*syncthingv2.ObservedFolder, len(folders))
 	for i, folder := range folders {
-		out[i] = configpb.ObservedFolder_builder{
+		out[i] = syncthingv2.ObservedFolder_builder{
 			Time:  timestamppb.New(folder.Time),
 			Id:    new(folder.ID),
 			Label: new(folder.Label),
@@ -207,10 +207,10 @@ func fromLegacyObservedFolders(folders []config.ObservedFolder) []*configpb.Obse
 	return out
 }
 
-func fromLegacyObservedDevices(devices []config.ObservedDevice) []*configpb.ObservedDevice {
-	out := make([]*configpb.ObservedDevice, len(devices))
+func fromLegacyObservedDevices(devices []config.ObservedDevice) []*syncthingv2.ObservedDevice {
+	out := make([]*syncthingv2.ObservedDevice, len(devices))
 	for i, device := range devices {
-		out[i] = configpb.ObservedDevice_builder{
+		out[i] = syncthingv2.ObservedDevice_builder{
 			Time:     timestamppb.New(device.Time),
 			DeviceId: new(device.ID.String()),
 			Name:     new(device.Name),
@@ -220,14 +220,14 @@ func fromLegacyObservedDevices(devices []config.ObservedDevice) []*configpb.Obse
 	return out
 }
 
-func fromLegacyGUI(g config.GUIConfiguration) *configpb.GUIConfiguration {
-	return configpb.GUIConfiguration_builder{
+func fromLegacyGUI(g config.GUIConfiguration) *syncthingv2.GUIConfiguration {
+	return syncthingv2.GUIConfiguration_builder{
 		Enabled:                   new(g.Enabled),
 		Address:                   new(g.RawAddress),
 		UnixSocketPermissions:     new(g.RawUnixSocketPermissions),
 		User:                      new(g.User),
 		Password:                  new(g.Password),
-		AuthMode:                  new(configpb.AuthMode(g.AuthMode)),
+		AuthMode:                  new(syncthingv2.AuthMode(g.AuthMode)),
 		MetricsWithoutAuth:        new(g.MetricsWithoutAuth),
 		UseTls:                    new(g.RawUseTLS),
 		ApiKey:                    new(g.APIKey),
@@ -241,19 +241,19 @@ func fromLegacyGUI(g config.GUIConfiguration) *configpb.GUIConfiguration {
 	}.Build()
 }
 
-func fromLegacyLDAP(l config.LDAPConfiguration) *configpb.LDAPConfiguration {
-	return configpb.LDAPConfiguration_builder{
+func fromLegacyLDAP(l config.LDAPConfiguration) *syncthingv2.LDAPConfiguration {
+	return syncthingv2.LDAPConfiguration_builder{
 		Address:            new(l.Address),
 		BindDn:             new(l.BindDN),
-		Transport:          new(configpb.LDAPTransport(l.Transport)),
+		Transport:          new(syncthingv2.LDAPTransport(l.Transport)),
 		InsecureSkipVerify: new(l.InsecureSkipVerify),
 		SearchBaseDn:       new(l.SearchBaseDN),
 		SearchFilter:       new(l.SearchFilter),
 	}.Build()
 }
 
-func fromLegacyOptions(o config.OptionsConfiguration) *configpb.OptionsConfiguration {
-	return configpb.OptionsConfiguration_builder{
+func fromLegacyOptions(o config.OptionsConfiguration) *syncthingv2.OptionsConfiguration {
+	return syncthingv2.OptionsConfiguration_builder{
 		ListenAddresses:                     slices.Clone(o.RawListenAddresses),
 		GlobalAnnounceServers:               slices.Clone(o.RawGlobalAnnServers),
 		GlobalAnnounceEnabled:               new(o.GlobalAnnEnabled),
@@ -312,19 +312,19 @@ func fromLegacyOptions(o config.OptionsConfiguration) *configpb.OptionsConfigura
 	}.Build()
 }
 
-func fromLegacyDefaults(d config.Defaults) *configpb.Defaults {
-	return configpb.Defaults_builder{
+func fromLegacyDefaults(d config.Defaults) *syncthingv2.Defaults {
+	return syncthingv2.Defaults_builder{
 		Folder:  fromLegacyFolder(d.Folder),
 		Device:  fromLegacyDevice(d.Device),
-		Ignores: configpb.Ignores_builder{Lines: slices.Clone(d.Ignores.Lines)}.Build(),
+		Ignores: syncthingv2.Ignores_builder{Lines: slices.Clone(d.Ignores.Lines)}.Build(),
 	}.Build()
 }
 
 // filesystemTypeFromLegacy maps the legacy string based filesystem type to
 // the new enum. The legacy zero value ("") means "basic".
-func filesystemTypeFromLegacy(t config.FilesystemType) configpb.FilesystemType {
+func filesystemTypeFromLegacy(t config.FilesystemType) syncthingv2.FilesystemType {
 	if t == config.FilesystemTypeFake {
-		return configpb.FilesystemType_FILESYSTEM_TYPE_FAKE
+		return syncthingv2.FilesystemType_FILESYSTEM_TYPE_FAKE
 	}
-	return configpb.FilesystemType_FILESYSTEM_TYPE_BASIC
+	return syncthingv2.FilesystemType_FILESYSTEM_TYPE_BASIC
 }
