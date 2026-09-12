@@ -3,6 +3,7 @@ module github.com/syncthing/syncthing
 go 1.26.2
 
 require (
+	buf.build/go/protoyaml v0.7.0
 	github.com/AudriusButkevicius/recli v0.0.7
 	github.com/alecthomas/kong v1.16.1
 	github.com/aws/aws-sdk-go v1.55.8
@@ -52,7 +53,11 @@ require (
 )
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250425153114-8976f5be98c1.1 // indirect
+	buf.build/go/protovalidate v0.11.0 // indirect
+	cel.dev/expr v0.23.1 // indirect
 	github.com/Azure/go-ntlmssp v0.1.1 // indirect
+	github.com/antlr4-go/antlr/v4 v4.13.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
@@ -64,6 +69,7 @@ require (
 	github.com/go-asn1-ber/asn1-ber v1.5.8 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/cel-go v0.25.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -84,14 +90,18 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
+	github.com/stoewer/go-strcase v1.3.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.39.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260811182544-a038080d80e5 // indirect
 	golang.org/x/tools v0.49.0 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240826202546-f6391c0de4c7 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	modernc.org/libc v1.74.4 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect

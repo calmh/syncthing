@@ -1,0 +1,346 @@
+edition = "2023";
+
+package config;
+
+import "google/protobuf/timestamp.proto";
+
+// Singular fields have explicit presence: "unset" is distinct from the
+// zero value.
+
+// The Syncthing configuration. Device IDs are represented as strings in
+// their canonical form (base32, with check digits and dashes).
+
+// --- Top level ---
+
+message Configuration {
+  int32 version = 1;
+  repeated FolderConfiguration folders = 2;
+  repeated DeviceConfiguration devices = 3;
+  GUIConfiguration gui = 4;
+  LDAPConfiguration ldap = 5;
+  OptionsConfiguration options = 6;
+  repeated ObservedDevice remote_ignored_devices = 7;
+  // Deprecated: Do not use.
+  repeated ObservedDevice deprecated_pending_devices = 8 [deprecated = true];
+  Defaults defaults = 9;
+}
+
+message Defaults {
+  FolderConfiguration folder = 1;
+  DeviceConfiguration device = 2;
+  Ignores ignores = 3;
+}
+
+message Ignores {
+  repeated string lines = 1;
+}
+
+// --- Folders ---
+
+message FolderConfiguration {
+  string id = 1;
+  string label = 2;
+  FilesystemType filesystem_type = 3 [default = FILESYSTEM_TYPE_BASIC];
+  string path = 4;
+  FolderType type = 5;
+  repeated FolderDeviceConfiguration devices = 6;
+  string group = 7;
+  int32 rescan_interval_s = 8 [default = 3600];
+  bool fs_watcher_enabled = 9 [default = true];
+  double fs_watcher_delay_s = 10 [default = 10];
+  double fs_watcher_timeout_s = 11;
+  bool ignore_perms = 12;
+  bool auto_normalize = 13 [default = true];
+  Size min_disk_free = 14;
+  VersioningConfiguration versioning = 15;
+  int32 copiers = 16;
+  int32 puller_max_pending_ki_b = 17;
+  int32 hashers = 18;
+  PullOrder order = 19;
+  bool ignore_delete = 20;
+  int32 scan_progress_interval_s = 21;
+  int32 puller_pause_s = 22;
+  double puller_delay_s = 23 [default = 1];
+  int32 max_conflicts = 24 [default = 10];
+  bool disable_sparse_files = 25;
+  bool paused = 26;
+  string marker_name = 27;
+  bool copy_ownership_from_parent = 28;
+  int32 mod_time_window_s = 29;
+  int32 max_concurrent_writes = 30;
+  bool disable_fsync = 31;
+  BlockPullOrder block_pull_order = 32;
+  CopyRangeMethod copy_range_method = 33 [default = COPY_RANGE_METHOD_STANDARD];
+  bool case_sensitive_fs = 34;
+  bool junctions_as_dirs = 35;
+  bool sync_ownership = 36;
+  bool send_ownership = 37;
+  bool sync_xattrs = 38;
+  bool send_xattrs = 39;
+  bool block_indexing = 40 [default = true];
+  XattrFilter xattr_filter = 41;
+  // Deprecated: Do not use.
+  bool deprecated_read_only = 42 [deprecated = true];
+  // Deprecated: Do not use.
+  double deprecated_min_disk_free_pct = 43 [deprecated = true];
+  // Deprecated: Do not use.
+  int32 deprecated_pullers = 44 [deprecated = true];
+  // Deprecated: Do not use.
+  bool deprecated_scan_ownership = 45 [deprecated = true];
+}
+
+// A device that a folder is shared with.
+message FolderDeviceConfiguration {
+  string device_id = 1;
+  string introduced_by = 2;
+  string encryption_password = 3;
+}
+
+// File versioning configuration for a folder.
+message VersioningConfiguration {
+  string type = 1;
+  map<string, string> params = 2;
+  int32 cleanup_interval_s = 3 [default = 3600];
+  string fs_path = 4;
+  FilesystemType fs_type = 5 [default = FILESYSTEM_TYPE_BASIC];
+}
+
+// Extended attribute filter. This is a list of patterns to match (glob
+// style), each with an action (permit or deny). First match is used. If the
+// filter is empty, all strings are permitted. If the filter is non-empty,
+// the default action becomes deny. To counter this, you can use the "*"
+// pattern to match all strings at the end of the filter. There are also
+// limits on the size of accepted attributes.
+message XattrFilter {
+  repeated XattrFilterEntry entries = 1;
+  int32 max_single_entry_size = 2 [default = 1024];
+  int32 max_total_size = 3 [default = 4096];
+}
+
+message XattrFilterEntry {
+  string match = 1;
+  bool permit = 2;
+}
+
+// --- Devices ---
+
+message DeviceConfiguration {
+  string device_id = 1;
+  string name = 2;
+  repeated string addresses = 3;
+  Compression compression = 4;
+  string cert_name = 5;
+  bool introducer = 6;
+  bool skip_introduction_removals = 7;
+  string introduced_by = 8;
+  bool paused = 9;
+  repeated string allowed_networks = 10;
+  bool auto_accept_folders = 11;
+  int32 max_send_kbps = 12;
+  int32 max_recv_kbps = 13;
+  repeated ObservedFolder ignored_folders = 14;
+  // Deprecated: Do not use.
+  repeated ObservedFolder deprecated_pending_folders = 15 [deprecated = true];
+  int32 max_request_ki_b = 16;
+  bool untrusted = 17;
+  int32 remote_gui_port = 18;
+  int32 num_connections = 19;
+  string group = 20;
+}
+
+// A folder announced by a remote device, e.g. in the list of ignored
+// folders.
+message ObservedFolder {
+  google.protobuf.Timestamp time = 1;
+  string id = 2;
+  string label = 3;
+}
+
+// A device encountered on the network, e.g. in the list of ignored
+// devices.
+message ObservedDevice {
+  google.protobuf.Timestamp time = 1;
+  string device_id = 2;
+  string name = 3;
+  string address = 4;
+}
+
+// --- GUI ---
+
+message GUIConfiguration {
+  bool enabled = 1 [default = true];
+  string address = 2 [default = "127.0.0.1:8384"];
+  string unix_socket_permissions = 3;
+  string user = 4;
+  string password = 5;
+  AuthMode auth_mode = 6;
+  bool metrics_without_auth = 7;
+  bool use_tls = 8;
+  string api_key = 9;
+  bool insecure_admin_access = 10;
+  string theme = 11 [default = "default"];
+  bool insecure_skip_hostcheck = 12;
+  bool insecure_allow_frame_loading = 13;
+  bool send_basic_auth_prompt = 14;
+  int32 session_cookie_duration_s = 15 [default = 604800];
+  string session_cookie_path = 16 [default = "/"];
+}
+
+// --- LDAP ---
+
+message LDAPConfiguration {
+  string address = 1;
+  string bind_dn = 2;
+  LDAPTransport transport = 3;
+  bool insecure_skip_verify = 4;
+  string search_base_dn = 5;
+  string search_filter = 6;
+}
+
+// --- Options ---
+
+message OptionsConfiguration {
+  repeated string listen_addresses = 1;
+  repeated string global_announce_servers = 2;
+  bool global_announce_enabled = 3 [default = true];
+  bool local_announce_enabled = 4 [default = true];
+  int32 local_announce_port = 5 [default = 21027];
+  string local_announce_mc_addr = 6 [default = "[ff12::8384]:21027"];
+  int32 max_send_kbps = 7;
+  int32 max_recv_kbps = 8;
+  int32 reconnection_interval_s = 9 [default = 20];
+  bool relays_enabled = 10 [default = true];
+  int32 relay_reconnect_interval_m = 11;
+  bool start_browser = 12 [default = true];
+  bool nat_enabled = 13 [default = true];
+  int32 nat_lease_minutes = 14 [default = 60];
+  int32 nat_renewal_minutes = 15 [default = 30];
+  int32 nat_timeout_seconds = 16 [default = 10];
+  int32 ur_accepted = 17;
+  int32 ur_seen = 18;
+  string ur_unique_id = 19;
+  string ur_url = 20 [default = "https://data.syncthing.net/newdata"];
+  bool ur_post_insecurely = 21;
+  int32 ur_initial_delay_s = 22 [default = 1800];
+  int32 auto_upgrade_interval_h = 23 [default = 12];
+  bool upgrade_to_pre_releases = 24;
+  int32 keep_temporaries_h = 25 [default = 24];
+  int32 progress_update_interval_s = 26 [default = 5];
+  bool limit_bandwidth_in_lan = 27;
+  Size min_home_disk_free = 28;
+  string releases_url = 29 [default = "https://upgrades.syncthing.net/meta.json"];
+  repeated string always_local_nets = 30;
+  bool overwrite_remote_device_names_on_connect = 31;
+  int32 temp_index_min_blocks = 32;
+  repeated string unacked_notification_ids = 33;
+  int32 traffic_class = 34;
+  // Deprecated: Do not use.
+  string deprecated_default_folder_path = 35 [deprecated = true];
+  bool set_low_priority = 36 [default = true];
+  int32 max_folder_concurrency = 37;
+  string cr_url = 38 [default = "https://crash.syncthing.net/newcrash"];
+  bool crash_reporting_enabled = 39 [default = true];
+  int32 stun_keepalive_start_s = 40 [default = 180];
+  int32 stun_keepalive_min_s = 41 [default = 20];
+  repeated string stun_servers = 42;
+  int32 max_concurrent_incoming_request_ki_b = 43;
+  bool announce_lan_addresses = 44 [default = true];
+  bool send_full_index_on_upgrade = 45;
+  repeated string feature_flags = 46;
+  bool audit_enabled = 47;
+  string audit_file = 48;
+  // The number of connections at which we stop trying to connect to more
+  // devices, zero meaning no limit. Does not affect incoming connections.
+  int32 connection_limit_enough = 49;
+  // The maximum number of connections which we will allow in total, zero
+  // meaning no limit. Affects incoming connections and prevents
+  // attempting outgoing connections.
+  int32 connection_limit_max = 50;
+  int32 connection_priority_tcp_lan = 51 [default = 10];
+  int32 connection_priority_quic_lan = 52 [default = 20];
+  int32 connection_priority_tcp_wan = 53 [default = 30];
+  int32 connection_priority_quic_wan = 54 [default = 40];
+  int32 connection_priority_relay = 55 [default = 50];
+  int32 connection_priority_upgrade_threshold = 56;
+  // Deprecated: Do not use.
+  bool deprecated_upnp_enabled = 57 [deprecated = true];
+  // Deprecated: Do not use.
+  int32 deprecated_upnp_lease_minutes = 58 [deprecated = true];
+  // Deprecated: Do not use.
+  int32 deprecated_upnp_renewal_minutes = 59 [deprecated = true];
+  // Deprecated: Do not use.
+  int32 deprecated_upnp_timeout_seconds = 60 [deprecated = true];
+  // Deprecated: Do not use.
+  repeated string deprecated_relay_servers = 61 [deprecated = true];
+  // Deprecated: Do not use.
+  double deprecated_min_home_disk_free_pct = 62 [deprecated = true];
+  // Deprecated: Do not use.
+  int32 deprecated_max_concurrent_scans = 63 [deprecated = true];
+}
+
+// --- Miscellaneous ---
+
+// A size, as a value and a unit (e.g. "10 MB" or "1 %").
+message Size {
+  double value = 1;
+  string unit = 2;
+}
+
+// --- Enums ---
+// Values are kept in sync with the corresponding types in lib/config. The
+// string representation used in JSON and XML is noted next to each value.
+
+enum AuthMode {
+  AUTH_MODE_STATIC = 0; // "static"
+  AUTH_MODE_LDAP = 1;   // "ldap"
+}
+
+enum BlockPullOrder {
+  BLOCK_PULL_ORDER_STANDARD = 0; // "standard"
+  BLOCK_PULL_ORDER_RANDOM = 1;   // "random"
+  BLOCK_PULL_ORDER_IN_ORDER = 2; // "inOrder"
+}
+
+enum Compression {
+  COMPRESSION_METADATA = 0; // "metadata"
+  COMPRESSION_NEVER = 1;    // "never"
+  COMPRESSION_ALWAYS = 2;   // "always"
+}
+
+enum CopyRangeMethod {
+  COPY_RANGE_METHOD_STANDARD = 0;          // "standard"
+  COPY_RANGE_METHOD_IOCTL = 1;             // "ioctl"
+  COPY_RANGE_METHOD_COPY_FILE_RANGE = 2;   // "copy_file_range"
+  COPY_RANGE_METHOD_SEND_FILE = 3;         // "sendfile"
+  COPY_RANGE_METHOD_DUPLICATE_EXTENTS = 4; // "duplicate_extents"
+  COPY_RANGE_METHOD_ALL_WITH_FALLBACK = 5; // "all"
+}
+
+// The zero value means "basic", for legacy compatibility.
+enum FilesystemType {
+  FILESYSTEM_TYPE_BASIC = 0; // "basic"
+  FILESYSTEM_TYPE_FAKE = 1;  // "fake"
+}
+
+enum FolderType {
+  FOLDER_TYPE_SEND_RECEIVE = 0;      // "sendreceive"
+  FOLDER_TYPE_SEND_ONLY = 1;         // "sendonly"
+  FOLDER_TYPE_RECEIVE_ONLY = 2;      // "receiveonly"
+  FOLDER_TYPE_RECEIVE_ENCRYPTED = 3; // "receiveencrypted"
+}
+
+enum LDAPTransport {
+  LDAP_TRANSPORT_PLAIN = 0;     // "plain"
+  LDAP_TRANSPORT_TLS = 2;       // "tls"
+  LDAP_TRANSPORT_START_TLS = 3; // "starttls"
+  reserved 1;
+}
+
+enum PullOrder {
+  PULL_ORDER_RANDOM = 0;         // "random"
+  PULL_ORDER_ALPHABETIC = 1;     // "alphabetic"
+  PULL_ORDER_SMALLEST_FIRST = 2; // "smallestFirst"
+  PULL_ORDER_LARGEST_FIRST = 3;  // "largestFirst"
+  PULL_ORDER_OLDEST_FIRST = 4;   // "oldestFirst"
+  PULL_ORDER_NEWEST_FIRST = 5;   // "newestFirst"
+}
