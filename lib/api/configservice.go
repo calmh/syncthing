@@ -36,7 +36,7 @@ var _ syncthingv2connect.ConfigurationServiceHandler = (*configService)(nil)
 // is converted from the legacy format, which remains the source of truth
 // for now.
 func (s *configService) GetConfiguration(_ context.Context, req *connect.Request[syncthingv2.GetConfigRequest]) (*connect.Response[syncthingv2.GetConfigResponse], error) {
-	cfg := newconfig.FromLegacy(s.cfg.RawCopy())
+	cfg := config.FromLegacy(s.cfg.RawCopy())
 	if req.Msg.GetMaterializeDefaults() {
 		cfg = newconfig.MaterializeDefaults(cfg)
 	}

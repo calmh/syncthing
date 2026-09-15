@@ -13,19 +13,45 @@ import (
 	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 )
 
-// MaterializeDefaults returns a copy of the configuration with the schema
-// defaults filled in: every singular field that has a declared default
-// and is unset is set to that default. Set fields are never changed, in
-// particular not explicitly set zero values. Fields without declared
-// defaults, and repeated and message fields, carry no defaults in the
-// schema and are left as they are.
+// MaterializeDefaults returns a copy of the configuration with all
+// defaults filled in: every singular field that has a schema-declared
+// default and is unset is set to that default, and every field that has
+// a getter-declared default (for fields that cannot carry one in the
+// schema, such as repeated and message fields) is set to its effective
+// value. Set fields are never changed, in particular not explicitly set
+// zero values.
 func MaterializeDefaults(cfg Configuration) Configuration {
 	out := proto.Clone(cfg).(*syncthingv2.Configuration)
 	materializeDefaults(out.ProtoReflect())
 	return Configuration{out}
 }
 
+// getterDefaulters materializes the defaults declared by getter
+// functions on the wrapper types, keyed by message name. Adding a
+// getter-declared default means adding it to the wrapper's getter and
+// its materializeDefaults method; the walk picks it up from here.
+var getterDefaulters = map[protoreflect.FullName]func(protoreflect.Message){
+	"syncthing.v2.OptionsConfiguration": func(m protoreflect.Message) {
+		if opts, ok := m.Interface().(*syncthingv2.OptionsConfiguration); ok {
+			(OptionsConfiguration{opts}).materializeDefaults()
+		}
+	},
+	"syncthing.v2.FolderConfiguration": func(m protoreflect.Message) {
+		if folder, ok := m.Interface().(*syncthingv2.FolderConfiguration); ok {
+			(FolderConfiguration{folder}).materializeDefaults()
+		}
+	},
+	"syncthing.v2.DeviceConfiguration": func(m protoreflect.Message) {
+		if device, ok := m.Interface().(*syncthingv2.DeviceConfiguration); ok {
+			(DeviceConfiguration{device}).materializeDefaults()
+		}
+	},
+}
+
 func materializeDefaults(m protoreflect.Message) {
+	if defaulter, ok := getterDefaulters[m.Descriptor().FullName()]; ok {
+		defaulter(m)
+	}
 	fields := m.Descriptor().Fields()
 	for i := range fields.Len() {
 		fd := fields.Get(i)

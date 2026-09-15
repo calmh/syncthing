@@ -7,6 +7,8 @@
 package config
 
 import (
+	"slices"
+
 	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
 	"google.golang.org/protobuf/proto"
@@ -84,6 +86,16 @@ func (c Configuration) SetRemoteIgnoredDevices(devices []ObservedDevice) {
 		pbs[i] = device.ObservedDevice
 	}
 	c.Configuration.SetRemoteIgnoredDevices(pbs)
+}
+
+// GetOptions returns the global configuration options.
+func (c Configuration) GetOptions() OptionsConfiguration {
+	return OptionsConfiguration{c.Configuration.GetOptions()}
+}
+
+// SetOptions sets the global configuration options.
+func (c Configuration) SetOptions(options OptionsConfiguration) {
+	c.Configuration.SetOptions(options.OptionsConfiguration)
 }
 
 // Device returns the configuration for the given device, if present, and
@@ -164,6 +176,27 @@ func (f FolderConfiguration) Device(id protocol.DeviceID) (FolderDeviceConfigura
 	return FolderDeviceConfiguration{}, false
 }
 
+// MinDiskFree returns the minimum required free space on the disk the
+// folder resides on. If unset, the default is one percent.
+func (f FolderConfiguration) MinDiskFree() *Size {
+	if size := f.GetMinDiskFree(); size != nil {
+		return size
+	}
+	return syncthingv2.Size_builder{Percent: new(1.0)}.Build()
+}
+
+// materializeDefaults sets the fields that have getter-declared defaults
+// to their effective values, when unset. It is used when materialising
+// the effective configuration.
+func (f FolderConfiguration) materializeDefaults() {
+	if f.FolderConfiguration == nil {
+		return
+	}
+	if size := f.MinDiskFree(); !proto.Equal(size, f.GetMinDiskFree()) {
+		f.SetMinDiskFree(size)
+	}
+}
+
 // GetDevices returns the devices the folder is shared with.
 func (f FolderConfiguration) GetDevices() []FolderDeviceConfiguration {
 	pbs := f.FolderConfiguration.GetDevices()
@@ -238,6 +271,28 @@ func (d DeviceConfiguration) GetIntroducedBy() protocol.DeviceID {
 	return deviceIDFromString(d.DeviceConfiguration.GetIntroducedBy())
 }
 
+// Addresses returns the addresses or host names to use when attempting to
+// connect to this device. If unset, the default is to use local and
+// global discovery to find the device.
+func (d DeviceConfiguration) Addresses() []string {
+	if addrs := d.GetAddresses(); len(addrs) > 0 && !(len(addrs) == 1 && addrs[0] == "") {
+		return addrs
+	}
+	return []string{"dynamic"}
+}
+
+// materializeDefaults sets the fields that have getter-declared defaults
+// to their effective values, when unset. It is used when materialising
+// the effective configuration.
+func (d DeviceConfiguration) materializeDefaults() {
+	if d.DeviceConfiguration == nil {
+		return
+	}
+	if addrs := d.Addresses(); !slices.Equal(addrs, d.GetAddresses()) {
+		d.SetAddresses(addrs)
+	}
+}
+
 // SetIntroducedBy sets the device ID of the introducer. The empty device
 // ID clears the value.
 func (d DeviceConfiguration) SetIntroducedBy(id protocol.DeviceID) {
@@ -276,12 +331,11 @@ func deviceIDFromString(s string) protocol.DeviceID {
 	return id
 }
 
-// Types without device IDs are used as-is.
+// Types without device IDs or defaults are used as-is.
 
 type (
 	GUIConfiguration        = syncthingv2.GUIConfiguration
 	LDAPConfiguration       = syncthingv2.LDAPConfiguration
-	OptionsConfiguration    = syncthingv2.OptionsConfiguration
 	VersioningConfiguration = syncthingv2.VersioningConfiguration
 	XattrFilter             = syncthingv2.XattrFilter
 	XattrFilterEntry        = syncthingv2.XattrFilterEntry
@@ -289,3 +343,76 @@ type (
 	Ignores                 = syncthingv2.Ignores
 	ObservedFolder          = syncthingv2.ObservedFolder
 )
+
+// OptionsConfiguration is the global configuration options. It wraps the
+// generated type to provide defaults for fields that cannot have them in
+// the schema, such as repeated fields.
+type OptionsConfiguration struct {
+	*syncthingv2.OptionsConfiguration
+}
+
+func (o OptionsConfiguration) Copy() OptionsConfiguration {
+	cp := proto.Clone(o.OptionsConfiguration).(*syncthingv2.OptionsConfiguration)
+	return OptionsConfiguration{cp}
+}
+
+// ListenAddresses returns the listen addresses for incoming sync
+// connections. If unset, the default is the "default" address set, which
+// the consumer of the configuration expands to the actual addresses.
+func (o OptionsConfiguration) ListenAddresses() []string {
+	if addrs := o.GetListenAddresses(); len(addrs) > 0 {
+		return addrs
+	}
+	return []string{"default"}
+}
+
+// GlobalAnnounceServers returns the global announce (discovery) servers.
+// If unset, the default is the "default" server set, which the consumer
+// of the configuration expands to the actual servers.
+func (o OptionsConfiguration) GlobalAnnounceServers() []string {
+	if servers := o.GetGlobalAnnounceServers(); len(servers) > 0 {
+		return servers
+	}
+	return []string{"default"}
+}
+
+// StunServers returns the servers to use for STUN. If unset, the default
+// is the "default" server set, which the consumer of the configuration
+// expands to the actual servers.
+func (o OptionsConfiguration) StunServers() []string {
+	if servers := o.GetStunServers(); len(servers) > 0 {
+		return servers
+	}
+	return []string{"default"}
+}
+
+// MinHomeDiskFree returns the minimum required free space on the partition
+// holding the configuration and index. If unset, the default is one
+// percent.
+func (o OptionsConfiguration) MinHomeDiskFree() *Size {
+	if size := o.GetMinHomeDiskFree(); size != nil {
+		return size
+	}
+	return syncthingv2.Size_builder{Percent: new(1.0)}.Build()
+}
+
+// materializeDefaults sets the fields that have getter-declared defaults
+// to their effective values, when unset. It is used when materialising
+// the effective configuration.
+func (o OptionsConfiguration) materializeDefaults() {
+	if o.OptionsConfiguration == nil {
+		return
+	}
+	if addrs := o.ListenAddresses(); !slices.Equal(addrs, o.GetListenAddresses()) {
+		o.SetListenAddresses(addrs)
+	}
+	if servers := o.GlobalAnnounceServers(); !slices.Equal(servers, o.GetGlobalAnnounceServers()) {
+		o.SetGlobalAnnounceServers(servers)
+	}
+	if servers := o.StunServers(); !slices.Equal(servers, o.GetStunServers()) {
+		o.SetStunServers(servers)
+	}
+	if size := o.MinHomeDiskFree(); !proto.Equal(size, o.GetMinHomeDiskFree()) {
+		o.SetMinHomeDiskFree(size)
+	}
+}

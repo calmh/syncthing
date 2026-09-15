@@ -113,7 +113,7 @@ func Manage(path string, cfg Configuration, myID protocol.DeviceID, evLogger eve
 
 // Load loads an existing file on disk and returns a new configuration
 // manager. The file must contain a configuration in YAML format; it is
-// validated before the manager is created.
+// validated and prepared for use before the manager is created.
 // The returned Manager is a suture.Service, thus needs to be started (added to
 // a supervisor).
 func Load(path string, myID protocol.DeviceID, evLogger events.Logger) (*Manager, error) {
@@ -123,6 +123,9 @@ func Load(path string, myID protocol.DeviceID, evLogger events.Logger) (*Manager
 	}
 	cfg, err := Unmarshal(bs)
 	if err != nil {
+		return nil, err
+	}
+	if err := Prepare(&cfg, myID); err != nil {
 		return nil, err
 	}
 	return Manage(path, cfg, myID, evLogger), nil
@@ -380,16 +383,12 @@ func (w *Manager) DefaultFolder() FolderConfiguration {
 	return w.cfg.GetDefaults().GetFolder().Copy()
 }
 
-// Options returns the current options configuration object, or nil if
-// unset. Getters on the result are nil-safe and return the schema
-// defaults.
-func (w *Manager) Options() *OptionsConfiguration {
+// Options returns the current options configuration object. Getters on
+// the result are nil-safe and return the schema defaults.
+func (w *Manager) Options() OptionsConfiguration {
 	w.mut.Lock()
 	defer w.mut.Unlock()
-	if opts := w.cfg.GetOptions(); opts != nil {
-		return proto.Clone(opts).(*OptionsConfiguration)
-	}
-	return nil
+	return w.cfg.GetOptions().Copy()
 }
 
 func (w *Manager) LDAP() *LDAPConfiguration {

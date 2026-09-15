@@ -13,8 +13,8 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	intconfig "github.com/syncthing/syncthing/internal/config"
 	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
-	config "github.com/syncthing/syncthing/lib/config"
 )
 
 // FromLegacy returns a new format configuration with the same contents as
@@ -26,8 +26,8 @@ import (
 // (e.g. rescanIntervalS 0 for no periodic rescan, or a disabled GUI) are
 // preserved as such. Legacy fields that were deprecated have no counterpart
 // in the new format and are dropped.
-func FromLegacy(cfg config.Configuration) Configuration {
-	return Configuration{syncthingv2.Configuration_builder{
+func FromLegacy(cfg Configuration) intconfig.Configuration {
+	return intconfig.Configuration{Configuration: syncthingv2.Configuration_builder{
 		Version:              new(int32(cfg.Version)),
 		Folders:              fromLegacyFolders(cfg.Folders),
 		Devices:              fromLegacyDevices(cfg.Devices),
@@ -39,7 +39,7 @@ func FromLegacy(cfg config.Configuration) Configuration {
 	}.Build()}
 }
 
-func fromLegacyFolders(folders []config.FolderConfiguration) []*syncthingv2.FolderConfiguration {
+func fromLegacyFolders(folders []FolderConfiguration) []*syncthingv2.FolderConfiguration {
 	out := make([]*syncthingv2.FolderConfiguration, len(folders))
 	for i, folder := range folders {
 		out[i] = fromLegacyFolder(folder)
@@ -47,7 +47,7 @@ func fromLegacyFolders(folders []config.FolderConfiguration) []*syncthingv2.Fold
 	return out
 }
 
-func fromLegacyFolder(f config.FolderConfiguration) *syncthingv2.FolderConfiguration {
+func fromLegacyFolder(f FolderConfiguration) *syncthingv2.FolderConfiguration {
 	return syncthingv2.FolderConfiguration_builder{
 		Id:                      new(f.ID),
 		Label:                   new(f.Label),
@@ -93,7 +93,7 @@ func fromLegacyFolder(f config.FolderConfiguration) *syncthingv2.FolderConfigura
 	}.Build()
 }
 
-func fromLegacyFolderDevices(devices []config.FolderDeviceConfiguration) []*syncthingv2.FolderDeviceConfiguration {
+func fromLegacyFolderDevices(devices []FolderDeviceConfiguration) []*syncthingv2.FolderDeviceConfiguration {
 	out := make([]*syncthingv2.FolderDeviceConfiguration, len(devices))
 	for i, device := range devices {
 		out[i] = syncthingv2.FolderDeviceConfiguration_builder{
@@ -105,7 +105,7 @@ func fromLegacyFolderDevices(devices []config.FolderDeviceConfiguration) []*sync
 	return out
 }
 
-func fromLegacyVersioning(v config.VersioningConfiguration) *syncthingv2.VersioningConfiguration {
+func fromLegacyVersioning(v VersioningConfiguration) *syncthingv2.VersioningConfiguration {
 	return syncthingv2.VersioningConfiguration_builder{
 		Type:             new(v.Type),
 		Params:           maps.Clone(v.Params),
@@ -115,7 +115,7 @@ func fromLegacyVersioning(v config.VersioningConfiguration) *syncthingv2.Version
 	}.Build()
 }
 
-func fromLegacyXattrFilter(f config.XattrFilter) *syncthingv2.XattrFilter {
+func fromLegacyXattrFilter(f XattrFilter) *syncthingv2.XattrFilter {
 	entries := make([]*syncthingv2.XattrFilterEntry, len(f.Entries))
 	for i, entry := range f.Entries {
 		entries[i] = syncthingv2.XattrFilterEntry_builder{
@@ -134,7 +134,7 @@ func fromLegacyXattrFilter(f config.XattrFilter) *syncthingv2.XattrFilter {
 // legacy size of zero or less meant "no minimum" and converts to an unset
 // size. Units with an "iB"-suffix are binary, other unit prefixes decimal,
 // matching the intent of the legacy string format.
-func fromLegacySize(s config.Size) *syncthingv2.Size {
+func fromLegacySize(s Size) *syncthingv2.Size {
 	if s.Value <= 0 {
 		return nil
 	}
@@ -163,7 +163,7 @@ func fromLegacySize(s config.Size) *syncthingv2.Size {
 	}
 }
 
-func fromLegacyDevices(devices []config.DeviceConfiguration) []*syncthingv2.DeviceConfiguration {
+func fromLegacyDevices(devices []DeviceConfiguration) []*syncthingv2.DeviceConfiguration {
 	out := make([]*syncthingv2.DeviceConfiguration, len(devices))
 	for i, device := range devices {
 		out[i] = fromLegacyDevice(device)
@@ -171,7 +171,7 @@ func fromLegacyDevices(devices []config.DeviceConfiguration) []*syncthingv2.Devi
 	return out
 }
 
-func fromLegacyDevice(d config.DeviceConfiguration) *syncthingv2.DeviceConfiguration {
+func fromLegacyDevice(d DeviceConfiguration) *syncthingv2.DeviceConfiguration {
 	return syncthingv2.DeviceConfiguration_builder{
 		DeviceId:                 new(d.DeviceID.String()),
 		Name:                     new(d.Name),
@@ -195,7 +195,7 @@ func fromLegacyDevice(d config.DeviceConfiguration) *syncthingv2.DeviceConfigura
 	}.Build()
 }
 
-func fromLegacyObservedFolders(folders []config.ObservedFolder) []*syncthingv2.ObservedFolder {
+func fromLegacyObservedFolders(folders []ObservedFolder) []*syncthingv2.ObservedFolder {
 	out := make([]*syncthingv2.ObservedFolder, len(folders))
 	for i, folder := range folders {
 		out[i] = syncthingv2.ObservedFolder_builder{
@@ -207,7 +207,7 @@ func fromLegacyObservedFolders(folders []config.ObservedFolder) []*syncthingv2.O
 	return out
 }
 
-func fromLegacyObservedDevices(devices []config.ObservedDevice) []*syncthingv2.ObservedDevice {
+func fromLegacyObservedDevices(devices []ObservedDevice) []*syncthingv2.ObservedDevice {
 	out := make([]*syncthingv2.ObservedDevice, len(devices))
 	for i, device := range devices {
 		out[i] = syncthingv2.ObservedDevice_builder{
@@ -220,7 +220,7 @@ func fromLegacyObservedDevices(devices []config.ObservedDevice) []*syncthingv2.O
 	return out
 }
 
-func fromLegacyGUI(g config.GUIConfiguration) *syncthingv2.GUIConfiguration {
+func fromLegacyGUI(g GUIConfiguration) *syncthingv2.GUIConfiguration {
 	return syncthingv2.GUIConfiguration_builder{
 		Enabled:                   new(g.Enabled),
 		Address:                   new(g.RawAddress),
@@ -241,7 +241,7 @@ func fromLegacyGUI(g config.GUIConfiguration) *syncthingv2.GUIConfiguration {
 	}.Build()
 }
 
-func fromLegacyLDAP(l config.LDAPConfiguration) *syncthingv2.LDAPConfiguration {
+func fromLegacyLDAP(l LDAPConfiguration) *syncthingv2.LDAPConfiguration {
 	return syncthingv2.LDAPConfiguration_builder{
 		Address:            new(l.Address),
 		BindDn:             new(l.BindDN),
@@ -252,7 +252,7 @@ func fromLegacyLDAP(l config.LDAPConfiguration) *syncthingv2.LDAPConfiguration {
 	}.Build()
 }
 
-func fromLegacyOptions(o config.OptionsConfiguration) *syncthingv2.OptionsConfiguration {
+func fromLegacyOptions(o OptionsConfiguration) *syncthingv2.OptionsConfiguration {
 	return syncthingv2.OptionsConfiguration_builder{
 		ListenAddresses:                     slices.Clone(o.RawListenAddresses),
 		GlobalAnnounceServers:               slices.Clone(o.RawGlobalAnnServers),
@@ -312,7 +312,7 @@ func fromLegacyOptions(o config.OptionsConfiguration) *syncthingv2.OptionsConfig
 	}.Build()
 }
 
-func fromLegacyDefaults(d config.Defaults) *syncthingv2.Defaults {
+func fromLegacyDefaults(d Defaults) *syncthingv2.Defaults {
 	return syncthingv2.Defaults_builder{
 		Folder:  fromLegacyFolder(d.Folder),
 		Device:  fromLegacyDevice(d.Device),
@@ -322,8 +322,8 @@ func fromLegacyDefaults(d config.Defaults) *syncthingv2.Defaults {
 
 // filesystemTypeFromLegacy maps the legacy string based filesystem type to
 // the new enum. The legacy zero value ("") means "basic".
-func filesystemTypeFromLegacy(t config.FilesystemType) syncthingv2.FilesystemType {
-	if t == config.FilesystemTypeFake {
+func filesystemTypeFromLegacy(t FilesystemType) syncthingv2.FilesystemType {
+	if t == FilesystemTypeFake {
 		return syncthingv2.FilesystemType_FILESYSTEM_TYPE_FAKE
 	}
 	return syncthingv2.FilesystemType_FILESYSTEM_TYPE_BASIC

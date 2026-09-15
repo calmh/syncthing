@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	intconfig "github.com/syncthing/syncthing/internal/config"
 	"github.com/syncthing/syncthing/internal/slogutil"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/fs"
@@ -31,58 +32,36 @@ import (
 	"github.com/syncthing/syncthing/lib/structutil"
 )
 
+// Default constants and declarations are now owned by the new
+// configuration package; the identifiers here are aliases, for backwards
+// compatibility.
 const (
-	OldestHandledVersion = 10
-	CurrentVersion       = 52
-	MaxRescanIntervalS   = 365 * 24 * 60 * 60
+	OldestHandledVersion = intconfig.OldestHandledVersion
+	CurrentVersion       = intconfig.CurrentVersion
+	MaxRescanIntervalS   = intconfig.MaxRescanIntervalS
+	DefaultTCPPort       = intconfig.DefaultTCPPort
+	DefaultQUICPort      = intconfig.DefaultQUICPort
+	DefaultTheme         = intconfig.DefaultTheme
 )
 
 var (
-	// DefaultTCPPort defines default TCP port used if the URI does not specify one, for example tcp://0.0.0.0
-	DefaultTCPPort = 22000
-	// DefaultQUICPort defines default QUIC port used if the URI does not specify one, for example quic://0.0.0.0
-	DefaultQUICPort = 22000
 	// DefaultListenAddresses should be substituted when the configuration
 	// contains <listenAddress>default</listenAddress>. This is done by the
 	// "consumer" of the configuration as we don't want these saved to the
 	// config.
-	DefaultListenAddresses = []string{
-		netutil.AddressURL("tcp", net.JoinHostPort("0.0.0.0", strconv.Itoa(DefaultTCPPort))),
-		"dynamic+https://relays.syncthing.net/endpoint",
-		netutil.AddressURL("quic", net.JoinHostPort("0.0.0.0", strconv.Itoa(DefaultQUICPort))),
-	}
+	DefaultListenAddresses = intconfig.DefaultListenAddresses
 	// DefaultDiscoveryServersV4 should be substituted when the configuration
 	// contains <globalAnnounceServer>default-v4</globalAnnounceServer>.
-	DefaultDiscoveryServersV4 = []string{
-		"https://discovery-lookup.syncthing.net/v2/?noannounce",
-		"https://discovery-announce-v4.syncthing.net/v2/?nolookup",
-	}
+	DefaultDiscoveryServersV4 = intconfig.DefaultDiscoveryServersV4
 	// DefaultDiscoveryServersV6 should be substituted when the configuration
 	// contains <globalAnnounceServer>default-v6</globalAnnounceServer>.
-	DefaultDiscoveryServersV6 = []string{
-		"https://discovery-lookup.syncthing.net/v2/?noannounce",
-		"https://discovery-announce-v6.syncthing.net/v2/?nolookup",
-	}
+	DefaultDiscoveryServersV6 = intconfig.DefaultDiscoveryServersV6
 	// DefaultDiscoveryServers should be substituted when the configuration
 	// contains <globalAnnounceServer>default</globalAnnounceServer>.
-	DefaultDiscoveryServers = append(DefaultDiscoveryServersV4, DefaultDiscoveryServersV6...)
-	// DefaultTheme is the default and fallback theme for the web UI.
-	DefaultTheme = "default"
-	// Default stun servers should be substituted when the configuration
-	// contains <stunServer>default</stunServer>.
-	// The primary stun servers are provided by us and are resolved via an SRV record
-	// The fallback stun servers are used if the primary ones can't be resolved or are down.
-	DefaultFallbackStunServers = []string{
-		"stun.counterpath.com:3478",
-		"stun.hitv.com:3478",
-		"stun.internetcalls.com:3478",
-		"stun.miwifi.com:3478",
-		"stun.schlund.de:3478",
-		"stun.sipgate.net:3478",
-		"stun.voip.aebc.com:3478",
-		"stun.voipbuster.com:3478",
-		"stun.voipstunt.com:3478",
-	}
+	DefaultDiscoveryServers = intconfig.DefaultDiscoveryServers
+	// Default fallback STUN servers, used if the primary ones can't be
+	// resolved or are down.
+	DefaultFallbackStunServers = intconfig.DefaultFallbackStunServers
 )
 
 var (

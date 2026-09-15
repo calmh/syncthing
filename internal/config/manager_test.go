@@ -172,12 +172,17 @@ func TestManagerSaveLoad(t *testing.T) {
 	id := protocol.NewDeviceID([]byte("saveload"))
 	path := filepath.Join(t.TempDir(), "config.yaml")
 
+	// The API key is set explicitly, as preparation generates a random
+	// one when it is unset.
 	cfg := Configuration{syncthingv2.Configuration_builder{
 		Version: new(int32(52)),
 		Devices: []*syncthingv2.DeviceConfiguration{syncthingv2.DeviceConfiguration_builder{
 			DeviceId: new(id.String()),
 			Name:     new("myself"),
 		}.Build()},
+		Gui: syncthingv2.GUIConfiguration_builder{
+			ApiKey: new("kO8nJgP7tY2wZq4x"),
+		}.Build(),
 	}.Build()}
 	w := startManager(Manage(path, cfg, id, events.NoopLogger))
 
@@ -202,7 +207,12 @@ func TestManagerSaveLoad(t *testing.T) {
 		t.Fatalf("load: %v", err)
 	}
 
+	// Loading prepares the configuration; do the same to the expected
+	// value before comparing.
 	want := w.RawCopy()
+	if err := Prepare(&want, id); err != nil {
+		t.Fatal(err)
+	}
 	got := loaded.RawCopy()
 	if !proto.Equal(want.Configuration, got.Configuration) {
 		t.Errorf("configuration did not survive save/load:\ngot:  %v\nwant: %v", got, want)
@@ -279,7 +289,7 @@ func TestManagerAccessorsAndRemove(t *testing.T) {
 	if w.DefaultIgnores() != nil {
 		t.Error("default ignores should be unset")
 	}
-	if w.GUI() != nil || w.Options() != nil || w.LDAP() != nil {
+	if w.GUI() != nil || w.RawCopy().HasOptions() || w.LDAP() != nil {
 		t.Error("unset sections should be nil")
 	}
 

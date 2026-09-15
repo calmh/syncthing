@@ -21,6 +21,7 @@ import (
 
 	"github.com/shirou/gopsutil/v4/disk"
 
+	intconfig "github.com/syncthing/syncthing/internal/config"
 	"github.com/syncthing/syncthing/lib/build"
 	"github.com/syncthing/syncthing/lib/fs"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -34,8 +35,9 @@ var (
 )
 
 const (
-	DefaultMarkerName          = ".stfolder"
-	EncryptionTokenName        = "syncthing-encryption_password_token" //nolint: gosec
+	DefaultMarkerName   = intconfig.DefaultMarkerName
+	EncryptionTokenName = intconfig.EncryptionTokenName
+
 	maxConcurrentWritesDefault = 16
 	maxConcurrentWritesLimit   = 256
 )

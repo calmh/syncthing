@@ -884,10 +884,10 @@ type FolderConfiguration struct {
 	xxx_hidden_MaxConflicts            int32                         `protobuf:"varint,24,opt,name=max_conflicts,json=maxConflicts,def=10"`
 	xxx_hidden_DisableSparseFiles      bool                          `protobuf:"varint,25,opt,name=disable_sparse_files,json=disableSparseFiles"`
 	xxx_hidden_Paused                  bool                          `protobuf:"varint,26,opt,name=paused"`
-	xxx_hidden_MarkerName              *string                       `protobuf:"bytes,27,opt,name=marker_name,json=markerName"`
+	xxx_hidden_MarkerName              *string                       `protobuf:"bytes,27,opt,name=marker_name,json=markerName,def=.stfolder"`
 	xxx_hidden_CopyOwnershipFromParent bool                          `protobuf:"varint,28,opt,name=copy_ownership_from_parent,json=copyOwnershipFromParent"`
 	xxx_hidden_ModTimeWindowS          int32                         `protobuf:"varint,29,opt,name=mod_time_window_s,json=modTimeWindowS"`
-	xxx_hidden_MaxConcurrentWrites     int32                         `protobuf:"varint,30,opt,name=max_concurrent_writes,json=maxConcurrentWrites"`
+	xxx_hidden_MaxConcurrentWrites     int32                         `protobuf:"varint,30,opt,name=max_concurrent_writes,json=maxConcurrentWrites,def=16"`
 	xxx_hidden_DisableFsync            bool                          `protobuf:"varint,31,opt,name=disable_fsync,json=disableFsync"`
 	xxx_hidden_BlockPullOrder          BlockPullOrder                `protobuf:"varint,32,opt,name=block_pull_order,json=blockPullOrder,enum=syncthing.v2.BlockPullOrder"`
 	xxx_hidden_CopyRangeMethod         CopyRangeMethod               `protobuf:"varint,33,opt,name=copy_range_method,json=copyRangeMethod,enum=syncthing.v2.CopyRangeMethod,def=0"`
@@ -907,15 +907,17 @@ type FolderConfiguration struct {
 
 // Default values for FolderConfiguration fields.
 const (
-	Default_FolderConfiguration_FilesystemType   = FilesystemType_FILESYSTEM_TYPE_BASIC
-	Default_FolderConfiguration_RescanIntervalS  = int32(3600)
-	Default_FolderConfiguration_FsWatcherEnabled = bool(true)
-	Default_FolderConfiguration_FsWatcherDelayS  = float64(10)
-	Default_FolderConfiguration_AutoNormalize    = bool(true)
-	Default_FolderConfiguration_PullerDelayS     = float64(1)
-	Default_FolderConfiguration_MaxConflicts     = int32(10)
-	Default_FolderConfiguration_CopyRangeMethod  = CopyRangeMethod_COPY_RANGE_METHOD_STANDARD
-	Default_FolderConfiguration_BlockIndexing    = bool(true)
+	Default_FolderConfiguration_FilesystemType      = FilesystemType_FILESYSTEM_TYPE_BASIC
+	Default_FolderConfiguration_RescanIntervalS     = int32(3600)
+	Default_FolderConfiguration_FsWatcherEnabled    = bool(true)
+	Default_FolderConfiguration_FsWatcherDelayS     = float64(10)
+	Default_FolderConfiguration_AutoNormalize       = bool(true)
+	Default_FolderConfiguration_PullerDelayS        = float64(1)
+	Default_FolderConfiguration_MaxConflicts        = int32(10)
+	Default_FolderConfiguration_MarkerName          = string(".stfolder")
+	Default_FolderConfiguration_MaxConcurrentWrites = int32(16)
+	Default_FolderConfiguration_CopyRangeMethod     = CopyRangeMethod_COPY_RANGE_METHOD_STANDARD
+	Default_FolderConfiguration_BlockIndexing       = bool(true)
 )
 
 func (x *FolderConfiguration) Reset() {
@@ -1159,12 +1161,14 @@ func (x *FolderConfiguration) GetPaused() bool {
 
 func (x *FolderConfiguration) GetMarkerName() string {
 	if x != nil {
-		if x.xxx_hidden_MarkerName != nil {
-			return *x.xxx_hidden_MarkerName
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 26) {
+			if x.xxx_hidden_MarkerName != nil {
+				return *x.xxx_hidden_MarkerName
+			}
+			return Default_FolderConfiguration_MarkerName
 		}
-		return ""
 	}
-	return ""
+	return Default_FolderConfiguration_MarkerName
 }
 
 func (x *FolderConfiguration) GetCopyOwnershipFromParent() bool {
@@ -1183,9 +1187,11 @@ func (x *FolderConfiguration) GetModTimeWindowS() int32 {
 
 func (x *FolderConfiguration) GetMaxConcurrentWrites() int32 {
 	if x != nil {
-		return x.xxx_hidden_MaxConcurrentWrites
+		if protoimpl.X.Present(&(x.XXX_presence[0]), 29) {
+			return x.xxx_hidden_MaxConcurrentWrites
+		}
 	}
-	return 0
+	return Default_FolderConfiguration_MaxConcurrentWrites
 }
 
 func (x *FolderConfiguration) GetDisableFsync() bool {
@@ -1870,7 +1876,6 @@ func (x *FolderConfiguration) ClearPaused() {
 
 func (x *FolderConfiguration) ClearMarkerName() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 26)
-	x.xxx_hidden_MarkerName = nil
 }
 
 func (x *FolderConfiguration) ClearCopyOwnershipFromParent() {
@@ -1885,7 +1890,6 @@ func (x *FolderConfiguration) ClearModTimeWindowS() {
 
 func (x *FolderConfiguration) ClearMaxConcurrentWrites() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 29)
-	x.xxx_hidden_MaxConcurrentWrites = 0
 }
 
 func (x *FolderConfiguration) ClearDisableFsync() {
@@ -6724,7 +6728,7 @@ const file_syncthing_v2_config_proto_rawDesc = "" +
 	"\x06device\x18\x02 \x01(\v2!.syncthing.v2.DeviceConfigurationR\x06device\x12/\n" +
 	"\aignores\x18\x03 \x01(\v2\x15.syncthing.v2.IgnoresR\aignores\"\x1f\n" +
 	"\aIgnores\x12\x14\n" +
-	"\x05lines\x18\x01 \x03(\tR\x05lines\"\xe8\x0e\n" +
+	"\x05lines\x18\x01 \x03(\tR\x05lines\"\xf7\x0e\n" +
 	"\x13FolderConfiguration\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12\\\n" +
@@ -6754,12 +6758,12 @@ const file_syncthing_v2_config_proto_rawDesc = "" +
 	"\x0epuller_delay_s\x18\x17 \x01(\x01:\x011R\fpullerDelayS\x12'\n" +
 	"\rmax_conflicts\x18\x18 \x01(\x05:\x0210R\fmaxConflicts\x120\n" +
 	"\x14disable_sparse_files\x18\x19 \x01(\bR\x12disableSparseFiles\x12\x16\n" +
-	"\x06paused\x18\x1a \x01(\bR\x06paused\x12\x1f\n" +
-	"\vmarker_name\x18\x1b \x01(\tR\n" +
+	"\x06paused\x18\x1a \x01(\bR\x06paused\x12*\n" +
+	"\vmarker_name\x18\x1b \x01(\t:\t.stfolderR\n" +
 	"markerName\x12;\n" +
 	"\x1acopy_ownership_from_parent\x18\x1c \x01(\bR\x17copyOwnershipFromParent\x12)\n" +
-	"\x11mod_time_window_s\x18\x1d \x01(\x05R\x0emodTimeWindowS\x122\n" +
-	"\x15max_concurrent_writes\x18\x1e \x01(\x05R\x13maxConcurrentWrites\x12#\n" +
+	"\x11mod_time_window_s\x18\x1d \x01(\x05R\x0emodTimeWindowS\x126\n" +
+	"\x15max_concurrent_writes\x18\x1e \x01(\x05:\x0216R\x13maxConcurrentWrites\x12#\n" +
 	"\rdisable_fsync\x18\x1f \x01(\bR\fdisableFsync\x12F\n" +
 	"\x10block_pull_order\x18  \x01(\x0e2\x1c.syncthing.v2.BlockPullOrderR\x0eblockPullOrder\x12e\n" +
 	"\x11copy_range_method\x18! \x01(\x0e2\x1d.syncthing.v2.CopyRangeMethod:\x1aCOPY_RANGE_METHOD_STANDARDR\x0fcopyRangeMethod\x12*\n" +
@@ -6954,8 +6958,8 @@ const file_syncthing_v2_config_proto_rawDesc = "" +
 	"\x19PULL_ORDER_SMALLEST_FIRST\x10\x02\x12\x1c\n" +
 	"\x18PULL_ORDER_LARGEST_FIRST\x10\x03\x12\x1b\n" +
 	"\x17PULL_ORDER_OLDEST_FIRST\x10\x04\x12\x1b\n" +
-	"\x17PULL_ORDER_NEWEST_FIRST\x10\x05B\xb6\x01\n" +
-	"\x10com.syncthing.v2B\vConfigProtoP\x01ZDgithub.com/syncthing/syncthing/internal/gen/syncthing/v2;syncthingv2\xa2\x02\x03SXX\xaa\x02\fSyncthing.V2\xca\x02\fSyncthing\\V2\xe2\x02\x18Syncthing\\V2\\GPBMetadata\xea\x02\rSyncthing::V2b\beditionsp\xe9\a"
+	"\x17PULL_ORDER_NEWEST_FIRST\x10\x05B\xb4\x01\n" +
+	"\x10com.syncthing.v2B\vConfigProtoZDgithub.com/syncthing/syncthing/internal/gen/syncthing/v2;syncthingv2\xa2\x02\x03SXX\xaa\x02\fSyncthing.V2\xca\x02\fSyncthing\\V2\xe2\x02\x18Syncthing\\V2\\GPBMetadata\xea\x02\rSyncthing::V2b\beditionsp\xe9\a"
 
 var file_syncthing_v2_config_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
 var file_syncthing_v2_config_proto_msgTypes = make([]protoimpl.MessageInfo, 16)

@@ -63,6 +63,55 @@ func TestConfigServiceGetConfiguration(t *testing.T) {
 	}
 }
 
+// TestConfigServiceGetConfigurationMaterialized tests the
+// materializeDefaults flag: fields that have their defaults declared by
+// getters, and are unset in the configuration, are filled in.
+func TestConfigServiceGetConfigurationMaterialized(t *testing.T) {
+	id := protocol.NewDeviceID([]byte("configmaterialize"))
+	// A sparse legacy configuration, where the options and device
+	// addresses are unset rather than materialised.
+	cfg := config.Configuration{
+		Version: config.CurrentVersion,
+		Devices: []config.DeviceConfiguration{{DeviceID: id}},
+	}
+	svc := &configService{fakeConfigSource{cfg: cfg}}
+
+	path, handler := syncthingv2connect.NewConfigurationServiceHandler(svc)
+	mux := http.NewServeMux()
+	mux.Handle(path, handler)
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := syncthingv2connect.NewConfigurationServiceClient(server.Client(), server.URL)
+
+	// Without the flag, the getter-defaulted fields are unset.
+	resp, err := client.GetConfiguration(context.Background(), connect.NewRequest(&syncthingv2.GetConfigRequest{}))
+	if err != nil {
+		t.Fatalf("GetConfiguration: %v", err)
+	}
+	if opts := resp.Msg.GetConfiguration().GetOptions(); len(opts.GetListenAddresses()) != 0 {
+		t.Errorf("listenAddresses: got %v, want unset", opts.GetListenAddresses())
+	}
+
+	// With the flag, they are filled in.
+	resp, err = client.GetConfiguration(context.Background(), connect.NewRequest(
+		syncthingv2.GetConfigRequest_builder{MaterializeDefaults: new(true)}.Build(),
+	))
+	if err != nil {
+		t.Fatalf("GetConfiguration: %v", err)
+	}
+	got := resp.Msg.GetConfiguration()
+	if addrs := got.GetOptions().GetListenAddresses(); len(addrs) != 1 || addrs[0] != "default" {
+		t.Errorf("listenAddresses: got %v, want [default]", addrs)
+	}
+	if addrs := got.GetDevices()[0].GetAddresses(); len(addrs) != 1 || addrs[0] != "dynamic" {
+		t.Errorf("device addresses: got %v, want [dynamic]", addrs)
+	}
+	if size := got.GetOptions().GetMinHomeDiskFree(); size == nil || !size.HasPercent() || size.GetPercent() != 1 {
+		t.Errorf("minHomeDiskFree: got %v, want one percent", size)
+	}
+}
+
 // TestConfigServiceGetConfigurationHTTPGet tests that the RPC is reachable
 // with a plain HTTP GET request, per the NO_SIDE_EFFECTS idempotency
 // annotation. The Connect protocol requires the response codec and the

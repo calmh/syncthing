@@ -198,7 +198,7 @@ message FolderConfiguration {
   // Name of a directory or file in the folder root to be used as a
   // folder marker. A marker directory is only created by Syncthing for
   // the default ".stfolder", not otherwise.
-  string marker_name = 27;
+  string marker_name = 27 [default = ".stfolder"];
 
   // On Unix systems, tries to copy file/folder ownership from the parent
   // directory. Requires running Syncthing as a privileged user, or
@@ -216,7 +216,7 @@ message FolderConfiguration {
   // Maximum number of concurrent write operations while syncing.
   // Increasing this might increase or decrease disk performance,
   // depending on the underlying storage.
-  int32 max_concurrent_writes = 30;
+  int32 max_concurrent_writes = 30 [default = 16];
 
   // Disables committing file operations to disk before recording them in
   // the database. Disabling fsync can lead to data corruption; this is a
