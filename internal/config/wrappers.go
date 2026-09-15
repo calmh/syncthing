@@ -9,6 +9,7 @@ package config
 import (
 	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
+	"google.golang.org/protobuf/proto"
 )
 
 // The configuration tree is exposed through wrapper types around the
@@ -19,6 +20,11 @@ import (
 // Configuration is the Syncthing configuration.
 type Configuration struct {
 	*syncthingv2.Configuration
+}
+
+func (c Configuration) Copy() Configuration {
+	cp := proto.Clone(c.Configuration).(*syncthingv2.Configuration)
+	return Configuration{cp}
 }
 
 // GetFolders returns the folder configurations.
@@ -80,6 +86,28 @@ func (c Configuration) SetRemoteIgnoredDevices(devices []ObservedDevice) {
 	c.Configuration.SetRemoteIgnoredDevices(pbs)
 }
 
+// Device returns the configuration for the given device, if present, and
+// its index in the device list.
+func (c Configuration) Device(id protocol.DeviceID) (DeviceConfiguration, int, bool) {
+	for i, device := range c.GetDevices() {
+		if device.GetDeviceId() == id {
+			return device, i, true
+		}
+	}
+	return DeviceConfiguration{}, 0, false
+}
+
+// Folder returns the configuration for the given folder, if present, and
+// its index in the folder list.
+func (c Configuration) Folder(id string) (FolderConfiguration, int, bool) {
+	for i, folder := range c.GetFolders() {
+		if folder.GetId() == id {
+			return folder, i, true
+		}
+	}
+	return FolderConfiguration{}, 0, false
+}
+
 // GetDefaults returns the default values for new folders and devices.
 func (c Configuration) GetDefaults() Defaults {
 	return Defaults{c.Configuration.GetDefaults()}
@@ -118,6 +146,22 @@ func (d Defaults) SetDevice(device DeviceConfiguration) {
 // FolderConfiguration is the configuration for a shared folder.
 type FolderConfiguration struct {
 	*syncthingv2.FolderConfiguration
+}
+
+func (f FolderConfiguration) Copy() FolderConfiguration {
+	cp := proto.Clone(f.FolderConfiguration).(*syncthingv2.FolderConfiguration)
+	return FolderConfiguration{cp}
+}
+
+// Device returns the configuration for the given device among the
+// devices the folder is shared with, if present.
+func (f FolderConfiguration) Device(id protocol.DeviceID) (FolderDeviceConfiguration, bool) {
+	for _, device := range f.GetDevices() {
+		if device.GetDeviceId() == id {
+			return device, true
+		}
+	}
+	return FolderDeviceConfiguration{}, false
 }
 
 // GetDevices returns the devices the folder is shared with.
@@ -172,6 +216,11 @@ type DeviceConfiguration struct {
 	*syncthingv2.DeviceConfiguration
 }
 
+func (d DeviceConfiguration) Copy() DeviceConfiguration {
+	cp := proto.Clone(d.DeviceConfiguration).(*syncthingv2.DeviceConfiguration)
+	return DeviceConfiguration{cp}
+}
+
 // GetDeviceId returns the device ID. An unset or empty device ID is
 // returned as the empty device ID.
 func (d DeviceConfiguration) GetDeviceId() protocol.DeviceID {
@@ -198,6 +247,11 @@ func (d DeviceConfiguration) SetIntroducedBy(id protocol.DeviceID) {
 // ObservedDevice is a device encountered on the network.
 type ObservedDevice struct {
 	*syncthingv2.ObservedDevice
+}
+
+func (d ObservedDevice) Copy() ObservedDevice {
+	cp := proto.Clone(d.ObservedDevice).(*syncthingv2.ObservedDevice)
+	return ObservedDevice{cp}
 }
 
 // GetDeviceId returns the device ID. An unset or empty device ID is
