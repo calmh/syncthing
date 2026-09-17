@@ -1994,7 +1994,8 @@ type FolderConfiguration_builder struct {
 	AutoNormalize *bool
 	// The minimum required free space on the disk this folder resides on.
 	// The folder will be stopped when the value drops below the threshold.
-	// An unset or zero size disables the check.
+	// An unset size uses the default of one percent; an explicit zero size
+	// disables the check.
 	MinDiskFree *Size
 	// The file versioning configuration for the folder.
 	Versioning *VersioningConfiguration
@@ -6159,7 +6160,8 @@ type OptionsConfiguration_builder struct {
 	// domain as the local device.
 	LimitBandwidthInLan *bool
 	// The minimum required free space on the partition holding the
-	// configuration and index. An unset or zero size disables the check.
+	// configuration and index. An unset size uses the default of one
+	// percent; an explicit zero size disables the check.
 	MinHomeDiskFree *Size
 	// The URL from which release information is loaded, for automatic
 	// upgrades.

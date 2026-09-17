@@ -14,6 +14,8 @@ import (
 	"buf.build/go/protoyaml"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/syncthing/syncthing/lib/structutil"
+
 	intconfig "github.com/syncthing/syncthing/internal/config"
 	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
 	"github.com/syncthing/syncthing/lib/protocol"
@@ -24,73 +26,7 @@ func TestFromLegacy(t *testing.T) {
 	otherID := protocol.NewDeviceID([]byte("otherdevice"))
 	ts := time.Date(2026, 9, 12, 12, 0, 0, 0, time.UTC)
 
-	legacy := Configuration{
-		Version: 52,
-		Folders: []FolderConfiguration{{
-			ID:              "f1",
-			Label:           "Folder One",
-			Path:            "/srv/sync/f1",
-			FilesystemType:  FilesystemTypeFake,
-			Type:            FolderTypeReceiveOnly,
-			RescanIntervalS: 0, // explicit zero: no periodic rescan
-			Devices: []FolderDeviceConfiguration{{
-				DeviceID:           otherID,
-				IntroducedBy:       id,
-				EncryptionPassword: "hunter2",
-			}},
-			MinDiskFree: Size{Value: 2, Unit: "GiB"},
-			Versioning: VersioningConfiguration{
-				Type:             "simple",
-				Params:           map[string]string{"keep": "3"},
-				CleanupIntervalS: 0, // explicit zero: no cleanup
-				FSType:           FilesystemTypeFake,
-			},
-			MaxConflicts:    0, // explicit zero
-			Copiers:         2,
-			Hashers:         4,
-			Order:           PullOrderOldestFirst,
-			BlockPullOrder:  BlockPullOrderInOrder,
-			CopyRangeMethod: CopyRangeMethodSendFile,
-			XattrFilter: XattrFilter{
-				Entries:            []XattrFilterEntry{{Match: "user.*", Permit: true}},
-				MaxSingleEntrySize: 512,
-				MaxTotalSize:       1024,
-			},
-		}},
-		Devices: []DeviceConfiguration{{
-			DeviceID:          otherID,
-			Name:              "Other",
-			Addresses:         []string{"dynamic"},
-			Compression:       CompressionAlways,
-			MaxSendKbps:       1000,
-			IgnoredFolders:    []ObservedFolder{{Time: ts, ID: "ig1", Label: "Ignored"}},
-			RemoteGUIPort:     1234,
-			RawNumConnections: 7,
-			Untrusted:         true,
-		}},
-		GUI: GUIConfiguration{
-			RawAddress: "127.0.0.1:9000",
-			AuthMode:   AuthModeLDAP,
-			RawUseTLS:  true,
-		},
-		LDAP: LDAPConfiguration{
-			Address:   "ldap.example.com:389",
-			Transport: LDAPTransportStartTLS,
-		},
-		Options: OptionsConfiguration{
-			RawListenAddresses: []string{"default"},
-			MaxSendKbps:        100,
-			URAccepted:         -1,
-			MinHomeDiskFree:    Size{Value: 1, Unit: "%"},
-		},
-		IgnoredDevices: []ObservedDevice{{Time: ts, ID: id, Name: "Friend", Address: "192.0.2.1:22000"}},
-		Defaults: Defaults{
-			Folder:  FolderConfiguration{RescanIntervalS: 10800},
-			Device:  DeviceConfiguration{Compression: CompressionNever},
-			Ignores: Ignores{Lines: []string{"*.tmp"}},
-		},
-	}
-
+	legacy := testLegacyConfiguration(id, otherID, ts)
 	got := FromLegacy(legacy)
 
 	// Explicit zeros must remain set, not fall back to defaults.
@@ -276,5 +212,179 @@ func TestLegacyEnumValues(t *testing.T) {
 		if got := filesystemTypeFromLegacy(test.legacy); got != test.want {
 			t.Errorf("filesystemTypeFromLegacy(%q): got %v, want %v", test.legacy, got, test.want)
 		}
+	}
+}
+
+// testLegacyConfiguration returns a legacy configuration populated
+// with a representative spread of fields and values.
+func testLegacyConfiguration(id, otherID protocol.DeviceID, ts time.Time) Configuration {
+	return Configuration{
+		Version: 52,
+		Folders: []FolderConfiguration{{
+			ID:              "f1",
+			Label:           "Folder One",
+			Path:            "/srv/sync/f1",
+			FilesystemType:  FilesystemTypeFake,
+			Type:            FolderTypeReceiveOnly,
+			RescanIntervalS: 0, // explicit zero: no periodic rescan
+			Devices: []FolderDeviceConfiguration{{
+				DeviceID:           otherID,
+				IntroducedBy:       id,
+				EncryptionPassword: "hunter2",
+			}},
+			MinDiskFree: Size{Value: 2, Unit: "GiB"},
+			Versioning: VersioningConfiguration{
+				Type:             "simple",
+				Params:           map[string]string{"keep": "3"},
+				CleanupIntervalS: 0, // explicit zero: no cleanup
+				FSType:           FilesystemTypeFake,
+			},
+			MaxConflicts:    0, // explicit zero
+			Copiers:         2,
+			Hashers:         4,
+			Order:           PullOrderOldestFirst,
+			BlockPullOrder:  BlockPullOrderInOrder,
+			CopyRangeMethod: CopyRangeMethodSendFile,
+			XattrFilter: XattrFilter{
+				Entries:            []XattrFilterEntry{{Match: "user.*", Permit: true}},
+				MaxSingleEntrySize: 512,
+				MaxTotalSize:       1024,
+			},
+		}},
+		Devices: []DeviceConfiguration{{
+			DeviceID:          otherID,
+			Name:              "Other",
+			Addresses:         []string{"dynamic"},
+			Compression:       CompressionAlways,
+			MaxSendKbps:       1000,
+			IgnoredFolders:    []ObservedFolder{{Time: ts, ID: "ig1", Label: "Ignored"}},
+			RemoteGUIPort:     1234,
+			RawNumConnections: 7,
+			Untrusted:         true,
+		}},
+		GUI: GUIConfiguration{
+			RawAddress: "127.0.0.1:9000",
+			AuthMode:   AuthModeLDAP,
+			RawUseTLS:  true,
+		},
+		LDAP: LDAPConfiguration{
+			Address:   "ldap.example.com:389",
+			Transport: LDAPTransportStartTLS,
+		},
+		Options: OptionsConfiguration{
+			RawListenAddresses: []string{"default"},
+			MaxSendKbps:        100,
+			URAccepted:         -1,
+			MinHomeDiskFree:    Size{Value: 1, Unit: "%"},
+		},
+		IgnoredDevices: []ObservedDevice{{Time: ts, ID: id, Name: "Friend", Address: "192.0.2.1:22000"}},
+		Defaults: Defaults{
+			Folder:  FolderConfiguration{RescanIntervalS: 10800},
+			Device:  DeviceConfiguration{Compression: CompressionNever},
+			Ignores: Ignores{Lines: []string{"*.tmp"}},
+		},
+	}
+}
+
+func TestToLegacy(t *testing.T) {
+	id := protocol.NewDeviceID([]byte("tolegacy"))
+
+	cfg := intconfig.Configuration{Configuration: syncthingv2.Configuration_builder{
+		Version: new(int32(52)),
+		Folders: []*syncthingv2.FolderConfiguration{
+			syncthingv2.FolderConfiguration_builder{
+				Id:   new("f1"),
+				Path: new("/srv/sync/f1"),
+				Type: new(syncthingv2.FolderType_FOLDER_TYPE_SEND_ONLY),
+				// Most fields unset; they should get their defaults.
+			}.Build(),
+			syncthingv2.FolderConfiguration_builder{
+				Id:          new("f2"),
+				Path:        new("/srv/sync/f2"),
+				MinDiskFree: syncthingv2.Size_builder{Percent: new(0.0)}.Build(), // explicit zero: disabled
+			}.Build(),
+		},
+		Devices: []*syncthingv2.DeviceConfiguration{syncthingv2.DeviceConfiguration_builder{
+			DeviceId: new(id.String()),
+		}.Build()},
+	}.Build()}
+
+	got := ToLegacy(cfg)
+
+	// Unset fields get their defaults, like a loaded legacy
+	// configuration.
+	folder := got.Folders[0]
+	if folder.RescanIntervalS != 3600 {
+		t.Errorf("rescanIntervalS: got %d, want default 3600", folder.RescanIntervalS)
+	}
+	if folder.MarkerName != DefaultMarkerName {
+		t.Errorf("markerName: got %q, want default %q", folder.MarkerName, DefaultMarkerName)
+	}
+	if folder.MaxConcurrentWrites != 16 {
+		t.Errorf("maxConcurrentWrites: got %d, want default 16", folder.MaxConcurrentWrites)
+	}
+	if folder.MinDiskFree != (Size{Value: 1, Unit: "%"}) {
+		t.Errorf("minDiskFree: got %v, want default one percent", folder.MinDiskFree)
+	}
+	if folder.FilesystemType != FilesystemTypeBasic {
+		t.Errorf("filesystemType: got %q, want basic", folder.FilesystemType)
+	}
+	// Set values are kept.
+	if folder.ID != "f1" || folder.Path != "/srv/sync/f1" || folder.Type != FolderTypeSendOnly {
+		t.Errorf("folder values not kept: %+v", folder)
+	}
+
+	// An explicit zero size disables the check, as the legacy zero size.
+	if got.Folders[1].MinDiskFree != (Size{}) {
+		t.Errorf("minDiskFree: got %v, want zero size", got.Folders[1].MinDiskFree)
+	}
+
+	// Device IDs are native and addresses default to dynamic discovery.
+	device := got.Devices[0]
+	if device.DeviceID != id {
+		t.Errorf("deviceID: got %v, want %v", device.DeviceID, id)
+	}
+	if !reflect.DeepEqual(device.Addresses, []string{"dynamic"}) {
+		t.Errorf("addresses: got %v, want [dynamic]", device.Addresses)
+	}
+
+	// The GUI and options sections get their defaults.
+	if !got.GUI.Enabled || got.GUI.RawAddress != "127.0.0.1:8384" || got.GUI.Theme != DefaultTheme {
+		t.Errorf("GUI not defaulted: %+v", got.GUI)
+	}
+	if !reflect.DeepEqual(got.Options.RawListenAddresses, []string{"default"}) {
+		t.Errorf("listenAddresses: got %v, want [default]", got.Options.RawListenAddresses)
+	}
+	if got.Options.MinHomeDiskFree != (Size{Value: 1, Unit: "%"}) {
+		t.Errorf("minHomeDiskFree: got %v, want default one percent", got.Options.MinHomeDiskFree)
+	}
+	if got.Options.ReconnectIntervalS != 20 {
+		t.Errorf("reconnectionIntervalS: got %d, want default 20", got.Options.ReconnectIntervalS)
+	}
+}
+
+func TestLegacyRoundTrip(t *testing.T) {
+	id := protocol.NewDeviceID([]byte("roundtrip"))
+	otherID := protocol.NewDeviceID([]byte("roundtripother"))
+	ts := time.Date(2026, 9, 12, 12, 0, 0, 0, time.UTC)
+
+	// A loaded legacy configuration has its defaults materialised, and
+	// ToLegacy produces effective values; materialise the fixture the
+	// same way before comparing. The legacy default mechanism covers
+	// neither top level folders nor slice fields, so those are set
+	// explicitly.
+	orig := testLegacyConfiguration(id, otherID, ts)
+	structutil.SetDefaults(&orig)
+	for i := range orig.Folders {
+		structutil.SetDefaults(&orig.Folders[i])
+	}
+	orig.Options.RawGlobalAnnServers = []string{"default"}
+	orig.Options.RawStunServers = []string{"default"}
+	orig.Defaults.Device.Addresses = []string{"dynamic"}
+
+	got := ToLegacy(FromLegacy(orig))
+
+	if !reflect.DeepEqual(orig, got) {
+		t.Errorf("legacy configuration did not survive round trip:\ngot:  %+v\nwant: %+v", got, orig)
 	}
 }

@@ -107,8 +107,10 @@ func TestConfigServiceGetConfigurationMaterialized(t *testing.T) {
 	if addrs := got.GetDevices()[0].GetAddresses(); len(addrs) != 1 || addrs[0] != "dynamic" {
 		t.Errorf("device addresses: got %v, want [dynamic]", addrs)
 	}
-	if size := got.GetOptions().GetMinHomeDiskFree(); size == nil || !size.HasPercent() || size.GetPercent() != 1 {
-		t.Errorf("minHomeDiskFree: got %v, want one percent", size)
+	// The legacy zero size means the check is disabled, which converts
+	// to an explicit zero rather than the default.
+	if size := got.GetOptions().GetMinHomeDiskFree(); size == nil || !size.HasPercent() || size.GetPercent() != 0 {
+		t.Errorf("minHomeDiskFree: got %v, want explicit zero", size)
 	}
 }
 
