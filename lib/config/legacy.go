@@ -535,7 +535,7 @@ func toLegacyObservedDevices(devices []intconfig.ObservedDevice) []ObservedDevic
 	return out
 }
 
-func toLegacyGUI(g *syncthingv2.GUIConfiguration) GUIConfiguration {
+func toLegacyGUI(g intconfig.GUIConfiguration) GUIConfiguration {
 	return GUIConfiguration{
 		Enabled:                   g.GetEnabled(),
 		RawAddress:                g.GetAddress(),

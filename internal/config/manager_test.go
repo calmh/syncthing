@@ -289,7 +289,7 @@ func TestManagerAccessorsAndRemove(t *testing.T) {
 	if w.DefaultIgnores() != nil {
 		t.Error("default ignores should be unset")
 	}
-	if w.GUI() != nil || w.RawCopy().HasOptions() || w.LDAP() != nil {
+	if w.RawCopy().HasGui() || w.RawCopy().HasOptions() || w.LDAP() != nil {
 		t.Error("unset sections should be nil")
 	}
 

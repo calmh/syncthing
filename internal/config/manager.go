@@ -400,15 +400,12 @@ func (w *Manager) LDAP() *LDAPConfiguration {
 	return nil
 }
 
-// GUI returns the current GUI configuration object, or nil if unset.
-// Getters on the result are nil-safe and return the schema defaults.
-func (w *Manager) GUI() *GUIConfiguration {
+// GUI returns the current GUI configuration object. Getters on the
+// result are nil-safe and return the schema defaults.
+func (w *Manager) GUI() GUIConfiguration {
 	w.mut.Lock()
 	defer w.mut.Unlock()
-	if gui := w.cfg.GetGui(); gui != nil {
-		return proto.Clone(gui).(*GUIConfiguration)
-	}
-	return nil
+	return w.cfg.GetGui().Copy()
 }
 
 // DefaultIgnores returns the list of ignore patterns to be used by default on

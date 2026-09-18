@@ -88,6 +88,16 @@ func (c Configuration) SetRemoteIgnoredDevices(devices []ObservedDevice) {
 	c.Configuration.SetRemoteIgnoredDevices(pbs)
 }
 
+// GetGui returns the GUI configuration.
+func (c Configuration) GetGui() GUIConfiguration {
+	return GUIConfiguration{c.Configuration.GetGui()}
+}
+
+// SetGui sets the GUI configuration.
+func (c Configuration) SetGui(gui GUIConfiguration) {
+	c.Configuration.SetGui(gui.GUIConfiguration)
+}
+
 // GetOptions returns the global configuration options.
 func (c Configuration) GetOptions() OptionsConfiguration {
 	return OptionsConfiguration{c.Configuration.GetOptions()}
@@ -96,6 +106,52 @@ func (c Configuration) GetOptions() OptionsConfiguration {
 // SetOptions sets the global configuration options.
 func (c Configuration) SetOptions(options OptionsConfiguration) {
 	c.Configuration.SetOptions(options.OptionsConfiguration)
+}
+
+// DeviceMap returns a map of device ID to device configuration.
+func (c Configuration) DeviceMap() map[protocol.DeviceID]DeviceConfiguration {
+	m := make(map[protocol.DeviceID]DeviceConfiguration, len(c.GetDevices()))
+	for _, dev := range c.GetDevices() {
+		m[dev.GetDeviceId()] = dev
+	}
+	return m
+}
+
+// FolderMap returns a map of folder ID to folder configuration.
+func (c Configuration) FolderMap() map[string]FolderConfiguration {
+	m := make(map[string]FolderConfiguration, len(c.GetFolders()))
+	for _, folder := range c.GetFolders() {
+		m[folder.GetId()] = folder
+	}
+	return m
+}
+
+// SetFolder adds the folder to the configuration, replacing any existing
+// folder with the same ID.
+func (c Configuration) SetFolder(folder FolderConfiguration) {
+	folders := c.GetFolders()
+	for i, existing := range folders {
+		if existing.GetId() == folder.GetId() {
+			folders[i] = folder
+			c.SetFolders(folders)
+			return
+		}
+	}
+	c.SetFolders(append(folders, folder))
+}
+
+// SetDevice adds the device to the configuration, replacing any existing
+// device with the same ID.
+func (c Configuration) SetDevice(device DeviceConfiguration) {
+	devices := c.GetDevices()
+	for i, existing := range devices {
+		if existing.GetDeviceId() == device.GetDeviceId() {
+			devices[i] = device
+			c.SetDevices(devices)
+			return
+		}
+	}
+	c.SetDevices(append(devices, device))
 }
 
 // Device returns the configuration for the given device, if present, and
@@ -334,7 +390,6 @@ func deviceIDFromString(s string) protocol.DeviceID {
 // Types without device IDs or defaults are used as-is.
 
 type (
-	GUIConfiguration        = syncthingv2.GUIConfiguration
 	LDAPConfiguration       = syncthingv2.LDAPConfiguration
 	VersioningConfiguration = syncthingv2.VersioningConfiguration
 	XattrFilter             = syncthingv2.XattrFilter

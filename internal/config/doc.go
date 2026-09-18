@@ -7,3 +7,9 @@
 // Package config provides handling of the protobuf based Syncthing
 // configuration, which is stored in YAML format.
 package config
+
+import "github.com/syncthing/syncthing/internal/slogutil"
+
+func init() {
+	slogutil.RegisterPackage("Configuration management")
+}

@@ -306,8 +306,8 @@ func prepareDevice(device DeviceConfiguration, sharedFolders []string) {
 // key, and normalises the session cookie path.
 func prepareGUI(cfg *Configuration) {
 	gui := cfg.GetGui()
-	if gui == nil {
-		gui = syncthingv2.GUIConfiguration_builder{}.Build()
+	if gui.GUIConfiguration == nil {
+		gui = GUIConfiguration{syncthingv2.GUIConfiguration_builder{}.Build()}
 		cfg.SetGui(gui)
 	}
 	if gui.GetApiKey() == "" {

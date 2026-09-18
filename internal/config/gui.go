@@ -1,0 +1,186 @@
+// Copyright (C) 2026 The Syncthing Authors.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at https://mozilla.org/MPL/2.0/.
+
+package config
+
+import (
+	"net/url"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+
+	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/protobuf/proto"
+
+	syncthingv2 "github.com/syncthing/syncthing/internal/gen/syncthing/v2"
+)
+
+// GUIConfiguration is the web GUI configuration. It wraps the generated
+// type to provide the runtime behaviour: the STGUIADDRESS and
+// STGUIAPIKEY environment variables override the stored values, and
+// getters return the schema defaults when unset.
+type GUIConfiguration struct {
+	*syncthingv2.GUIConfiguration
+}
+
+func (c GUIConfiguration) Copy() GUIConfiguration {
+	cp := proto.Clone(c.GUIConfiguration).(*syncthingv2.GUIConfiguration)
+	return GUIConfiguration{cp}
+}
+
+// IsAuthEnabled returns true if authentication is enabled. This should
+// match the behaviour of isAuthEnabled() in syncthingController.js.
+func (c GUIConfiguration) IsAuthEnabled() bool {
+	return c.GetAuthMode() == syncthingv2.AuthMode_AUTH_MODE_LDAP ||
+		(len(c.GetUser()) > 0 && len(c.GetPassword()) > 0)
+}
+
+// IsOverridden returns true if the GUI address is overridden by the
+// STGUIADDRESS environment variable.
+func (GUIConfiguration) IsOverridden() bool {
+	return os.Getenv("STGUIADDRESS") != ""
+}
+
+// Address returns the address to listen on. The STGUIADDRESS environment
+// variable overrides the configured value; it may be of the form
+// "scheme://address:port" or just "address:port".
+func (c GUIConfiguration) Address() string {
+	if override := os.Getenv("STGUIADDRESS"); override != "" {
+		// This value may be of the form "scheme://address:port" or just
+		// "address:port". We need to chop off the scheme. We try to parse
+		// it as an URL if it contains a slash. If that fails, return it
+		// as is and let some other error handling handle it.
+		if strings.Contains(override, "/") {
+			url, err := url.Parse(override)
+			if err != nil {
+				return override
+			}
+			if strings.HasPrefix(url.Scheme, "unix") {
+				return url.Path
+			}
+			return url.Host
+		}
+
+		return override
+	}
+
+	return c.GetAddress()
+}
+
+// UnixSocketPermissions returns the permissions to set on the UNIX
+// socket, if the address is a UNIX socket location.
+func (c GUIConfiguration) UnixSocketPermissions() os.FileMode {
+	perm, err := strconv.ParseUint(c.GetUnixSocketPermissions(), 8, 32)
+	if err != nil {
+		// ignore incorrectly formatted permissions
+		return 0
+	}
+	return os.FileMode(perm) & os.ModePerm
+}
+
+// Network returns "unix" if the address is a UNIX socket location, or
+// "tcp" otherwise.
+func (c GUIConfiguration) Network() string {
+	if override := os.Getenv("STGUIADDRESS"); override != "" {
+		url, err := url.Parse(override)
+		if err == nil && strings.HasPrefix(url.Scheme, "unix") {
+			return "unix"
+		}
+		return "tcp"
+	}
+	if strings.HasPrefix(c.GetAddress(), "/") {
+		return "unix"
+	}
+	return "tcp"
+}
+
+// UseTLS returns true if TLS (HTTPS) is in effect. The STGUIADDRESS
+// environment variable overrides the configured value.
+func (c GUIConfiguration) UseTLS() bool {
+	if override := os.Getenv("STGUIADDRESS"); override != "" {
+		return strings.HasPrefix(override, "https:") || strings.HasPrefix(override, "unixs:")
+	}
+	return c.GetUseTls()
+}
+
+// URL returns the address of the GUI, in a form suitable for opening in
+// a browser: localhost addresses are substituted for wildcard addresses.
+func (c GUIConfiguration) URL() string {
+	if c.Network() == "unix" {
+		if c.UseTLS() {
+			return "unixs://" + c.Address()
+		}
+		return "unix://" + c.Address()
+	}
+
+	u := url.URL{
+		Scheme: "http",
+		Host:   c.Address(),
+		Path:   "/",
+	}
+
+	if c.UseTLS() {
+		u.Scheme = "https"
+	}
+
+	if strings.HasPrefix(u.Host, ":") {
+		// Empty host, i.e. ":port", use IPv4 localhost
+		u.Host = "127.0.0.1" + u.Host
+	} else if strings.HasPrefix(u.Host, "0.0.0.0:") {
+		// IPv4 all zeroes host, convert to IPv4 localhost
+		u.Host = "127.0.0.1" + u.Host[7:]
+	} else if strings.HasPrefix(u.Host, "[::]:") {
+		// IPv6 all zeroes host, convert to IPv6 localhost
+		u.Host = "[::1]" + u.Host[4:]
+	}
+
+	return u.String()
+}
+
+// matches a bcrypt hash and not too much else
+var bcryptExpr = regexp.MustCompile(`^\$2[aby]\$\d+\$.{50,}`)
+
+// SetPassword takes a bcrypt hash or a plaintext password and stores it.
+// Plaintext passwords are hashed. Returns an error if the password is
+// not valid.
+func (c *GUIConfiguration) SetPassword(password string) error {
+	if bcryptExpr.MatchString(password) {
+		// Already hashed
+		c.GUIConfiguration.SetPassword(password)
+		return nil
+	}
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	c.GUIConfiguration.SetPassword(string(hash))
+	return nil
+}
+
+// CompareHashedPassword returns nil when the given plaintext password
+// matches the stored hash.
+func (c GUIConfiguration) CompareHashedPassword(password string) error {
+	configPasswordBytes := []byte(c.GetPassword())
+	passwordBytes := []byte(password)
+	return bcrypt.CompareHashAndPassword(configPasswordBytes, passwordBytes)
+}
+
+// IsValidAPIKey returns true when the given API key is valid, including
+// both the value in the config and the STGUIAPIKEY environment variable
+// override.
+func (c GUIConfiguration) IsValidAPIKey(apiKey string) bool {
+	switch apiKey {
+	case "":
+		return false
+
+	case c.GetApiKey(), os.Getenv("STGUIAPIKEY"):
+		return true
+
+	default:
+		return false
+	}
+}
